@@ -1,0 +1,47 @@
+h1 {
+    color: black;
+}
+h2 {
+    color: blue;
+}
+h3 {
+    color: darkgreen;
+}
+canvas{
+    border-style: solid;
+}
+#warningPrint{
+    color: red;
+    display: inline-block;
+}
+#userInputVerticiess{
+    display: inline-block;
+    white-space: nowrap;
+}
+#userInputFaces{
+    white-space: nowrap;
+}
+.column{
+    float: right;
+}
+select:required:invalid {
+  color: grey;
+}
+option[value=""][disabled] {
+  display: none;
+}
+option {
+  color: black;
+}
+.sliderBoxes {
+    display: inline-block;
+    width: 38px;
+    -moz-appearance: textfield;
+    -webkit-appearance: textfield;
+}
+.leftmar{
+    margin-left: 100px;
+}
+.leftmar1{
+    margin-left: 20px;
+}

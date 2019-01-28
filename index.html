@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+    <head>    
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <title>Beyond 3D</title>
+        <script src="code.js" type="text/javascript" charset="utf-8"></script>   
+        <script src="https://code.jquery.com/jquery-1.3.min.js" integrity="sha256-kAGRpEMRXYtIqdaNMGLos9cSlyeVG4YXRltIW68lMAY=" crossorigin="anonymous"></script>
+        <link href="style.css" rel="stylesheet" type="text/css">
+        <script>
+            document.addEventListener('keydown', (event) => {
+                const keyName = event.key;
+                if (keyName == "ArrowUp"){
+                    w += 10;
+                }
+                else if(keyName == "ArrowDown"){
+                    w -= 10;
+                }
+                else if(keyName == "w"){
+                    z -= 10;
+                }
+                else if(keyName == "s"){
+                    z += 10;
+                }
+                else if(keyName == "a"){
+                    x += 10;
+                }
+                else if(keyName == "d"){
+                    x -= 10;
+                }
+                else if(keyName == " "){
+                    y += 10;
+                }
+                else if(keyName == "Shift"){
+                    y -= 10;
+                }
+                clearCanvas();
+                
+                document.getElementById("x").innerHTML = x;
+                document.getElementById("y").innerHTML = y;
+                document.getElementById("z").innerHTML = z;
+                document.getElementById("w").innerHTML = w;
+                
+                drawShape();
+                /*
+                drawLine(0,0,0,0,100,0,0,0);
+                drawLine(100,0,0,0,100,100,0,0);
+                drawLine(100,100,0,0,0,100,0,0);
+                drawLine(0,100,0,0,0,0,0,0);
+                
+                drawLine(0,0,0,0,0,0,100,0);
+                drawLine(100,0,0,0,100,0,100,0);
+                drawLine(100,100,0,0,100,100,100,0);
+                drawLine(0,100,0,0,0,100,100,0);
+                
+                drawLine(0,0,100,0,100,0,100,0);
+                drawLine(100,0,100,0,100,100,100,0);
+                drawLine(100,100,100,0,0,100,100,0);
+                drawLine(0,100,100,0,0,0,100,0);
+                
+                
+                //this is where the connector lines would be
+                drawLine(0,0,0,-400,0,0,0,0);
+                drawLine(100,0,0,-400,100,0,0,0);
+                drawLine(100,100,0,-400,100,100,0,0);
+                drawLine(0,100,0,-400,0,100,0,0);
+                
+                drawLine(0,0,0,-400,0,0,0,0);
+                drawLine(100,0,0,-400,100,0,0,0);
+                drawLine(100,100,0,-400,100,100,0,0);
+                drawLine(0,100,0,-400,0,100,0,0);
+                
+                drawLine(0,0,100,-400,0,0,100,0);
+                drawLine(100,0,100,-400,100,0,100,0);
+                drawLine(100,100,100,-400,100,100,100,0);
+                drawLine(0,100,100,-400,0,100,100,0);
+                
+                
+    
+                
+                drawLine(0,0,0,-400,100,0,0,-400);
+                drawLine(100,0,0,-400,100,100,0,-400);
+                drawLine(100,100,0,-400,0,100,0,-400);
+                drawLine(0,100,0,-400,0,0,0,-400);
+                
+                drawLine(0,0,0,-400,0,0,100,-400);
+                drawLine(100,0,0,-400,100,0,100,-400);
+                drawLine(100,100,0,-400,100,100,100,-400);
+                drawLine(0,100,0,-400,0,100,100,-400);
+                
+                drawLine(0,0,100,-400,100,0,100,-400);
+                drawLine(100,0,100,-400,100,100,100,-400);
+                drawLine(100,100,100,-400,0,100,100,-400);
+                drawLine(0,100,100,-400,0,0,100,-400);*/
+                //alert('keydown event\n\n' + 'key: ' + keyName);
+            });
+        </script>
+    </head>
+    <body onload="onload()">
+        <div class=column>
+            <canvas id="myCanvas" width="800" height="800"></canvas>
+            <!--<canvas style="display:inline;" id="myCanvas2" width="800" height="800"></canvas>-->
+            <div id="x"></div>
+            <div id="y"></div>
+            <div id="z"></div>
+            <div id="w"></div> 
+            </div>
+            <h1>Beyond 3D!</h1>
+        <button onclick="test3();">test3</button>
+        <div>
+            <h2> Select a Shape</h2>
+            <select required id="NoD" onChange="updateDimensionSize()">
+                <option value="" disabled selected>Number of Dimensions</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+            </select>
+            <select required id=shape onChange="updateShape()">
+                <option value="" placeholder="shape" disabled selected>Shape</option>
+                <option value="pentachoron">pentachoron</option>
+                <option value="life1">life1</option>
+                <option value="life2">life2</option>
+                <option value="life3">life3</option>
+            </select>
+            <div>
+                <h3> or enter your own data points</h3>
+            </div>
+            <div>
+                <textarea id="userInputVerticies" placeholder="Type in data points..."></textArea>
+            </div>
+            <h3>and connect your points with lines</h3>
+            <div>
+                <textarea id = "userInputFaces" rows="4" cols="50" placeholder="Type points as faces to be connected..."></textArea>
+            </div>
+            <script></script>
+            
+            <button onclick="saveUserInput()" >save data</button>
+            <span>
+                <div id = "warningPrint" ></div>
+            </span>
+            <div>
+                <h2>Display Options</h2>
+                <label for="" >3D<input type="checkbox" /></label>
+                <label for="" >linear regression<input type="checkbox" /></label>
+            </div>
+            <button onClick="copyLink();">get perma link</button>
+            <div id="userVerticies"></div>
+            <div id="userFaces"></div>
+            <div>
+              <div><h2 id="TLabel">Translation</h2></div>
+              <div id="TSliders"> </div>
+            </div>
+            <div>
+              <div><h2 id="RLabel">Rotation</h2></div>
+              <div id="RSliders"> </div>
+            </div>
+            <!--  <vb>
+            <div><label for="" id="xT">X-Axis<input type="range" min="-360" max="360" step="1" /></label></div>
+            <div><label for="" id="yT">Y-Axis<input type="range" min="-360" max="360" step="1"/></label></div>
+            <div><label for="" id="zT">Z-Axis<input type="range" min="-360" max="360" step="1"/></label></div>
+            <div><label for="" id="wT">W-Axis<input type="range" min="-360" max="360" step="1"/></label></div>
+            <div><label for="" id="vT">V-Axis<input type="range" min="-360" max="360" step="1"/></label></div>
+            </vb>
+             <vb>
+            <div><h2 id="RLabel">Rotation</h2></div>
+            <div><label for="" id="xyR">X-Y Axes<input type="range" min="-360" max="360" step="1" /></label></div>
+            <div><label for="" id="yzR">Y-Z Axes<input type="range" min="-360" max="360" step="1"/></label></div>
+            <div><label for="" id="zxR">Z-X Axes<input type="range" min="-360" max="360" step="1"/></label></div>
+            <div><label for="" id="wxR">W-X Axes<input type="range" min="-360" max="360" step="1"/></label></div>
+            <div><label for="" id="wyR">W-Y Axes<input type="range" min="-360" max="360" step="1"/></label></div>
+            <div><label for="" id="wzR">W-Z Axes<input type="range" min="-360" max="360" step="1"/></label></div>
+            <div><label for="" id="vxR">V-X Axes<input type="range" min="-360" max="360" step="1"/></label></div>
+            <div><label for="" id="vyR">V-Y Axes<input type="range" min="-360" max="360" step="1"/></label></div>
+            <div><label for="" id="vzR">V-Z Axes<input type="range" min="-360" max="360" step="1"/></label></div>
+            <div><label for="" id="vwR">V-W Axes<input type="range" min="-360" max="360" step="1"/></label></div>
+            </vb>-->
+        </div>
+        
+        
+        <div>
+            <table>
+                <tr>
+                    <td><label></label></td>
+                    <td><input type="range" id="start" name="volume" min="-360" max="360" step="1" onchange="rotate(0,1,this.value);"/></td>
+  <!--
+  <option value="0" label="0%">
+  <option value="10">
+  <option value="20">
+  <option value="30">
+  <option value="40">
+  <option value="50" label="50%">
+  <option value="60">
+  <option value="70">
+  <option value="80">
+  <option value="90">
+  <option value="100" label="100%"> -->
+                    <td><div>there will be a number here</div></td> 
+                </tr>
+            </table>
+            
+        </div>
+    </body>
+</html>
+<!--
+//16
+v0 0,0,0,0
+v1 100,0,0,0
+v2 100,100,0,0
+v3 0,100,0,0
+
+v4 0,0,100,0
+v5 100,0,100,0
+v6 100,100,100,0
+v7 0,100,100,0
+
+
+v8 0,0,0,100
+v9 100,0,0,100
+v10 100,100,0,100
+v11 0,100,0,100
+
+v12 0,0,100,100
+v13 100,0,100,100
+v14 100,100,100,100
+v15 0,100,100,100
+
+faces
+
+0,1,2,3
+4,5,6,7
+8,9,10,11
+12,13,14,15
+
+14,13,9,10
+15,14,10,11
+12,15,11,8
+12,13,9,8
+
+1,2,6,5
+4,5,1,0
+7,6,2,3
+0,3,7,4
+
+11,10,2,3
+10,9,1,2
+9,8,0,1
+8,11,3,0
+
+15,14,6,7
+14,13,5,6
+12,13,5,4
+12,15,7,4
+
+missing 4 ish faces that are not important
+
+
+
+
+http://anthonyterrien.com/demo/knob/
+really nice option for knobs
+uses jquery i think
+-->
