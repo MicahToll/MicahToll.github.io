@@ -107,9 +107,9 @@ function updateDimensionSize(){
     addSliders();
 }
 
-function addSliders(){
+function addSliders(){ //TODO: make default range print to numbre boxes on creation
     var rSliders = ["X-Y", "Y-Z", "Z-X", "W-X", "W-Y", "W-Z", "V-X", "V-Y", "V-Z", "V-W", 
-            "U-X", "U-Y", "U-Z", "U-W", "U-V", "T-X", "T-Y", "T-Z", "T-W", "T-V", "T-U"]; //TODO: sliders build not hidden
+            "U-X", "U-Y", "U-Z", "U-W", "U-V", "T-X", "T-Y", "T-Z", "T-W", "T-V", "T-U"];
     var rNum = [0, 0, 1, 3, 6, 10, 15, 21];
     var string = "";
     
@@ -118,7 +118,7 @@ function addSliders(){
     document.getElementById("RLabel").style.visibility="hidden";
     document.getElementById("RSliders").innerHTML = "";
     
-    for(var k = 0; dimensionSize > k; k++){ //ID 1 is //box 1, 2 is box 2, and 3 is the slider
+    for(var k = 0; dimensionSize > k; k++){ //ID 1 is box 1, 2 is box 2, and 3 is the slider
         string +="<input id=" + tSliders[k] + "1  onChange=updateSliderRange() class=\"sliderBoxes leftmar1\" type=\"number\">\n";
         string +="<input id=" + tSliders[k] + "2 onChange=updateSliderRange() class=\"sliderBoxes leftmar\" type=\"number\">\n";
         string += "<div>" + tSliders[k] + "-Axis<input id=" + tSliders[k] + "3 type=\"range\" min=\"" + -defaultRangeSliders + "\" max=\"" + defaultRangeSliders + "\" step=\"1\" /></div>\n";
@@ -136,8 +136,11 @@ function addSliders(){
 
 function updateSliderRange(){
     for(let i = 0; i < dimensionSize; i++){
-        document.getElemantById(tSliders[i] + 3).min = document.getElementById( tSliders[i] + 1).value;
-        document.getElemantById( tSliders[i] + 3).max = document.getElementById( tSliders[k] + 2).value;
+        if (document.getElementById( tSliders[i] + 1).value >= document.getElementById( tSliders[i] + 2).value){
+            document.getElementById("warningTrans").innerHTML = "ERROR: invalid range!"; 
+        } else document.getElementById("warningTrans").innerHTML = ""; 
+        document.getElementById(tSliders[i] + 3).min = document.getElementById( tSliders[i] + 1).value;
+        document.getElementById( tSliders[i] + 3).max = document.getElementById( tSliders[i] + 2).value;
     }
 }
 

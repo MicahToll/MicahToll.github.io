@@ -10,7 +10,7 @@ h3 {
 canvas{
     border-style: solid;
 }
-#warningPrint{
+.warningPrint{
     color: red;
     display: inline-block;
 }
