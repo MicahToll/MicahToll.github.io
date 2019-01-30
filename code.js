@@ -227,25 +227,28 @@ function drawLine(x1,y1,z1,w1,x2,y2,z2,w2){wZ1
 function rotate(xAxis,yAxis,changeInAngle){
     for (var point of userVerticies){
         var angleOfPoint;
-        if (0 === point[xAxis]){
-            angleOfPoint = Math.atan(1);
-        }
-        else{
+        if (point[xAxis]>0){
             angleOfPoint = Math.atan(point[yAxis]/point[xAxis]);
+        }
+        else if (point[xAxis]<0){
+            angleOfPoint = Math.PI-Math.atan(point[yAxis]/(-1*point[xAxis]));
+        }
+        else {
+            angleOfPoint = Math.atan(1);
         }
         var h = Math.sqrt(point[yAxis]*point[yAxis]+point[xAxis]*point[xAxis]);
         if(changeInAngle>0){
-            angleOfPoint += .17;// 0.17453292519;
+            angleOfPoint += .175;// 0.17453292519;
         }
         else{
-            angleOfPoint -= .17;// 0.17453292519;
+            angleOfPoint -= .175;// 0.17453292519;
         }
         point[yAxis] = h*Math.sin(angleOfPoint);//y
         point[xAxis] = h*Math.cos(angleOfPoint);//x
         //alert(point[yAxis]+","+point[xAxis]);
     }
+    clearCanvas();
     drawShape();
-    alert(userVerticies)
 }
 
 function onload(){
