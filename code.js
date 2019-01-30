@@ -119,9 +119,9 @@ function addSliders(){ //TODO: make default range print to numbre boxes on creat
     document.getElementById("RSliders").innerHTML = "";
     
     for(var k = 0; dimensionSize > k; k++){ //ID 1 is box 1, 2 is box 2, and 3 is the slider
-        string +="<input id=" + tSliders[k] + "1  onChange=updateSliderRange() class=\"sliderBoxes leftmar1\" type=\"number\">\n";
-        string +="<input id=" + tSliders[k] + "2 onChange=updateSliderRange() class=\"sliderBoxes leftmar\" type=\"number\">\n";
-        string += "<div>" + tSliders[k] + "-Axis<input id=" + tSliders[k] + "3 type=\"range\" min=\"" + -defaultRangeSliders + "\" max=\"" + defaultRangeSliders + "\" step=\"1\" /></div>\n";
+        string +="<input id=" + tSliders[k] + "1  onChange=updateSliderRange() class=\"sliderBoxes leftmar1\" type=\"number\" value=\"" + -defaultRangeSliders + "\">\n";
+        string +="<input id=" + tSliders[k] + "2 onChange=updateSliderRange() class=\"sliderBoxes leftmar\" type=\"number\" value=\"" + defaultRangeSliders + "\">\n";
+        string += "<div>" + tSliders[k] + "-Axis<input id=" + tSliders[k] + "3 onChange=updateDisplay() type=\"range\" min=\"" + -defaultRangeSliders + "\" max=\"" + defaultRangeSliders + "\" step=\"1\" /></div>\n";
         document.getElementById("TLabel").style.visibility="visible";
     }
     document.getElementById("TSliders").innerHTML = string;
@@ -142,6 +142,19 @@ function updateSliderRange(){
         document.getElementById(tSliders[i] + 3).min = document.getElementById( tSliders[i] + 1).value;
         document.getElementById( tSliders[i] + 3).max = document.getElementById( tSliders[i] + 2).value;
     }
+}
+
+function updateDisplay(){
+    w = document.getElementById("W" + 3).value;
+    z = document.getElementById("Z" + 3).value;
+    x = document.getElementById("X" + 3).value;
+    y = document.getElementById("Y" + 3).value;
+    clearCanvas();
+    document.getElementById("x").innerHTML = -x;
+    document.getElementById("y").innerHTML = -y;
+    document.getElementById("z").innerHTML = -z;
+    document.getElementById("w").innerHTML = -w;
+    drawShape();
 }
 
 function copyLink() {
