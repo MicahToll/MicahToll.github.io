@@ -41,57 +41,6 @@
                 document.getElementById("w").innerHTML = w;
                 
                 drawShape();
-                /*
-                drawLine(0,0,0,0,100,0,0,0);
-                drawLine(100,0,0,0,100,100,0,0);
-                drawLine(100,100,0,0,0,100,0,0);
-                drawLine(0,100,0,0,0,0,0,0);
-                
-                drawLine(0,0,0,0,0,0,100,0);
-                drawLine(100,0,0,0,100,0,100,0);
-                drawLine(100,100,0,0,100,100,100,0);
-                drawLine(0,100,0,0,0,100,100,0);
-                
-                drawLine(0,0,100,0,100,0,100,0);
-                drawLine(100,0,100,0,100,100,100,0);
-                drawLine(100,100,100,0,0,100,100,0);
-                drawLine(0,100,100,0,0,0,100,0);
-                
-                
-                //this is where the connector lines would be
-                drawLine(0,0,0,-400,0,0,0,0);
-                drawLine(100,0,0,-400,100,0,0,0);
-                drawLine(100,100,0,-400,100,100,0,0);
-                drawLine(0,100,0,-400,0,100,0,0);
-                
-                drawLine(0,0,0,-400,0,0,0,0);
-                drawLine(100,0,0,-400,100,0,0,0);
-                drawLine(100,100,0,-400,100,100,0,0);
-                drawLine(0,100,0,-400,0,100,0,0);
-                
-                drawLine(0,0,100,-400,0,0,100,0);
-                drawLine(100,0,100,-400,100,0,100,0);
-                drawLine(100,100,100,-400,100,100,100,0);
-                drawLine(0,100,100,-400,0,100,100,0);
-                
-                
-    
-                
-                drawLine(0,0,0,-400,100,0,0,-400);
-                drawLine(100,0,0,-400,100,100,0,-400);
-                drawLine(100,100,0,-400,0,100,0,-400);
-                drawLine(0,100,0,-400,0,0,0,-400);
-                
-                drawLine(0,0,0,-400,0,0,100,-400);
-                drawLine(100,0,0,-400,100,0,100,-400);
-                drawLine(100,100,0,-400,100,100,100,-400);
-                drawLine(0,100,0,-400,0,100,100,-400);
-                
-                drawLine(0,0,100,-400,100,0,100,-400);
-                drawLine(100,0,100,-400,100,100,100,-400);
-                drawLine(100,100,100,-400,0,100,100,-400);
-                drawLine(0,100,100,-400,0,0,100,-400);*/
-                //alert('keydown event\n\n' + 'key: ' + keyName);
             });
         </script>
     </head>
@@ -104,11 +53,10 @@
             <div id="z"></div>
             <div id="w"></div> 
             </div>
-            <h1>Beyond 3D!</h1>
-        <button onclick="test3();">test3</button>
+            <h1>4 Dimensional Projections</h1>
         <div>
             <h2> Select a Shape</h2>
-            <select required id="NoD" onChange="updateDimensionSize()">
+            <!--<select required id="NoD" onChange="updateDimensionSize()">
                 <option value="" disabled selected>Number of Dimensions</option>
                 <option value="1">1</option>
                 <option value="2">2</option>
@@ -117,21 +65,21 @@
                 <option value="5">5</option>
                 <option value="6">6</option>
                 <option value="7">7</option>
-            </select>
-            <select required id=shape onChange="updateShape()">
+            </select>-->
+            <select id="shape" onChange="updateShape()">
                 <option value="" placeholder="shape" disabled selected>Shape</option>
                 <option value="pentachoron">pentachoron</option>
-                <option value="life1">life1</option>
+                <option value="life1">tesseract</option>
                 <option value="life2">life2</option>
                 <option value="life3">life3</option>
             </select>
             <div>
-                <h3> or enter your own data points</h3>
+                <h3> or enter your own points</h3>
             </div>
             <div>
                 <textarea id="userInputVerticies" placeholder="Type in data points..."></textArea>
             </div>
-            <h3>and connect your points with lines</h3>
+            <h3>and connect your points with faces</h3>
             <div>
                 <textarea id = "userInputFaces" rows="4" cols="50" placeholder="Type points as faces to be connected..."></textArea>
             </div>
@@ -150,13 +98,23 @@
             <div id="userVerticies"></div>
             <div id="userFaces"></div>
             <div>
-              <div><h2 id="TLabel">Translation</h2></div>
-              <div id="TSliders"> </div>
-              <div class=warningPrint id = "warningTrans" ></div>
+                <div><h2 id="TLabel">Translation</h2></div>
+                <div id="TSliders">
+                    <input oninput="translate();" type="range" min="100" max="100" step="1">
+                </div>
+                <!--<div class=warningPrint id = "warningTrans" ></div>-->
             </div>
             <div>
-              <div><h2 id="RLabel">Rotation</h2></div>
-              <div id="RSliders"> </div>
+                <div><h2 id="RLabel">Rotation</h2></div>
+                <div id="RSliders">
+                    <div><input oninput="rotate(0, 1);" type="range" min="360" max="360" step="1"></div>
+                    <div><input oninput="rotate(0, 2);" type="range" min="360" max="360" step="1"></div>
+                    <div><input oninput="rotate(1, 2);" type="range" min="360" max="360" step="1"></div>
+                    <div><input oninput="rotate(1, 3);" type="range" min="360" max="360" step="1"></div>
+                    <div><input oninput="rotate(2, 3);" type="range" min="360" max="360" step="1"></div>
+                    <div><input oninput="rotate(3, 0);" type="range" min="360" max="360" step="1"></div>
+            
+                </div>
             </div>
             <!--  <vb>
             <div><label for="" id="xT">X-Axis<input type="range" min="-360" max="360" step="1" /></label></div>

@@ -22,9 +22,14 @@ var w = 0;
 var xOffSet;
 var yOffSet;
 
+/*
+//this will be the corrdinates of the vanishing point for the third dimension
+var vanPointx3 = 0;
+var vanPointy3 = 0;
+*/
 //this is the corrdinates of the vanishing point for the fourth dimension
-var vanPointx = 400;
-var vanPointy = 400;
+var vanPointx4 = 400;
+var vanPointy4 = 400;
 
 //user inputted data 
 var userVerticies = []; //is an int[][] when "save data" button is pressed
@@ -165,35 +170,34 @@ function clearCanvas(){
     //ctx2.clearRect(0, 0, 800, 800);
 }
 
-function test3(){
-    alert("hi there");
-    alert(userVerticies);
-    alert(userFaces);
-}
-
 function drawShape(){
     ctx.beginPath();
     for(var face of userFaces){
         var xandy = findCord(userVerticies[face.length-1][0],userVerticies[face.length-1][1],userVerticies[face.length-1][2],userVerticies[face.length-1][3]);
-        ctx.moveTo(0,0);
-        ctx.lineTo(xandy[0],xandy[1]);
+             
+        ctx.moveTo(xandy[0],xandy[1]);
+        console.log(xandy[0]+","+xandy[1]);
         for(var point of face){
+            
             xandy = findCord(userVerticies[point][0],userVerticies[point][1],userVerticies[point][2],userVerticies[point][3]);
             ctx.lineTo(xandy[0],xandy[1]);
+            console.log(xandy[0]+","+xandy[1]);
         }
+        
     }
     ctx.stroke();
 }
+
 function findCord(x1,y1,z1,w1){
     return [
-        (((x1+x)*d/(d+-z1+-z) - vanPointx)*(d/(d+-w+-w1)) + vanPointx) + xOffSet,
-        (((y1+y)*d/(d+-z+-z1) + vanPointy)*(d/(d+-w+-w1)) - vanPointy) + yOffSet
+        (((x1+x)*d/(d+-z1+-z) - vanPointx4)*(d/(d+-w+-w1)) + vanPointx4) + xOffSet,
+        (((y1+y)*d/(d+-z+-z1) + vanPointy4)*(d/(d+-w+-w1)) - vanPointy4) + yOffSet
     ];
 }
 function findCordPara(x1,y1,z1,w1){
     return [
-        (((x1+x+para)*d/(d+-z1+-z) - vanPointx)*(d/(d+-w+-w1)) + vanPointx) + xOffSet,
-        (((y1+y)*d/(d+-z+-z1) + vanPointy)*(d/(d+-w+-w1)) - vanPointy) + yOffSet
+        (((x1+x+para)*d/(d+-z1+-z) - vanPointx4)*(d/(d+-w+-w1)) + vanPointx4) + xOffSet,
+        (((y1+y)*d/(d+-z+-z1) + vanPointy4)*(d/(d+-w+-w1)) - vanPointy4) + yOffSet
     ];
     //var ne
 }
@@ -201,11 +205,11 @@ function drawLine(x1,y1,z1,w1,x2,y2,z2,w2){wZ1
     //var newW1
     
     ctx.beginPath();
-    var newX1 = ((x1+x)*d/(d+-z1+-z) - vanPointx)*(d/(d+-w+-w1)) + vanPointx;
-    var newY1 = ((y1+y)*d/(d+-z+-z1) + vanPointy)*(d/(d+-w+-w1)) - vanPointy;
+    var newX1 = ((x1+x)*d/(d+-z1+-z) - vanPointx4)*(d/(d+-w+-w1)) + vanPointx4;
+    var newY1 = ((y1+y)*d/(d+-z+-z1) + vanPointy4)*(d/(d+-w+-w1)) - vanPointy4;
     
-    var newX2 = ((x2+x)*d/(d+-z2+-z) - vanPointx)*(d/(d+-w+-w2)) + vanPointx;
-    var newY2 = ((y2+y)*d/(d+-z2+-z) + vanPointy)*(d/(d+-w+-w2)) - vanPointy;
+    var newX2 = ((x2+x)*d/(d+-z2+-z) - vanPointx4)*(d/(d+-w+-w2)) + vanPointx4;
+    var newY2 = ((y2+y)*d/(d+-z2+-z) + vanPointy4)*(d/(d+-w+-w2)) - vanPointy4;
     
     ctx.moveTo(newX1 + xOffSet,newY1 + yOffSet);
     ctx.lineTo(newX2 + xOffSet,newY2 + yOffSet);
@@ -216,11 +220,11 @@ function drawLine(x1,y1,z1,w1,x2,y2,z2,w2){wZ1
     
     
     ctx2.beginPath();
-    var newX12 = ((x1+x+para)*d/(d+-z1+-z) - vanPointx)*(d/(d+-w1+-w)) + vanPointx;
-    var newY12 = ((y1+y)*d/(d+-z1+-z) + vanPointy)*(d/(d+-w1+-w)) - vanPointy;
+    var newX12 = ((x1+x+para)*d/(d+-z1+-z) - vanPointx4)*(d/(d+-w1+-w)) + vanPointx4;
+    var newY12 = ((y1+y)*d/(d+-z1+-z) + vanPointy4)*(d/(d+-w1+-w)) - vanPointy4;
     
-    var newX22 = ((x2+x+para)*d/(d+-z2+-z) - vanPointx)*(d/(d+-w2+-w)) + vanPointx;
-    var newY22 = ((y2+y)*d/(d+-z2+-z) + vanPointy)*(d/(d+-w2+-w)) - vanPointy;
+    var newX22 = ((x2+x+para)*d/(d+-z2+-z) - vanPointx4)*(d/(d+-w2+-w)) + vanPointx4;
+    var newY22 = ((y2+y)*d/(d+-z2+-z) + vanPointy4)*(d/(d+-w2+-w)) - vanPointy4;
     
     ctx2.moveTo(newX12 + xOffSet,newY12 + yOffSet);
     ctx2.lineTo(newX22 + xOffSet,newY22 + yOffSet);
@@ -268,14 +272,16 @@ function onload(){
         [0,100,0,0],
         [100,100,0,0],
         [100,0,0,0],
-        
+    
+        [100,100,100,0],
+        [100,0,100,0],
         [0,0,100,0],
         [0,100,100,0]
         
     ];
     userFaces = [
         [0,1,2,3],
-        [0,1,5,4]
+        [4,5,6,7]
     ];
     
     
@@ -333,6 +339,11 @@ function updateShape(){
     default:
         // code block
     }
+}
+
+function life() {
+    //document.getElementById("fname").addEventListener("focusout", myFunction);
+    alert("huyiefisfgiuobseg");
 }
 
 function pentachoronData(){
