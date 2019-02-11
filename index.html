@@ -6,6 +6,8 @@
         <script src="code.js" type="text/javascript" charset="utf-8"></script>   
         <script src="https://code.jquery.com/jquery-1.3.min.js" integrity="sha256-kAGRpEMRXYtIqdaNMGLos9cSlyeVG4YXRltIW68lMAY=" crossorigin="anonymous"></script>
         <link href="style.css" rel="stylesheet" type="text/css">
+ <!--       <link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection"/>
+        <script type="text/javascript" src="js/materialize.min.js"></script> -->
         <script>
             document.addEventListener('keydown', (event) => {
                 const keyName = event.key;
@@ -106,8 +108,8 @@
             </div>
             <h1>Beyond 3D!</h1>
         <button onclick="test3();">test3</button>
-        <div>
             <h2> Select a Shape</h2>
+        <div class="input-field col s12">
             <select required id="NoD" onChange="updateDimensionSize()">
                 <option value="" disabled selected>Number of Dimensions</option>
                 <option value="1">1</option>
@@ -118,13 +120,19 @@
                 <option value="6">6</option>
                 <option value="7">7</option>
             </select>
+            <label>Materialize Select</label>
+        </div>
+        <div class="input-field col s12">
             <select required id=shape onChange="updateShape()">
                 <option value="" placeholder="shape" disabled selected>Shape</option>
                 <option value="pentachoron">pentachoron</option>
-                <option value="life1">life1</option>
+                <option value="hexadecachoron">hexadecachoron</option>
                 <option value="life2">life2</option>
                 <option value="life3">life3</option>
             </select>
+            <label>Materialize Select</label>
+        </div>
+
             <div>
                 <h3> or enter your own data points</h3>
             </div>

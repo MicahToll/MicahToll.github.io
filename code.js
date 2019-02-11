@@ -121,7 +121,7 @@ function addSliders(){ //TODO: make default range print to numbre boxes on creat
     for(var k = 0; dimensionSize > k; k++){ //ID 1 is box 1, 2 is box 2, and 3 is the slider
         string +="<input id=" + tSliders[k] + "1  onChange=updateSliderRange() class=\"sliderBoxes leftmar1\" type=\"number\" value=\"" + -defaultRangeSliders + "\">\n";
         string +="<input id=" + tSliders[k] + "2 onChange=updateSliderRange() class=\"sliderBoxes leftmar\" type=\"number\" value=\"" + defaultRangeSliders + "\">\n";
-        string += "<div>" + tSliders[k] + "-Axis<input id=" + tSliders[k] + "3 onChange=updateDisplay() type=\"range\" min=\"" + -defaultRangeSliders + "\" max=\"" + defaultRangeSliders + "\" step=\"1\" /></div>\n";
+        string += "<form action=\"#\"><p class=\"range-field\"><div>" + tSliders[k] + "-Axis<input id=" + tSliders[k] + "3 onChange=updateDisplay() type=\"range\" min=\"" + -defaultRangeSliders + "\" max=\"" + defaultRangeSliders + "\" step=\"1\" /></div></p></form>\n";
         document.getElementById("TLabel").style.visibility="visible";
     }
     document.getElementById("TSliders").innerHTML = string;
@@ -343,6 +343,8 @@ function updateShape(){
     case "pentachoron":
         pentachoronData();
         break;
+    case "hexadecachoron"   :
+        hexadecachoronData();
     default:
         // code block
     }
@@ -367,5 +369,31 @@ function pentachoronData(){
         [0, 3, 2], 
         [0, 4, 1],
         [0, 2, 4] //TODO: fix face bug loop back
+    ];
+}
+
+function hexadecachoronData(){
+    dimensionSize = 4;
+    addSliders();
+    userVerticies = [
+        [200,0,0,0],
+        [0,200,0,0],
+        [0,0,200,0],
+        [0,0,0,200],
+        [-200,0,0,0],
+        [0,-200,0,0],
+        [0,0,-200,0],
+        [0,0,0,-200]
+    ];
+    userFaces = [//TODO: add all faces
+        [0, 3, 5], //TODO: fix 164 line bug with 5 pts (Micah)
+        [1, 4, 6],
+        [2, 5, 7], 
+        [3, 6, 0], 
+        [4, 7, 1], 
+        [5, 0, 2],
+        [6, 1, 3], //TODO: fix face bug loop back
+        [7, 2, 4],
+        [0, 1, 2, 3, 4, 5, 6, 7]
     ];
 }
