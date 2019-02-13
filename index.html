@@ -78,7 +78,6 @@
                 <option value="life2">life2</option>
                 <option value="life3">life3</option>
             </select>
-            <label>Materialize Select</label>
         </div>
 
             <div>
@@ -97,30 +96,28 @@
             <span>
                 <div class=warningPrint id = "warningPrint" ></div>
             </span>
-            <div>
-                <h2>Display Options</h2>
-                <label for="" >3D<input type="checkbox" /></label>
-            </div>
-            <button onClick="copyLink();">get perma link</button>
+            <!--<button onClick="copyLink();">get perma link</button>-->
             <div id="userVerticies"></div>
             <div id="userFaces"></div>
             <div>
                 <div><h2 id="TLabel">Translation</h2></div>
                 <div id="TSliders">
-                    <input oninput="translate();" type="range" min="100" max="100" step="1">
+                    <div>x: -100<input oninput="translate(0, this.value);" type="range" min="-100" max="100" step="1">100</div>
+                    <div>y: -100<input oninput="translate(1, this.value);" type="range" min="-100" max="100" step="1">100</div>
+                    <div>z: -100<input oninput="translate(2, this.value);" type="range" min="-100" max="100" step="1">100</div>
+                    <div>w: -100<input oninput="translate(3, this.value);" type="range" min="-100" max="100" step="1">100</div>
                 </div>
                 <!--<div class=warningPrint id = "warningTrans" ></div>-->
             </div>
             <div>
                 <div><h2 id="RLabel">Rotation</h2></div>
                 <div id="RSliders">
-                    <div><input oninput="rotate(0, 1);" type="range" min="360" max="360" step="1"></div>
-                    <div><input oninput="rotate(0, 2);" type="range" min="360" max="360" step="1"></div>
-                    <div><input oninput="rotate(1, 2);" type="range" min="360" max="360" step="1"></div>
-                    <div><input oninput="rotate(1, 3);" type="range" min="360" max="360" step="1"></div>
-                    <div><input oninput="rotate(2, 3);" type="range" min="360" max="360" step="1"></div>
-                    <div><input oninput="rotate(3, 0);" type="range" min="360" max="360" step="1"></div>
-            
+                    <div>x-y: -360<input oninput="rotate(0, 1, this.value);" type="range" min="-360" max="360" step="1">360</div>
+                    <div>x-z: -360<input oninput="rotate(0, 2, this.value);" type="range" min="-360" max="360" step="1">360</div>
+                    <div>x-w: -360<input oninput="rotate(0, 3, this.value);" type="range" min="-360" max="360" step="1">360</div>
+                    <div>y-z: -360<input oninput="rotate(1, 2, this.value);" type="range" min="-360" max="360" step="1">360</div>
+                    <div>y-w: -360<input oninput="rotate(1, 3, this.value);" type="range" min="-360" max="360" step="1">360</div>
+                    <div>z-w: -360<input oninput="rotate(2, 3, this.value);" type="range" min="-360" max="360" step="1">360</div>
                 </div>
             </div>
             <!--  <vb>
@@ -143,15 +140,17 @@
             <div><label for="" id="vzR">V-Z Axes<input type="range" min="-360" max="360" step="1"/></label></div>
             <div><label for="" id="vwR">V-W Axes<input type="range" min="-360" max="360" step="1"/></label></div>
             </vb>-->
+            <div>
+                <h2>Display Options</h2>
+                <label for="" >3D<input type="checkbox" /></label>
+            </div>
         </div>
-        
-        
+         <!--
         <div>
             <table>
                 <tr>
                     <td><label></label></td>
                     <td><input type="range" id="start" name="volume" min="-360" max="360" step="1" onchange="rotate(0,1,this.value);"/></td>
-  <!--
   <option value="0" label="0%">
   <option value="10">
   <option value="20">
@@ -162,12 +161,10 @@
   <option value="70">
   <option value="80">
   <option value="90">
-  <option value="100" label="100%"> -->
-                    <td><div>there will be a number here</div></td> 
+  <option value="100" label="100%">
                 </tr>
             </table>
-            
-        </div>
+        </div> -->
     </body>
 </html>
 <!--

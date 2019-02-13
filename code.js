@@ -1,18 +1,16 @@
 var c;
 var ctx;
 
-var link = "https://www.editey.com/file/1NwPe0oTq8bj3HzL_qgsrliuq3VV6Ifrz/";
-
-//var c2;https://lh3.googleusercontent.com/-FUWgZH_zd3s/AAAAAAAAAAI/AAAAAAAABT8/Vw63wNU1nG4/photo.jpg?sz=50
-//var ctx2;
-
 //this is the paralax value in px
 var para = -200;//-238.110236223;
+
 //this is the distance in px from the screen to your head
 var d = 1000;
-//these are the position of the player
+
+//these are GOING TO BE the position of the player
 var position = [0,0,0,0];
 
+//these are the position of the player
 var x = 0;
 var y = 0;
 var z = 0;
@@ -106,12 +104,15 @@ function turnToInt(array, isFloat){
     }
 }
 
+/*
 function updateDimensionSize(){
     var e = document.getElementById("NoD");
     dimensionSize = e.options[e.selectedIndex].value;
     addSliders();
 }
+*/
 
+/*
 function addSliders(){ //TODO: make default range print to numbre boxes on creation
     var rSliders = ["X-Y", "Y-Z", "Z-X", "W-X", "W-Y", "W-Z", "V-X", "V-Y", "V-Z", "V-W", 
             "U-X", "U-Y", "U-Z", "U-W", "U-V", "T-X", "T-Y", "T-Z", "T-W", "T-V", "T-U"];
@@ -138,7 +139,9 @@ function addSliders(){ //TODO: make default range print to numbre boxes on creat
     document.getElementById("RSliders").innerHTML = string;
     console.log("ready");
 }
+*/
 
+/*
 function updateSliderRange(){
     for(let i = 0; i < dimensionSize; i++){
         if (document.getElementById( tSliders[i] + 1).value >= document.getElementById( tSliders[i] + 2).value){
@@ -148,6 +151,7 @@ function updateSliderRange(){
         document.getElementById( tSliders[i] + 3).max = document.getElementById( tSliders[i] + 2).value;
     }
 }
+*/
 
 function updateDisplay(){
     w = document.getElementById("W" + 3).value;
@@ -162,7 +166,7 @@ function updateDisplay(){
     drawShape();
 }
 
-function copyLink() {
+/*function copyLink() {
   var link = "sup"; //TODO: put real link in the String
   
    var el = document.createElement('textarea');
@@ -175,7 +179,7 @@ function copyLink() {
    document.body.removeChild(el);
   
   alert("Copied!");
-}
+}*/
 
 
 function clearCanvas(){
