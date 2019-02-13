@@ -276,6 +276,41 @@ function rotate(xAxis,yAxis,changeInAngle){
 }
 
 function onload(){
+    document.addEventListener('keydown', (event) => {
+        const keyName = event.key;
+        if (keyName == "ArrowUp"){
+            w += 10;
+        }
+        else if(keyName == "ArrowDown"){
+            w -= 10;
+        }
+        else if(keyName == "w"){
+            z -= 10;
+        }
+        else if(keyName == "s"){
+            z += 10;
+        }
+        else if(keyName == "a"){
+            x += 10;
+        }
+        else if(keyName == "d"){
+            x -= 10;
+        }
+        else if(keyName == " "){
+            y += 10;
+        }
+        else if(keyName == "Shift"){
+            y -= 10;
+        }
+        clearCanvas();
+        
+        document.getElementById("x").innerHTML = x;
+        document.getElementById("y").innerHTML = y;
+        document.getElementById("z").innerHTML = z;
+        document.getElementById("w").innerHTML = w;
+        
+        drawShape();
+    });
     c = document.getElementById("myCanvas");
     ctx = c.getContext("2d");
     //c2 = document.getElementById("myCanvas2");
@@ -344,6 +379,7 @@ function onload(){
         [12,15,7,4]   
     ];*/
     //pentachoronData();
+    drawShape();
 }
 
 function updateShape(){
