@@ -32,6 +32,10 @@ var vanPointy4 = 400;
 //user inputted data 
 var userVerticies = []; //is an int[][] when "save data" button is pressed
 var userFaces = []; //is an int[][] when "save data" button is pressed
+
+var CurrentVerticies = []; //is an int[][] when "save data" button is pressed
+var CurrentFaces = []; //is an int[][] when "save data" button is pressed
+
 var dimensionSize = 0; //updated when "save data" button is pressed
 var dimensionMax = 7;
 var defaultRangeSliders ="100";
@@ -190,12 +194,12 @@ function clearCanvas(){
 function drawShape(){
     ctx.beginPath();
     for(var face of userFaces){
-        var xandy = findCord(userVerticies[face[face.length-1]][0],userVerticies[face[face.length-1]][1],userVerticies[face[face.length-1]][2],userVerticies[face[face.length-1]][3]);
+        var xandy = findCord(CurrentVerticies[face[face.length-1]][0],CurrentVerticies[face[face.length-1]][1],CurrentVerticies[face[face.length-1]][2],CurrentVerticies[face[face.length-1]][3]);
         ctx.moveTo(xandy[0],xandy[1]);
         console.log(face.length-1);
         for(var point of face){
             
-            xandy = findCord(userVerticies[point][0],userVerticies[point][1],userVerticies[point][2],userVerticies[point][3]);
+            xandy = findCord(CurrentVerticies[point][0],CurrentVerticies[point][1],CurrentVerticies[point][2],CurrentVerticies[point][3]);
             ctx.lineTo(xandy[0],xandy[1]);
             console.log(point);
         }
@@ -261,6 +265,7 @@ function translateShape(axis, value) {
     drawShape();
 }
 
+
 function rotate(xAxis,yAxis,changeInAngle){
     for (var point of userVerticies){
         var angleOfPoint;
@@ -287,6 +292,30 @@ function rotate(xAxis,yAxis,changeInAngle){
     clearCanvas();
     drawShape();
 }
+
+//this function was going to replace by rotate, but didn't
+/*function rotateShape(xAxis, yAxis, changeInAngle) {
+    for (var i = 0; i < userVerticies.length; i++) {///var point of userVerticies){
+        var point = userVerticies[i];
+        var angleOfPoint;
+        if (point[xAxis]>0){
+            angleOfPoint = Math.atan(point[yAxis]/point[xAxis]);
+        }
+        else if (point[xAxis]<0){
+            angleOfPoint = Math.PI-Math.atan(point[yAxis]/(-1*point[xAxis]));
+        }
+        else {
+            angleOfPoint = Math.atan(99); // this should be fixed later
+        }
+        var h = Math.sqrt(point[yAxis]*point[yAxis]+point[xAxis]*point[xAxis]);
+        angleOfPoint += changeInAngle;
+        CurrentVerticies[i][yAxis] = h*Math.sin(angleOfPoint);//y
+        CurrentVerticies[i][xAxis] = h*Math.cos(angleOfPoint);//x
+        //alert(point[yAxis]+","+point[xAxis]);
+    }
+    clearCanvas();
+    drawShape();
+}*/
 
 function onload(){
     document.addEventListener('keydown', (event) => {
@@ -391,7 +420,8 @@ function onload(){
         [12,13,5,4],
         [12,15,7,4]   
     ];
-    //pentachoronData();
+    CurrentVerticies = userVerticies;
+    CurrentFaces = userFaces;
     drawShape();
 }
 
