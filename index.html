@@ -51,6 +51,12 @@
             <div id="userFaces"></div>
             <div>
                 <div><h2 id="TLabel">Translation</h2></div>
+                <!--<div>
+                    <div class="translateButtonDiv">X: <button>+10</button></div><button>-10</button></div>
+                    <div>Y: <button>+10</button><div></div><button>-10</button></div>
+                    <div>Z: <button>+10</button><div></div><button>-10</button></div>
+                    <div>W: <button>+10</button><div></div><button>-10</button></div>
+                </div>-->
                 <div id="TSliders">
                     <div>x: -100<input oninput="translateShape(0, this.value)" type="range" min="-100" max="100" step="1">100</div>
                     <div>y: -100<input oninput="translateShape(1, this.value);" type="range" min="-100" max="100" step="1">100</div>
@@ -62,12 +68,12 @@
             <div>
                 <div><h2 id="RLabel">Rotation</h2></div>
                 <div id="RSliders">
-                    <div>x-y: -360<input oninput="rotate(0, 1, this.value);" type="range" min="-360" max="360" step="1">360</div>
-                    <div>x-z: -360<input oninput="rotate(0, 2, this.value);" type="range" min="-360" max="360" step="1">360</div>
-                    <div>x-w: -360<input oninput="rotate(0, 3, this.value);" type="range" min="-360" max="360" step="1">360</div>
-                    <div>y-z: -360<input oninput="rotate(1, 2, this.value);" type="range" min="-360" max="360" step="1">360</div>
-                    <div>y-w: -360<input oninput="rotate(1, 3, this.value);" type="range" min="-360" max="360" step="1">360</div>
-                    <div>z-w: -360<input oninput="rotate(2, 3, this.value);" type="range" min="-360" max="360" step="1">360</div>
+                    <div>x-y: -360<input oninput="rotateShape(0, 1, this.value);" type="range" min="-360" max="360" step="1">360</div>
+                    <div>x-z: -360<input oninput="rotateShape(0, 2, this.value);" type="range" min="-360" max="360" step="1">360</div>
+                    <div>x-w: -360<input oninput="rotateShape(0, 3, this.value);" type="range" min="-360" max="360" step="1">360</div>
+                    <div>y-z: -360<input oninput="rotateShape(1, 2, this.value);" type="range" min="-360" max="360" step="1">360</div>
+                    <div>y-w: -360<input oninput="rotateShape(1, 3, this.value);" type="range" min="-360" max="360" step="1">360</div>
+                    <div>z-w: -360<input oninput="rotateShape(2, 3, this.value);" type="range" min="-360" max="360" step="1">360</div>
                 </div>
             </div>
             <div>

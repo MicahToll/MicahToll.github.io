@@ -9,6 +9,10 @@ var d = 1000;
 
 //these are GOING TO BE the position of the player
 var position = [0,0,0,0];
+//this IS the rotation of the object
+var angle = [[0,0,0],[0,0],[0]];
+
+
 
 //these are the position of the player
 var x = 0;
@@ -32,9 +36,6 @@ var vanPointy4 = 400;
 //user inputted data 
 var userVerticies = []; //is an int[][] when "save data" button is pressed
 var userFaces = []; //is an int[][] when "save data" button is pressed
-
-var CurrentVerticies = []; //is an int[][] when "save data" button is pressed
-var CurrentFaces = []; //is an int[][] when "save data" button is pressed
 
 var dimensionSize = 0; //updated when "save data" button is pressed
 var dimensionMax = 7;
@@ -158,15 +159,11 @@ function updateSliderRange(){
 */
 
 function updateDisplay(){
-    w = document.getElementById("W" + 3).value;
-    z = document.getElementById("Z" + 3).value;
-    x = document.getElementById("X" + 3).value;
-    y = document.getElementById("Y" + 3).value;
     clearCanvas();
-    document.getElementById("x").innerHTML = -x;
-    document.getElementById("y").innerHTML = -y;
-    document.getElementById("z").innerHTML = -z;
-    document.getElementById("w").innerHTML = -w;
+    document.getElementById("x").innerHTML = x;
+    document.getElementById("y").innerHTML = y;
+    document.getElementById("z").innerHTML = z;
+    document.getElementById("w").innerHTML = w;
     drawShape();
 }
 
@@ -194,14 +191,12 @@ function clearCanvas(){
 function drawShape(){
     ctx.beginPath();
     for(var face of userFaces){
-        var xandy = findCord(CurrentVerticies[face[face.length-1]][0],CurrentVerticies[face[face.length-1]][1],CurrentVerticies[face[face.length-1]][2],CurrentVerticies[face[face.length-1]][3]);
+        var xandy = findCord(userVerticies[face[face.length-1]][0],userVerticies[face[face.length-1]][1],userVerticies[face[face.length-1]][2],userVerticies[face[face.length-1]][3]);
         ctx.moveTo(xandy[0],xandy[1]);
-        console.log(face.length-1);
         for(var point of face){
             
-            xandy = findCord(CurrentVerticies[point][0],CurrentVerticies[point][1],CurrentVerticies[point][2],CurrentVerticies[point][3]);
+            xandy = findCord(userVerticies[point][0],userVerticies[point][1],userVerticies[point][2],userVerticies[point][3]);
             ctx.lineTo(xandy[0],xandy[1]);
-            console.log(point);
         }
         
     }
@@ -261,11 +256,14 @@ function translateShape(axis, value) {
     } else if (axis == 3) {
         w = Number(value);
     }
-    clearCanvas();
-    drawShape();
+    updateDisplay()
+}
+function rotateShape(axis1, axis2, value) {
+    angle[axis1][axis2] = value;
+    updateDisplay()
 }
 
-
+/*
 function rotate(xAxis,yAxis,changeInAngle){
     for (var point of userVerticies){
         var angleOfPoint;
@@ -289,9 +287,8 @@ function rotate(xAxis,yAxis,changeInAngle){
         point[xAxis] = h*Math.cos(angleOfPoint);//x
         //alert(point[yAxis]+","+point[xAxis]);
     }
-    clearCanvas();
-    drawShape();
-}
+    updateDisplay()
+}*/
 
 //this function was going to replace by rotate, but didn't
 /*function rotateShape(xAxis, yAxis, changeInAngle) {
@@ -309,22 +306,21 @@ function rotate(xAxis,yAxis,changeInAngle){
         }
         var h = Math.sqrt(point[yAxis]*point[yAxis]+point[xAxis]*point[xAxis]);
         angleOfPoint += changeInAngle;
-        CurrentVerticies[i][yAxis] = h*Math.sin(angleOfPoint);//y
-        CurrentVerticies[i][xAxis] = h*Math.cos(angleOfPoint);//x
+        userVerticies[i][yAxis] = h*Math.sin(angleOfPoint);//y
+        userVerticies[i][xAxis] = h*Math.cos(angleOfPoint);//x
         //alert(point[yAxis]+","+point[xAxis]);
     }
-    clearCanvas();
-    drawShape();
+    updateDisplay()
 }*/
 
 function onload(){
     document.addEventListener('keydown', (event) => {
         const keyName = event.key;
         if (keyName == "ArrowUp"){
-            w += 10;
+            w -= 10;
         }
         else if(keyName == "ArrowDown"){
-            w -= 10;
+            w += 10;
         }
         else if(keyName == "w"){
             z -= 10;
@@ -333,10 +329,10 @@ function onload(){
             z += 10;
         }
         else if(keyName == "a"){
-            x += 10;
+            x -= 10;
         }
         else if(keyName == "d"){
-            x -= 10;
+            x += 10;
         }
         else if(keyName == " "){
             y += 10;
@@ -344,14 +340,7 @@ function onload(){
         else if(keyName == "Shift"){
             y -= 10;
         }
-        clearCanvas();
-        
-        document.getElementById("x").innerHTML = x;
-        document.getElementById("y").innerHTML = y;
-        document.getElementById("z").innerHTML = z;
-        document.getElementById("w").innerHTML = w;
-        
-        drawShape();
+        updateDisplay()
     });
     c = document.getElementById("myCanvas");
     ctx = c.getContext("2d");
@@ -420,31 +409,105 @@ function onload(){
         [12,13,5,4],
         [12,15,7,4]   
     ];
-    CurrentVerticies = userVerticies;
-    CurrentFaces = userFaces;
     drawShape();
 }
 
 function updateShape(){
-    var e = document.getElementById("shape");
     alert("hello");
+    var e = document.getElementById("shape");
     switch(e.options[e.selectedIndex].value) {
     case "pentachoron":
-        pentachoronData();
+        var phi = 1.61803398875 * 100;
+        userVerticies = [
+            [200,0,0,0],
+            [0,200,0,0],
+            [0,0,200,0],
+            [0,0,0,200],
+            [phi,phi,phi,phi]
+        ];
+        userFaces = [//TODO: add all faces
+            [0, 1, 2], //TODO: fix 164 line bug with 5 pts (Micah)
+            [1, 2, 3],
+            [2, 3, 4],
+            [0, 3, 1],
+            [0, 3, 2],
+            [0, 4, 1],
+            [0, 2, 4] //TODO: fix face bug loop back
+        ];
         break;
-    case "hexadecachoron"   :
-        hexadecachoronData();
+    case "tesseract":
+        userVerticies = [
+            [0,0,0,0],
+            [100,0,0,0],
+            [100,100,0,0],
+            [0,100,0,0],
+            [0,0,100,0],
+            [100,0,100,0],
+            [100,100,100,0],
+            [0,100,100,0],
+            [0,0,0,100],//8
+            [100,0,0,100],
+            [100,100,0,100],
+            [0,100,0,100],
+            [0,0,100,100],
+            [100,0,100,100],
+            [100,100,100,100],
+            [0,100,100,100]
+        ];
+        userFaces = [
+            [0,1,2,3],
+            [4,5,6,7],
+            [8,9,10,11],
+            [12,13,14,15],
+            [14,13,9,10],
+            [15,14,10,11],
+            [12,15,11,8],
+            [12,13,9,0],
+            [1,2,6,5],
+            [4,5,1,0],
+            [7,6,2,3],
+            [0,3,7,4],
+            [11,10,2,3],
+            [10,9,1,2],
+            [9,8,0,1],
+            [8,11,3,0],
+            [15,14,6,7],
+            [14,13,5,6],
+            [12,13,5,4],
+            [12,15,7,4]   
+        ];
+        break;
+    case "hexadecachoron":
+        userVerticies = [
+            [200,0,0,0],
+            [0,200,0,0],
+            [0,0,200,0],
+            [0,0,0,200],
+            [-200,0,0,0],
+            [0,-200,0,0],
+            [0,0,-200,0],
+            [0,0,0,-200]
+        ];
+        userFaces = [//TODO: add all faces
+            [0, 3, 5], //TODO: fix 164 line bug with 5 pts (Micah)
+            [1, 4, 6],
+            [2, 5, 7], 
+            [3, 6, 0], 
+            [4, 7, 1], 
+            [5, 0, 2],
+            [6, 1, 3], //TODO: fix face bug loop back
+            [7, 2, 4],
+            [0, 1, 2, 3, 4, 5, 6, 7]
+        ];
+        break;
     default:
         // code block
     }
+    clearCanvas()
+    drawShape();
 }
 
-function life() {
-    //document.getElementById("fname").addEventListener("focusout", myFunction);
-    alert("huyiefisfgiuobseg");
-}
-
-function pentachoronData(){
+/*function pentachoronData(){
     dimensionSize = 4;
     addSliders();
     var phi = 1.61803398875 * 100;
@@ -464,9 +527,9 @@ function pentachoronData(){
         [0, 4, 1],
         [0, 2, 4] //TODO: fix face bug loop back
     ];
-}
+}*/
 
-function hexadecachoronData(){
+/*function hexadecachoronData(){
     dimensionSize = 4;
     addSliders();
     userVerticies = [
@@ -490,4 +553,4 @@ function hexadecachoronData(){
         [7, 2, 4],
         [0, 1, 2, 3, 4, 5, 6, 7]
     ];
-}
+}*/
