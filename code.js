@@ -247,6 +247,20 @@ function drawLine(x1,y1,z1,w1,x2,y2,z2,w2){wZ1
     ctx2.stroke();
 }
 
+function translateShape(axis, value) {
+    if (axis == 0) {
+        x = Number(value);
+    } else if (axis == 1) {
+        y = Number(value);
+    } else if (axis == 2) {
+        z = Number(value);
+    } else if (axis == 3) {
+        w = Number(value);
+    }
+    clearCanvas();
+    drawShape();
+}
+
 function rotate(xAxis,yAxis,changeInAngle){
     for (var point of userVerticies){
         var angleOfPoint;
