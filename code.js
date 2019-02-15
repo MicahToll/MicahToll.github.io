@@ -174,12 +174,13 @@ function test3(){
 function drawShape(){
     ctx.beginPath();
     for(var face of userFaces){
-        var xandy = findCord(userVerticies[face.length-1][0],userVerticies[face.length-1][1],userVerticies[face.length-1][2],userVerticies[face.length-1][3]);
-        ctx.moveTo(0,0);
-        ctx.lineTo(xandy[0],xandy[1]);
+        var xandy = findCord(userVerticies[face[face.length-1]][0],userVerticies[face[face.length-1]][1],userVerticies[face[face.length-1]][2],userVerticies[face[face.length-1]][3]);
+        ctx.moveTo(xandy[0],xandy[1]);
+        console.log(face.length-1);
         for(var point of face){
             xandy = findCord(userVerticies[point][0],userVerticies[point][1],userVerticies[point][2],userVerticies[point][3]);
             ctx.lineTo(xandy[0],xandy[1]);
+            console.log(point);
         }
     }
     ctx.stroke();
@@ -237,7 +238,7 @@ function rotate(xAxis,yAxis,changeInAngle){
             angleOfPoint = Math.PI-Math.atan(point[yAxis]/(-1*point[xAxis]));
         }
         else {
-            angleOfPoint = Math.atan(1);
+            angleOfPoint = Math.atan(99); // this should be fixed later
         }
         var h = Math.sqrt(point[yAxis]*point[yAxis]+point[xAxis]*point[xAxis]);
         if(changeInAngle>0){
@@ -263,23 +264,8 @@ function onload(){
     xOffSet = Math.floor(c.width/2);
     yOffSet = Math.floor(c.height/2);
     
-    userVerticies = [
-        [0,0,0,0],
-        [0,100,0,0],
-        [100,100,0,0],
-        [100,0,0,0],
-        
-        [0,0,100,0],
-        [0,100,100,0]
-        
-    ];
-    userFaces = [
-        [0,1,2,3],
-        [0,1,5,4]
-    ];
     
-    
-    /*test thing
+    //test thing
     userVerticies = [
         [0,0,0,0],
         [100,0,0,0],
@@ -319,7 +305,7 @@ function onload(){
         [14,13,5,6],
         [12,13,5,4],
         [12,15,7,4]   
-    ];*/
+    ];
     //pentachoronData();
 }
 
