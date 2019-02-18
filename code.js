@@ -9,8 +9,10 @@ var d = 1000;
 
 //these are GOING TO BE the position of the player
 var position = [0,0,0,0];
+
 //this IS the rotation of the object
-var angle = [[0,0,0],[0,0],[0]];
+//x-y, x-z, x-w, y-, y-w, z-w
+var angle = [0, 0, 0, 0, 0, 0];
 
 
 
@@ -203,11 +205,63 @@ function drawShape(){
     ctx.stroke();
 }
 
+//this function was going to replace by rotate, but didn't
+/*function rotateShape(xAxis, yAxis, changeInAngle) {
+    for (var i = 0; i < userVerticies.length; i++) {///var point of userVerticies){
+        var point = userVerticies[i];
+        var angleOfPoint;
+        if (point[xAxis]>0){
+            angleOfPoint = Math.atan(point[yAxis]/point[xAxis]);
+        }
+        else if (point[xAxis]<0){
+            angleOfPoint = Math.PI-Math.atan(point[yAxis]/(-1*point[xAxis]));
+        }
+        else {
+            angleOfPoint = Math.atan(99); // this should be fixed later
+        }
+        var h = Math.sqrt(point[yAxis]*point[yAxis]+point[xAxis]*point[xAxis]);
+        angleOfPoint += changeInAngle;
+        userVerticies[i][yAxis] = h*Math.sin(angleOfPoint);//y
+        userVerticies[i][xAxis] = h*Math.cos(angleOfPoint);//x
+        //alert(point[yAxis]+","+point[xAxis]);
+    }
+    updateDisplay()
+}*/
+
 function findCord(x1,y1,z1,w1){
+    var point = [x1, y1, z1, w1];
+    planex = [0, 0, 0, 1, 1, 2];
+    planey = [1, 2, 3, 2, 3, 3];
+
+    for (var plane = 0; plane < angle.length; plane++) {
+        var angleOfPoint;
+        var changeInAngle = angle[plane];
+        xAxis = planex[plane];
+        yAxis = planey[plane];
+        if (point[xAxis]>0){
+            angleOfPoint = Math.atan(point[yAxis]/point[xAxis]);
+        }
+        else if (point[xAxis]<0){
+            angleOfPoint = Math.PI-Math.atan(point[yAxis]/(-1*point[xAxis]));
+        }
+        else {
+            angleOfPoint = Math.atan(99); // this should be fixed later
+        }
+        angleOfPoint += changeInAngle;
+        var h = Math.sqrt(point[yAxis]*point[yAxis]+point[xAxis]*point[xAxis]);
+        point[yAxis] = h*Math.sin(angleOfPoint);//y
+        point[xAxis] = h*Math.cos(angleOfPoint);//x
+    }
+
     return [
-        (((x1+x)*d/(d+-z1+-z) - vanPointx4)*(d/(d+-w+-w1)) + vanPointx4) + xOffSet,
-        (((y1+y)*d/(d+-z+-z1) + vanPointy4)*(d/(d+-w+-w1)) - vanPointy4) + yOffSet
+        (((point[0]+x)*d/(d+-point[2]+-z) - vanPointx4)*(d/(d+-w+-point[3])) + vanPointx4) + xOffSet,
+        (((point[1]+y)*d/(d+-z+-point[2]) + vanPointy4)*(d/(d+-w+-point[3])) - vanPointy4) + yOffSet
     ];
+
+    //return [
+    //    (((x1+x)*d/(d+-z1+-z) - vanPointx4)*(d/(d+-w+-w1)) + vanPointx4) + xOffSet,
+    //    (((y1+y)*d/(d+-z+-z1) + vanPointy4)*(d/(d+-w+-w1)) - vanPointy4) + yOffSet
+    //];
 }
 function findCordPara(x1,y1,z1,w1){
     return [
@@ -258,8 +312,8 @@ function translateShape(axis, value) {
     }
     updateDisplay()
 }
-function rotateShape(axis1, axis2, value) {
-    angle[axis1][axis2] = value;
+function rotateShape(plan, value) {
+    angle[plan] = value/180*Math.PI;
     updateDisplay()
 }
 
