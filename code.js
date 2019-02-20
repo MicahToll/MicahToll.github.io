@@ -4,6 +4,9 @@ var ctx;
 //this is the paralax value in px
 var para = -200;//-238.110236223;
 
+//this is off until three D is turned on 
+var threeD = false;
+
 //this is the distance in px from the screen to your head
 var d = 1000;
 
@@ -203,6 +206,20 @@ function drawShape(){
         
     }
     ctx.stroke();
+
+    if (threeD) {
+        ctx.beginPath();
+        for(var face of userFaces){
+            var xandy = findCord(userVerticies[face[face.length-1]][0],userVerticies[face[face.length-1]][1],userVerticies[face[face.length-1]][2],userVerticies[face[face.length-1]][3]);
+            ctx.moveTo(xandy[0],xandy[1]);
+            for(var point of face){
+                
+                xandy = findCord(userVerticies[point][0],userVerticies[point][1],userVerticies[point][2],userVerticies[point][3]);
+                ctx.lineTo(xandy[0],xandy[1]);
+            }
+        }
+        ctx.stroke();
+    }
 }
 
 //this function was going to replace by rotate, but didn't
@@ -264,11 +281,39 @@ function findCord(x1,y1,z1,w1){
     //];
 }
 function findCordPara(x1,y1,z1,w1){
+    var point = [x1, y1, z1, w1];
+    planex = [0, 0, 0, 1, 1, 2];
+    planey = [1, 2, 3, 2, 3, 3];
+
+    for (var plane = 0; plane < angle.length; plane++) {
+        var angleOfPoint;
+        var changeInAngle = angle[plane];
+        xAxis = planex[plane];
+        yAxis = planey[plane];
+        if (point[xAxis]>0){
+            angleOfPoint = Math.atan(point[yAxis]/point[xAxis]);
+        }
+        else if (point[xAxis]<0){
+            angleOfPoint = Math.PI-Math.atan(point[yAxis]/(-1*point[xAxis]));
+        }
+        else {
+            angleOfPoint = Math.atan(point[yAxis]*99); // this should be fixed later
+        }
+        angleOfPoint += changeInAngle;
+        var h = Math.sqrt(point[yAxis]*point[yAxis]+point[xAxis]*point[xAxis]);
+        point[yAxis] = h*Math.sin(angleOfPoint);//y
+        point[xAxis] = h*Math.cos(angleOfPoint);//x
+    }
+
     return [
-        (((x1+x+para)*d/(d+-z1+-z) - vanPointx4)*(d/(d+-w+-w1)) + vanPointx4) + xOffSet,
-        (((y1+y)*d/(d+-z+-z1) + vanPointy4)*(d/(d+-w+-w1)) - vanPointy4) + yOffSet
+        (((point[0]+x+para)*d/(d+-point[2]+-z) - vanPointx4)*(d/(d+-w+-point[3])) + vanPointx4) + xOffSet,
+        (((point[1]+y)*d/(d+-z+-point[2]) + vanPointy4)*(d/(d+-w+-point[3])) - vanPointy4) + yOffSet
     ];
-    //var ne
+
+    //return [
+    //    (((x1+x+para)*d/(d+-z1+-z) - vanPointx4)*(d/(d+-w+-w1)) + vanPointx4) + xOffSet,
+    //    (((y1+y)*d/(d+-z+-z1) + vanPointy4)*(d/(d+-w+-w1)) - vanPointy4) + yOffSet
+    //];
 }
 function drawLine(x1,y1,z1,w1,x2,y2,z2,w2){wZ1
     //var newW1
@@ -606,3 +651,8 @@ function updateShape(){
         [0, 1, 2, 3, 4, 5, 6, 7]
     ];
 }*/
+
+function turnOn3D() {
+    threeD = document.getElementById("threeD").checked;
+    updateShape();
+}
