@@ -245,7 +245,7 @@ function findCord(x1,y1,z1,w1){
             angleOfPoint = Math.PI-Math.atan(point[yAxis]/(-1*point[xAxis]));
         }
         else {
-            angleOfPoint = Math.atan(99); // this should be fixed later
+            angleOfPoint = Math.atan(point[yAxis]*99); // this should be fixed later
         }
         angleOfPoint += changeInAngle;
         var h = Math.sqrt(point[yAxis]*point[yAxis]+point[xAxis]*point[xAxis]);
@@ -403,71 +403,11 @@ function onload(){
     //drawItem([{},{},{}]);
     xOffSet = Math.floor(c.width/2);
     yOffSet = Math.floor(c.height/2);
-    
-    /*userVerticies = [
-        [0,0,0,0],
-        [0,100,0,0],
-        [100,100,0,0],
-        [100,0,0,0],
-    
-        [100,100,100,0],
-        [100,0,100,0],
-        [0,0,100,0],
-        [0,100,100,0]
-        
-    ];
-    userFaces = [
-        [0,1,2,3],
-        [4,5,6,7]
-    ];*/
 
-    
-    //test thing
-    userVerticies = [
-        [0,0,0,0],
-        [100,0,0,0],
-        [100,100,0,0],
-        [0,100,0,0],
-        [0,0,100,0],
-        [100,0,100,0],
-        [100,100,100,0],
-        [0,100,100,0],
-        [0,0,0,100],//8
-        [100,0,0,100],
-        [100,100,0,100],
-        [0,100,0,100],
-        [0,0,100,100],
-        [100,0,100,100],
-        [100,100,100,100],
-        [0,100,100,100]
-    ];
-    userFaces = [
-        [0,1,2,3],
-        [4,5,6,7],
-        [8,9,10,11],
-        [12,13,14,15],
-        [14,13,9,10],
-        [15,14,10,11],
-        [12,15,11,8],
-        [12,13,9,0],
-        [1,2,6,5],
-        [4,5,1,0],
-        [7,6,2,3],
-        [0,3,7,4],
-        [11,10,2,3],
-        [10,9,1,2],
-        [9,8,0,1],
-        [8,11,3,0],
-        [15,14,6,7],
-        [14,13,5,6],
-        [12,13,5,4],
-        [12,15,7,4]   
-    ];
-    drawShape();
+    updateShape()
 }
 
 function updateShape(){
-    alert("hello");
     var e = document.getElementById("shape");
     switch(e.options[e.selectedIndex].value) {
     case "pentachoron":
@@ -554,7 +494,7 @@ function updateShape(){
             [0, 1, 2, 3, 4, 5, 6, 7]
         ];
         break;
-    case "tetrahedron":
+    case "tetrahedralprism":
         userVerticies = [
             [100*Math.sqrt(8/9), 100*0, -1/3*100, 0*100],
             [ -Math.sqrt(2/9)*100, Math.sqrt(2/3)*100, -1/3*100, 0*100],
@@ -577,6 +517,39 @@ function updateShape(){
             [1,5],
             [2,6],
             [3,7],/**/
+        ];
+        break;
+    case "octahedralprism":
+        userVerticies = [
+            [100, 0, 0, 0],
+            [0, -100, 0, 0],
+            [-100, 0, 0, 0],
+            [0, 100, 0, 0],
+            [0, 0, 100, 0],
+            [0, 0, -100, 0],
+
+            [100, 0, 0, 100],
+            [0, -100, 0, 100],
+            [-100, 0, 0, 100],
+            [0, 100, 0, 100],
+            [0, 0, 100, 100],
+            [0, 0, -100, 100],
+        ];
+        userFaces = [
+            [0,1,2,3],
+            [0,4,2,5],
+            [1,4,3,5],
+
+            [0+6,1+6,2+6,3+6],
+            [0+6,4+6,2+6,5+6],
+            [1+6,4+6,3+6,5+6],
+
+            [0,6],
+            [1,7],
+            [2,8],
+            [3,9],
+            [4,10],
+            [5,11]
         ];
         break;
     default:
