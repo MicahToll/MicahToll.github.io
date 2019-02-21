@@ -16,12 +16,11 @@
             <h2> Select a Shape</h2>
             <div class="input-field col s12">
             <select id="shape" onChange="updateShape()">
-                <option value="" placeholder="shape" disabled selected>Shape</option>
-                <option value="pentachoron">pentachoron</option>
                 <option value="tesseract">tesseract</option>
+                <option value="pentachoron">pentachoron</option>
                 <option value="hexadecachoron">hexadecachoron</option>
-                <option value="life2">life2</option>
-                <option value="life3">life3</option>
+                <option value="tetrahedralprism">tetrahedral prism</option>
+                <option value="octahedralprism">octahedral prism</option>
             </select>
         </div>
 
@@ -73,7 +72,7 @@
             </div>
             <div>
                 <h2>Display Options</h2>
-                <label for="" >3D<input type="checkbox" /></label>
+                <label for="" >3D<input id="threeD" type="checkbox" onclick="turnOn3D()"/></label>
             </div>
         </div>
     </body>
