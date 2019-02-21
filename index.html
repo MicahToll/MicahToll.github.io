@@ -10,14 +10,9 @@
     <body onload="onload()">
         <div class=column>
             <canvas id="myCanvas" width="800" height="800"></canvas>
-            <div id="x"></div>
-            <div id="y"></div>
-            <div id="z"></div>
-            <div id="w"></div> 
-            </div>
-
-            <h1>4 Dimensional Projections</h1>
+        </div>
         <div>
+            <h1>4 Dimensional Projections</h1>
             <h2> Select a Shape</h2>
             <div class="input-field col s12">
             <select id="shape" onChange="updateShape()">
@@ -58,10 +53,10 @@
                     <div>W: <button>+10</button><div></div><button>-10</button></div>
                 </div>-->
                 <div id="TSliders">
-                    <div>x: -100<input oninput="translateShape(0, this.value)" type="range" min="-100" max="100" step="1">100</div>
-                    <div>y: -100<input oninput="translateShape(1, this.value);" type="range" min="-100" max="100" step="1">100</div>
-                    <div>z: -100<input oninput="translateShape(2, this.value);" type="range" min="-100" max="100" step="1">100</div>
-                    <div>w: -100<input oninput="translateShape(3, this.value);" type="range" min="-100" max="100" step="1">100</div>
+                    <div>x: -100<input oninput="translateShape(0, this.value)" type="range" min="-100" max="100" step="1">100</div><div id="x"></div>
+                    <div>y: -100<input oninput="translateShape(1, this.value);" type="range" min="-100" max="100" step="1">100</div><div id="y"></div>
+                    <div>z: -100<input oninput="translateShape(2, this.value);" type="range" min="-100" max="100" step="1">100</div><div id="z"></div>
+                    <div>w: -100<input oninput="translateShape(3, this.value);" type="range" min="-100" max="100" step="1">100</div><div id="w"></div> 
                 </div>
                 <!--<div class=warningPrint id = "warningTrans" ></div>-->
             </div>
