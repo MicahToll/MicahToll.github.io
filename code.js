@@ -1,8 +1,13 @@
+/*Java Script code
+    Fourth Dimensional Projections
+    
+    Micah Toll and Lizzy Milford
+*/
 var c;
 var ctx;
 
 //this is the paralax value in px
-var para = -200;//-238.110236223;
+var para = 200;//-238.110236223;
 
 //this is off until three D is turned on 
 var threeD = false;
@@ -16,8 +21,6 @@ var position = [0,0,0,0];
 //this IS the rotation of the object
 //x-y, x-z, x-w, y-, y-w, z-w
 var angle = [0, 0, 0, 0, 0, 0];
-
-
 
 //these are the position of the player
 var x = 0;
@@ -123,7 +126,7 @@ function updateDimensionSize(){
 */
 
 /*
-function addSliders(){ //TODO: make default range print to numbre boxes on creation
+function addSliders(){ 
     var rSliders = ["X-Y", "Y-Z", "Z-X", "W-X", "W-Y", "W-Z", "V-X", "V-Y", "V-Z", "V-W", 
             "U-X", "U-Y", "U-Z", "U-W", "U-V", "T-X", "T-Y", "T-Z", "T-W", "T-V", "T-U"];
     var rNum = [0, 0, 1, 3, 6, 10, 15, 21];
@@ -172,6 +175,7 @@ function updateDisplay(){
     drawShape();
 }
 
+//TODO: finish
 /*function copyLink() {
   var link = "sup"; //TODO: put real link in the String
   
@@ -190,7 +194,6 @@ function updateDisplay(){
 
 function clearCanvas(){
     ctx.clearRect(0, 0, 800, 800);
-    //ctx2.clearRect(0, 0, 800, 800);
 }
 
 function drawShape(){
@@ -205,19 +208,24 @@ function drawShape(){
         }
         
     }
+    ctx.strokeStyle = "#00FFFF"
     ctx.stroke();
+    
+    var p = findCordPara(0,0,0,0,0)[0] - findCord(0,0,0,0)[0];
 
+    
     if (threeD) {
         ctx.beginPath();
         for(var face of userFaces){
-            var xandy = findCord(userVerticies[face[face.length-1]][0],userVerticies[face[face.length-1]][1],userVerticies[face[face.length-1]][2],userVerticies[face[face.length-1]][3]);
+            var xandy = findCordPara(userVerticies[face[face.length-1]][0],userVerticies[face[face.length-1]][1],userVerticies[face[face.length-1]][2],userVerticies[face[face.length-1]][3],p);
             ctx.moveTo(xandy[0],xandy[1]);
             for(var point of face){
                 
-                xandy = findCord(userVerticies[point][0],userVerticies[point][1],userVerticies[point][2],userVerticies[point][3]);
+                xandy = findCordPara(userVerticies[point][0],userVerticies[point][1],userVerticies[point][2],userVerticies[point][3],p);
                 ctx.lineTo(xandy[0],xandy[1]);
             }
         }
+        ctx.strokeStyle = "#FF0000"
         ctx.stroke();
     }
 }
@@ -280,7 +288,7 @@ function findCord(x1,y1,z1,w1){
     //    (((y1+y)*d/(d+-z+-z1) + vanPointy4)*(d/(d+-w+-w1)) - vanPointy4) + yOffSet
     //];
 }
-function findCordPara(x1,y1,z1,w1){
+function findCordPara(x1,y1,z1,w1,p){
     var point = [x1, y1, z1, w1];
     planex = [0, 0, 0, 1, 1, 2];
     planey = [1, 2, 3, 2, 3, 3];
@@ -306,7 +314,7 @@ function findCordPara(x1,y1,z1,w1){
     }
 
     return [
-        (((point[0]+x+para)*d/(d+-point[2]+-z) - vanPointx4)*(d/(d+-w+-point[3])) + vanPointx4) + xOffSet,
+        (((point[0]+x+para)*d/(d+-point[2]+-z) - vanPointx4)*(d/(d+-w+-point[3])) + vanPointx4) + xOffSet - p,
         (((point[1]+y)*d/(d+-z+-point[2]) + vanPointy4)*(d/(d+-w+-point[3])) - vanPointy4) + yOffSet
     ];
 
@@ -316,7 +324,6 @@ function findCordPara(x1,y1,z1,w1){
     //];
 }
 function drawLine(x1,y1,z1,w1,x2,y2,z2,w2){wZ1
-    //var newW1
     
     ctx.beginPath();
     var newX1 = ((x1+x)*d/(d+-z1+-z) - vanPointx4)*(d/(d+-w+-w1)) + vanPointx4;
@@ -327,11 +334,7 @@ function drawLine(x1,y1,z1,w1,x2,y2,z2,w2){wZ1
     
     ctx.moveTo(newX1 + xOffSet,newY1 + yOffSet);
     ctx.lineTo(newX2 + xOffSet,newY2 + yOffSet);
-    ctx.stroke();
-    
-    
-    
-    
+    ctx.stroke();  
     
     ctx2.beginPath();
     var newX12 = ((x1+x+para)*d/(d+-z1+-z) - vanPointx4)*(d/(d+-w1+-w)) + vanPointx4;
@@ -464,14 +467,14 @@ function updateShape(){
             [0,0,0,200],
             [phi,phi,phi,phi]
         ];
-        userFaces = [//TODO: add all faces
-            [0, 1, 2], //TODO: fix 164 line bug with 5 pts (Micah)
+        userFaces = [
+            [0, 1, 2], 
             [1, 2, 3],
             [2, 3, 4],
             [0, 3, 1],
             [0, 3, 2],
             [0, 4, 1],
-            [0, 2, 4] //TODO: fix face bug loop back
+            [0, 2, 4] 
         ];
         break;
     case "tesseract":
@@ -527,14 +530,14 @@ function updateShape(){
             [0,0,-200,0],
             [0,0,0,-200]
         ];
-        userFaces = [//TODO: add all faces
-            [0, 3, 5], //TODO: fix 164 line bug with 5 pts (Micah)
+        userFaces = [
+            [0, 3, 5], 
             [1, 4, 6],
             [2, 5, 7], 
             [3, 6, 0], 
             [4, 7, 1], 
             [5, 0, 2],
-            [6, 1, 3], //TODO: fix face bug loop back
+            [6, 1, 3], 
             [7, 2, 4],
             [0, 1, 2, 3, 4, 5, 6, 7]
         ];
@@ -598,59 +601,11 @@ function updateShape(){
         ];
         break;
     default:
-        // code block
+        
     }
     clearCanvas()
     drawShape();
 }
-
-/*function pentachoronData(){
-    dimensionSize = 4;
-    addSliders();
-    var phi = 1.61803398875 * 100;
-        userVerticies = [
-        [200,0,0,0],
-        [0,200,0,0],
-        [0,0,200,0],
-        [0,0,0,200],
-        [phi,phi,phi,phi]
-    ];
-    userFaces = [//TODO: add all faces
-        [0, 1, 2], //TODO: fix 164 line bug with 5 pts (Micah)
-        [1, 2, 3],
-        [2, 3, 4], 
-        [0, 3, 1], 
-        [0, 3, 2], 
-        [0, 4, 1],
-        [0, 2, 4] //TODO: fix face bug loop back
-    ];
-}*/
-
-/*function hexadecachoronData(){
-    dimensionSize = 4;
-    addSliders();
-    userVerticies = [
-        [200,0,0,0],
-        [0,200,0,0],
-        [0,0,200,0],
-        [0,0,0,200],
-        [-200,0,0,0],
-        [0,-200,0,0],
-        [0,0,-200,0],
-        [0,0,0,-200]
-    ];
-    userFaces = [//TODO: add all faces
-        [0, 3, 5], //TODO: fix 164 line bug with 5 pts (Micah)
-        [1, 4, 6],
-        [2, 5, 7], 
-        [3, 6, 0], 
-        [4, 7, 1], 
-        [5, 0, 2],
-        [6, 1, 3], //TODO: fix face bug loop back
-        [7, 2, 4],
-        [0, 1, 2, 3, 4, 5, 6, 7]
-    ];
-}*/
 
 function turnOn3D() {
     threeD = document.getElementById("threeD").checked;
