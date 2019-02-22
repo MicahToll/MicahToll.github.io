@@ -172,6 +172,12 @@ function updateDisplay(){
     document.getElementById("y").innerHTML = y;
     document.getElementById("z").innerHTML = z;
     document.getElementById("w").innerHTML = w;
+    document.getElementById("x-y").innerHTML = angle[0];
+    document.getElementById("x-z").innerHTML = angle[1];
+    document.getElementById("x-w").innerHTML = angle[2];
+    document.getElementById("y-z").innerHTML = angle[3];
+    document.getElementById("y-w").innerHTML = angle[4];
+    document.getElementById("z-w").innerHTML = angle[5];
     drawShape();
 }
 
@@ -422,17 +428,17 @@ function rotate(xAxis,yAxis,changeInAngle){
 function onload(){
     document.addEventListener('keydown', (event) => {
         const keyName = event.key;
-        if (keyName == "ArrowUp"){
+        if (keyName == "6"){
             w -= 10;
         }
-        else if(keyName == "ArrowDown"){
+        else if(keyName == "4"){
             w += 10;
         }
         else if(keyName == "w"){
-            z -= 10;
+            y -= 10;
         }
         else if(keyName == "s"){
-            z += 10;
+            y += 10;
         }
         else if(keyName == "a"){
             x -= 10;
@@ -440,11 +446,28 @@ function onload(){
         else if(keyName == "d"){
             x += 10;
         }
-        else if(keyName == " "){
-            y += 10;
+        else if(keyName == "8"){
+            z -= 10;
         }
-        else if(keyName == "Shift"){
-            y -= 10;
+        else if(keyName == "2"){
+            z += 10;
+        }
+        else if(keyName == "t"){
+            var slknsf = ["x-y","x-z", "x-w", "y-z", "y-w", "z-w"];
+            document.getElementById(slknsf[toggleAngle]).parentElement.style.border = "none";
+            toggleAngle = (toggleAngle+1)%6;
+            prettyStuff();
+        }
+        else if(keyName == "g"){
+            var slknsf = ["x-y","x-z", "x-w", "y-z", "y-w", "z-w"];
+            document.getElementById(slknsf[toggleAngle]).parentElement.style.border = "none";
+            if (toggleAngle == 0) {
+                toggleAngle = 5;
+            } else {
+                toggleAngle = (toggleAngle-1)%6;
+            }
+            
+            prettyStuff();
         }
         updateDisplay()
     });
@@ -614,4 +637,41 @@ function updateShape(){
 function turnOn3D() {
     threeD = document.getElementById("threeD").checked;
     updateShape();
+}
+
+var mRestPos = [0,0];
+
+function onClick(e) {
+    mRestPos = [e.x, e.y];
+    //document.addEventListener("onmousemove", function () {onMouseMove(event); alert("hwgkbjwgu")})
+}
+
+function onMouseMove(e) {
+    if (!(mRestPos[0] == 0)){
+        var adjx = e.x - mRestPos[0];
+        var adjy = e.y - mRestPos[1];
+        var someAngle;
+        if (adjx>0){
+            someAngle = Math.atan(adjy/adjx);
+        }
+        else if (adjx<0){
+            someAngle = Math.PI-Math.atan(adjy/(-1*adjx));
+        }
+        else {
+            someAngle = Math.atan(adjy*99);
+        }
+        if (adjy*adjy + adjx*adjx > 2500){
+            angle[toggleAngle] = someAngle;
+        }
+
+        updateDisplay()
+    }
+}
+
+var toggleAngle = 0;
+
+function prettyStuff() {
+    var slknsf = ["x-y","x-z", "x-w", "y-z", "y-w", "z-w"];
+
+    document.getElementById(slknsf[toggleAngle]).parentElement.style.border = "5px solid black";
 }
