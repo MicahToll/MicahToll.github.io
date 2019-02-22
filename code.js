@@ -7,7 +7,7 @@ var c;
 var ctx;
 
 //this is the paralax value in px
-var para = 200;//-238.110236223;
+var para = 238;//-238.110236223;
 
 //this is off until three D is turned on 
 var threeD = false;
@@ -208,7 +208,11 @@ function drawShape(){
         }
         
     }
-    ctx.strokeStyle = "#00FFFF"
+    if (threeD) {
+        ctx.strokeStyle = "#FFFF00";
+    } else {
+        ctx.strokeStyle = "#000000";
+    }
     ctx.stroke();
     
     var p = findCordPara(0,0,0,0,0)[0] - findCord(0,0,0,0)[0];
@@ -225,7 +229,7 @@ function drawShape(){
                 ctx.lineTo(xandy[0],xandy[1]);
             }
         }
-        ctx.strokeStyle = "#FF0000"
+        ctx.strokeStyle = "#00FFFF";
         ctx.stroke();
     }
 }
