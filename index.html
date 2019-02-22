@@ -1,3 +1,9 @@
+<!-- HTML code
+    Fourth Dimensional Projections
+    
+    Micah Toll and Lizzy Milford
+-->
+
 <!DOCTYPE html>
 <html>
     <head>    
@@ -23,7 +29,6 @@
                 <option value="octahedralprism">octahedral prism</option>
             </select>
         </div>
-
             <div>
                 <h3> or enter your own points</h3>
             </div>
@@ -34,8 +39,6 @@
             <div>
                 <textarea id = "userInputFaces" rows="4" cols="50" placeholder="Type points as faces to be connected..."></textArea>
             </div>
-            <script></script>
-            
             <button onclick="saveUserInput()" >save data</button>
             <span>
                 <div class=warningPrint id = "warningPrint" ></div>
@@ -45,12 +48,6 @@
             <div id="userFaces"></div>
             <div>
                 <div><h2 id="TLabel">Translation</h2></div>
-                <!--<div>
-                    <div class="translateButtonDiv">X: <button>+10</button></div><button>-10</button></div>
-                    <div>Y: <button>+10</button><div></div><button>-10</button></div>
-                    <div>Z: <button>+10</button><div></div><button>-10</button></div>
-                    <div>W: <button>+10</button><div></div><button>-10</button></div>
-                </div>-->
                 <div id="TSliders">
                     <div>x: -100<input oninput="translateShape(0, this.value)" type="range" min="-100" max="100" step="1">100</div><div id="x"></div>
                     <div>y: -100<input oninput="translateShape(1, this.value);" type="range" min="-100" max="100" step="1">100</div><div id="y"></div>
@@ -77,62 +74,3 @@
         </div>
     </body>
 </html>
-<!--
-//16
-v0 0,0,0,0
-v1 100,0,0,0
-v2 100,100,0,0
-v3 0,100,0,0
-
-v4 0,0,100,0
-v5 100,0,100,0
-v6 100,100,100,0
-v7 0,100,100,0
-
-
-v8 0,0,0,100
-v9 100,0,0,100
-v10 100,100,0,100
-v11 0,100,0,100
-
-v12 0,0,100,100
-v13 100,0,100,100
-v14 100,100,100,100
-v15 0,100,100,100
-
-faces
-
-0,1,2,3
-4,5,6,7
-8,9,10,11
-12,13,14,15
-
-14,13,9,10
-15,14,10,11
-12,15,11,8
-12,13,9,8
-
-1,2,6,5
-4,5,1,0
-7,6,2,3
-0,3,7,4
-
-11,10,2,3
-10,9,1,2
-9,8,0,1
-8,11,3,0
-
-15,14,6,7
-14,13,5,6
-12,13,5,4
-12,15,7,4
-
-missing 4 ish faces that are not important
-
-
-
-
-http://anthonyterrien.com/demo/knob/
-really nice option for knobs
-uses jquery i think
--->
