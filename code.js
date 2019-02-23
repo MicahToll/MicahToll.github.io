@@ -38,8 +38,8 @@ var vanPointx3 = 0;
 var vanPointy3 = 0;
 */
 //this is the corrdinates of the vanishing point for the fourth dimension
-var vanPointx4 = 400;
-var vanPointy4 = 400;
+var vanPointx4 = 500;
+var vanPointy4 = 350;
 
 //user inputted data 
 var userVerticies = []; //is an int[][] when "save data" button is pressed
@@ -199,7 +199,7 @@ function updateDisplay(){
 
 
 function clearCanvas(){
-    ctx.clearRect(0, 0, 800, 800);
+    ctx.clearRect(0, 0, 1000, 700);
 }
 
 function drawShape(){
@@ -455,19 +455,28 @@ function onload(){
         else if(keyName == "t"){
             var slknsf = ["x-y","x-z", "x-w", "y-z", "y-w", "z-w"];
             document.getElementById(slknsf[toggleAngle]).parentElement.style.border = "none";
-            toggleAngle = (toggleAngle+1)%6;
-            prettyStuff();
-        }
-        else if(keyName == "g"){
-            var slknsf = ["x-y","x-z", "x-w", "y-z", "y-w", "z-w"];
-            document.getElementById(slknsf[toggleAngle]).parentElement.style.border = "none";
             if (toggleAngle == 0) {
                 toggleAngle = 5;
             } else {
                 toggleAngle = (toggleAngle-1)%6;
             }
+            prettyStuff();
+        }
+        else if(keyName == "g"){
+            var slknsf = ["x-y","x-z", "x-w", "y-z", "y-w", "z-w"];
+            document.getElementById(slknsf[toggleAngle]).parentElement.style.border = "none";
+            
+            toggleAngle = (toggleAngle+1)%6;
             
             prettyStuff();
+        }
+        else if(keyName == "x") {
+            x = 0;
+            y = 0;
+            z = 0;
+            w = 0;
+            angle = [0,0,0,0,0,0]
+            updateDisplay();
         }
         updateDisplay()
     });
@@ -506,44 +515,36 @@ function updateShape(){
         break;
     case "tesseract":
         userVerticies = [
-            [0,0,0,0],
-            [100,0,0,0],
-            [100,100,0,0],
-            [0,100,0,0],
-            [0,0,100,0],
-            [100,0,100,0],
-            [100,100,100,0],
-            [0,100,100,0],
-            [0,0,0,100],//8
-            [100,0,0,100],
-            [100,100,0,100],
-            [0,100,0,100],
-            [0,0,100,100],
-            [100,0,100,100],
+            [-100,100,-100,-100],
+            [100,100,-100,-100],
+            [100,100,100,-100],
+            [-100,100,100,-100],
+
+            [-100,-100,-100,-100],
+            [100,-100,-100,-100],
+            [100,-100,100,-100],
+            [-100,-100,100,-100],
+
+            [-100,100,-100,100],
+            [100,100,-100,100],
             [100,100,100,100],
-            [0,100,100,100]
+            [-100,100,100,100],
+
+            [-100,-100,-100,100],
+            [100,-100,-100,100],
+            [100,-100,100,100],
+            [-100,-100,100,100]
         ];
         userFaces = [
             [0,1,2,3],
             [4,5,6,7],
             [8,9,10,11],
             [12,13,14,15],
-            [14,13,9,10],
-            [15,14,10,11],
-            [12,15,11,8],
-            [12,13,9,0],
-            [1,2,6,5],
-            [4,5,1,0],
-            [7,6,2,3],
-            [0,3,7,4],
-            [11,10,2,3],
-            [10,9,1,2],
-            [9,8,0,1],
-            [8,11,3,0],
-            [15,14,6,7],
-            [14,13,5,6],
-            [12,13,5,4],
-            [12,15,7,4]   
+
+            [0,8,12,4],
+            [1,9,13,5],
+            [2,10,14,6],
+            [3,11,15,7]
         ];
         break;
     case "hexadecachoron":
