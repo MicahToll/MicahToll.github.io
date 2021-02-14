@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+    <head> 
+		<meta charset="utf-8">
+		<title>learnThreejs</title>
+		<style> body {margin: 0;}</style>
+		<script src="js/three.js"></script>
+	</head>	
+	<body id="body">
+		<script>
+
+
+// controls handler
+//initialize your variables here
+var w = false;
+var a = false;
+var s = false;
+var d = false;
+var q = false;
+var e = false;
+var thrusters = 0;
+var direction = new THREE.Vector3;//direction of camera
+
+document.addEventListener('keydown', keyDown);
+document.addEventListener('keyup', keyUp);
+document.addEventListener("wheel", wheel);
+
+function keyDown(){
+	//console.log(event.keyCode);
+	switch(event.keyCode) {
+		case 87:
+			w = true;
+			break;
+		case 65:
+			a = true;
+			break;
+		case 83:
+			s = true;
+			break;
+		case 68:
+			d = true;
+			break;
+		case 81:
+			q = true;
+			break;
+		case 69:
+			e = true;
+			break;
+		//default:
+			//no default required for this
+	}
+}
+
+function keyUp(){
+	//console.log(event.keyCode);
+	switch(event.keyCode) {
+		case 87:
+			w = false;
+			break;
+		case 65:
+			a = false;
+			break;
+		case 83:
+			s = false;
+			break;
+		case 68:
+			d = false;
+			break;
+		case 81:
+			q = false;
+			break;
+		case 69:
+			e = false;
+			break;
+		//default:
+			//no default required for this
+	}
+}
+function wheel(){
+	//console.log(event.deltaY);
+	thrusters -= event.deltaY/100;//not sure why this has to be negative
+}
+//this is a web GL compatibility checked //didn't seem to work
+//starting here
+/*if ( WEBGL.isWebGLAvailable() ) {
+
+	// Initiate function or other initializations here
+	animate();
+
+} else {
+
+	const warning = WEBGL.getWebGLErrorMessage();
+	document.getElementById( 'container' ).appendChild( warning );
+
+}*/
+//ending here
+	
+//first tutorial (a cube spinning)
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000);			
+
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight); 
+document.body.appendChild( renderer.domElement );//document.getElementById("body").appendChild( renderer.domElement );
+
+// now everything is set up, so the coding cube can be placed
+
+const geometry = new THREE.BoxGeometry();
+const material = new THREE.MeshBasicMaterial({color:0x00ff00});
+const cube = new THREE.Mesh(geometry, material);
+scene.add( cube );
+
+
+camera.position.z = 100;
+camera.lookAt(0,0,0);
+
+
+
+
+
+//create a blue LineBasicMaterial
+const blueMaterial = new THREE.LineBasicMaterial( { color: 0x0000ff } );
+
+const points = [];
+points.push( new THREE.Vector3( - 10, 0, 0 ) );
+points.push( new THREE.Vector3( 0, 10, 0 ) );
+points.push( new THREE.Vector3( 10, 0, 0 ) );
+
+const geometry2 = new THREE.BufferGeometry().setFromPoints( points );
+const line = new THREE.Line( geometry2, material );
+
+scene.add( line );
+
+
+
+
+
+
+
+function animate() {
+	cube.rotation.x += 0.01;
+	cube.rotation.y += 0.01;
+	line.rotation.x += 0.02;
+
+	//controls
+	if(w){
+		camera.rotation.x += .01;
+	}
+	if(a){
+		camera.rotation.y += .01;
+	}
+	if(s){
+		camera.rotation.x -= .01;
+	}
+	if(d){
+		camera.rotation.y -= .01;
+	}
+	if(q){
+		camera.rotation.z += .01;//not sure
+	}
+	if(e){
+		camera.rotation.z -= .01;//not sure
+	}
+	camera.getWorldDirection(direction);
+	camera.position.addScaledVector(direction, thrusters);//I need to change everything, but for the time being, this is good.
+
+	renderer.render(scene,camera);
+	requestAnimationFrame(animate);
+}
+animate();
+// interesting space pirates game idea:  kinda like the sea pirates game, but where you upgrade your ship.  
+// in it, you have up to 4 people all working together to pilate a space craft, this means: stir the ship, fire the cannons, man the shields, and repair any damages.  if there is pvp, the ships is insured, however pve, ship is not fully ensured.
+
+
+
+
+
+
+
+
+
+		</script>
+	</body>
+</html>

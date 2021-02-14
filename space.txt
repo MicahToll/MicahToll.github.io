@@ -1,0 +1,36 @@
+some notes on space game:
+premise - near earth and our solar system and galaxy physics and space is constant, but out there, past our solar system, the world is far more complecated.
+
+Sci-fi, tech, and ship elements
+Hyperspace/light speed/wormholes?  For long distance travel, what will I use?
+	Light speed would be bad, because that is the same as instant teleportation, so no light speed.  
+	"going really fast" aka relitivistic speeds, is fine, but has two problems: 
+		(a)  I'd have to deal with time dialation - eh... That might be fun and worth it (or it may not matter for the scope of this game.  
+		(b)  It uses a LOT of energy, plus it is dificult to distinguish from normal travel.  also, would I need to make sparate graphical effects?  not sure, that might be a feature.
+	wormholes/UMN column:
+		advantage: can't do it anywhere and would allow me to curve space (yay?)
+		disadvantage, might be a bit wierd and wouldn't feel as "connected"
+force shields should be separate from armor, not sure how they work yet.
+armor, resists dmg, not sure how helpful it is though.  
+lasers, deal dmg.  not as effective against let
+explosive missiles are also effective
+
+
+universe elements - 
+near earth, and the solar system there are more normal more space, less weird stuff.  Additionally, near by things are not procedurally generated.
+further away, things are procedurally generated and bizzar.  
+I may have the UMN columns from xenosaga, but that's about it.
+
+
+how will draw distance work?  
+if I use a combination of fractals and draw distance I should get a good result
+	ex.  a nearby star is more detailed than a far star
+
+
+controls
+	wasd for direction, a slider on dash for speed.  
+>----\
+  ||||)O)
+>----/
+
+Will uses Meaba system for characters if needed <not needed>
