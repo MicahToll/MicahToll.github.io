@@ -1,92 +1,26 @@
-<!-- HTML code
-    Fourth Dimensional Projections
-    
-    Micah Toll and Lizzy Milford
--->
-
 <!DOCTYPE html>
 <html>
     <head>    
         <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-        <title>Beyond 3D</title>
-        <script src="code.js" type="text/javascript" charset="utf-8"></script>   
+        <title>MicahToll.github.io</title>
         <script src="https://code.jquery.com/jquery-1.3.min.js" integrity="sha256-kAGRpEMRXYtIqdaNMGLos9cSlyeVG4YXRltIW68lMAY=" crossorigin="anonymous"></script>
-        <link href="style.css" rel="stylesheet" type="text/css">
     </head>
-    <body onload="onload()" onmousemove="onMouseMove(event)">
-        <div class=column>
-            <canvas onclick="onClick(event)" id="myCanvas" width="1000" height="700"></canvas>
+    <body>
+        <div>
+            <hi>Hello and Welcome to MicahToll.github.io!!!</hi>
+            <p>This is just a place for me to keep some of the projects I've done or an working on.</p>
         </div>
         <div>
-            <h1>4 Dimensional Projections</h1>
-            <h2> Select a Shape</h2>
-            <div class="input-field col s12">
-            <select id="shape" onChange="updateShape()">
-                <option value="tesseract">tesseract</option>
-                <option value="pentachoron">pentachoron</option>
-                <option value="hexadecachoron">hexadecachoron</option>
-                <option value="tetrahedralprism">tetrahedral prism</option>
-                <option value="octahedralprism">octahedral prism</option>
-            </select>
-        </div>
-            <!--<div>//commented out for comp
-                <h3> or enter your own points</h3>
+            <div>
+                <h2>Four Dimensional Shape Viewer</h2>
+                <p>This was my senior project in High School.  What it does is allow the user to view one of a selections of 4D shapes as a 2D or 3D projection.  Of course, till someone invents the holodeck, you'll have to use red/blue 3D glasses for the 3D projection.  lastly, the controls were set up for use with a controller, so until I decide to go back and change it, the controls will be rather unwieldy.</p>
+                <p>This project can be found here:</p><a href="fourDimensions.html">Four Dimensional Shape Viewer</a>
             </div>
             <div>
-                <textarea id="userInputVerticies" placeholder="Type in data points..."></textArea>
+                <h2>SPACE!!!</h2>
+                <p>This is the project I'm working on currently.  It's just a basic spaceship simulator that I'm making primarily to learn to use THREE.js</p>
+                <p>This project can be found here:</p><a href="learnThreejs.html">go to SPACE!</a>
             </div>
-            <h3>and connect your points with faces</h3>
-            <div>
-                <textarea id = "userInputFaces" rows="4" cols="50" placeholder="Type points as faces to be connected..."></textArea>
-            </div>-
-            <button onclick="saveUserInput()" >save data</button>
-            <span>
-                <div class=warningPrint id = "warningPrint" ></div>
-            </span>-->
-            <!--<button onClick="copyLink();">get perma link</button>-->
-            <!--<div id="userVerticies"></div>//commented out for comp
-            <div id="userFaces"></div>
-            <div>
-                <div><h2 id="TLabel">Translation</h2></div>
-                <div id="TSliders">
-                    <div>x: -100<input oninput="translateShape(0, this.value)" type="range" min="-100" max="100" step="1">100</div></div>
-                    <div>y: -100<input oninput="translateShape(1, this.value);" type="range" min="-100" max="100" step="1">100</div><div id="y"></div>
-                    <div>z: -100<input oninput="translateShape(2, this.value);" type="range" min="-100" max="100" step="1">100</div><div id="z"></div>
-                    <div>w: -100<input oninput="translateShape(3, this.value);" type="range" min="-100" max="100" step="1">100</div><div id="w"></div> 
-                </div>-->
-                <!--<div class=warningPrint id = "warningTrans" ></div>--><!--//commented out for comp
-            </div>
-            <div>
-                <div><h2 id="RLabel">Rotation</h2></div>
-                <div id="RSliders">
-                    <div>x-y: -360<input oninput="rotateShape(0, this.value);" type="range" min="-360" max="360" step="1">360</div>
-                    <div>x-z: -360<input oninput="rotateShape(1, this.value);" type="range" min="-360" max="360" step="1">360</div>
-                    <div>x-w: -360<input oninput="rotateShape(2, this.value);" type="range" min="-360" max="360" step="1">360</div>
-                    <div>y-z: -360<input oninput="rotateShape(3, this.value);" type="range" min="-360" max="360" step="1">360</div>
-                    <div>y-w: -360<input oninput="rotateShape(4, this.value);" type="range" min="-360" max="360" step="1">360</div>
-                    <div>z-w: -360<input oninput="rotateShape(5, this.value);" type="range" min="-360" max="360" step="1">360</div>
-                </div>
-            </div>-->
-            <div>
-                <h2>Display Options</h2>
-                <label for="" >3D<input id="threeD" type="checkbox" onclick="turnOn3D()"/></label>
-            </div>
-            <h2>Coordinates</h2>
-            <span style="display:flex; flex-direction: row;">x: <div id="x"></div></span>
-            <span style="display:flex; flex-direction: row;">y: <div id="y"></div></span>
-            <span style="display:flex; flex-direction: row;">z: <div id="z"></div></span>
-            <span style="display:flex; flex-direction: row;">w: <div id="w"></div></span>
-
-            <h2>Rotations</h2>
-            <span style="display:flex; flex-direction: row;">x-y: <div id="x-y"></div></span>
-            <span style="display:flex; flex-direction: row;">x-z: <div id="x-z"></div></span>
-            <span style="display:flex; flex-direction: row;">x-w: <div id="x-w"></div></span>
-            <span style="display:flex; flex-direction: row;">y-z: <div id="y-z"></div></span>
-            <span style="display:flex; flex-direction: row;">y-w: <div id="y-w"></div></span>
-            <span style="display:flex; flex-direction: row;">z-w: <div id="z-w"></div></span>
-        </div>
-		<div>
-			<a href="learnThreejs.html">go to learnThreejs</a>
 		</div>
     </body>
 </html>
