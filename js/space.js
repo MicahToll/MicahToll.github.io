@@ -109,6 +109,18 @@ document.body.appendChild( renderer.domElement );//document.getElementById("body
 //everything in the universe's reference frame should be added to this group
 var universe = new THREE.Group()
 
+//light
+const light = new THREE.AmbientLight( 0x404040 ); // soft white light
+scene.add( light );
+
+const light2 = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
+scene.add( light2 );
+
+// White directional light at half intensity shining from the top.
+/*const directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
+scene.add( directionalLight );*/
+
+
 //finally, everything is set up, so universe can begin to be built
 
 //first tutorial (a cube spinning)

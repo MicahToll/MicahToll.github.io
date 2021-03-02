@@ -1,16 +1,16 @@
 scene.add( universe );
 camera.position.z = 100;
-camera.lookAt(0,0,0);
+camera.lookAt(0,0,0)//Math.sqrt(2)/2,Math.sqrt(2)/2);
 
-universe.matrix.matrixAutoUpdate = false;
-function animate() {
+universe.matrixAutoUpdate = false;
+function animate(timestamp) {
 
 
 
-    //insert universe
-	cube.rotation.x += 0.01;
-	cube.rotation.y += 0.01;
-	line.rotation.x += 0.02;
+    //insert universe animations
+	//cube.rotation.x += 0.01;
+	//cube.rotation.y += 0.01;
+	//line.rotation.x += 0.02;
 
 	//controls
 	if(w){
@@ -31,17 +31,19 @@ function animate() {
 	if(e){
 		camera.rotation.z -= .01;//not sure
 	}
-	camera.getWorldDirection(direction);
-	var T = new THREE.Matrix4();
+	//direction.x = Math.sqrt(2)/2;//Math.sqrt(2)/2;
+    //direction.y = 0;//Math.sqrt(2)/2;
+    //direction.z = Math.sqrt(2)/2;
+    camera.getWorldDirection(direction);
 	//calculating velocity and the like
 	p += thrusters/60;//momentum = F*time ... this is assuming 60 fps
-	if (hyperdrive){
-		if (p < 0){//NEGATIVE VALUES are squared, so rip
-			v = -Math.sqrt((p/m)**2/(1+(p/m)**2/(c**2)));
-		}
-		else {
-			v = Math.sqrt((p/m)**2/(1+(p/m)**2/(c**2)));
-		}
+	if (p < 0){//NEGATIVE VALUES are squared, so rip
+        v = -Math.sqrt((p/m)**2/(1+(p/m)**2/(c**2)));
+    }
+    else {
+        v = Math.sqrt((p/m)**2/(1+(p/m)**2/(c**2)));
+    }
+    if (hyperdrive){
 		length_contraction = Math.sqrt(1-(v/c)**2);
 		
 		//create the matrix
@@ -49,25 +51,29 @@ function animate() {
 		var u1 = direction.x;
 		var u2 = direction.y;
 		var u3 = direction.z;
-		T.set(
+		universe.matrix.set(
 			1+len1*u1*u1, 0+len1*u2*u1, 0+len1*u3*u1, 0,
 			0+len1*u1*u2, 1+len1*u2*u2, 0+len1*u3*u2, 0,
 			0+len1*u1*u3, 0+len1*u2*u3, 1+len1*u3*u3, 0,
 			0,            0,            0,            1
 		);
-        //apply matrix
-		universe.applyMatrix4(T);
+		
+		//keeps camera in the right spot in the universe
+        camera.position.applyMatrix4(universe.matrix);//this makes the camera move with the universe.  originally, I wasn't a fan of it, but now I actually think it is ok.  either way, nothing should be too dependent on this system, so it would be easy to fix later.
 	}
 	else {
-		v = p/m; // v*m = p
+		//v /= 10;this would need editing.  I don't like it.  
 	}
 	camera.position.addScaledVector(direction, v);//I need to change everything, but for the time being, this is good.
     //render
 	renderer.render(scene,camera);
-    //reset the scale of the universe
-	universe.position.set(0,0,0);
-	universe.rotation.set(0,0,0);
-	universe.scale.set(1,1,1);
+
+    //update dashboard
+    document.getElementById("speed").innerHTML = "Speed: "+v;
+
+	//returns camera to the unscaled universe.  might change later.
+	camera.position.applyMatrix4(universe.matrix.invert());
+
     //get new frame
 	requestAnimationFrame(animate);
 }
