@@ -3,7 +3,7 @@
 //initialize your variables here
 const c = 1; // in units of light seconds per second.  
 const m = 1; // in kg
-var thrusters = 0;// in __
+var thrusters = 0;// in __  
 var direction = new THREE.Vector3;//direction of camera
 var hyperdrive = false;// when caps lock is on and a key is pressed, hyper driver is turned on
 var p = 0;//momentum
@@ -16,6 +16,45 @@ var s = false;
 var d = false;
 var q = false;
 var e = false;
+
+//define ambiant sound
+//var music = document.getElementById("myAudio");
+
+//setting up three.js
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000);			
+
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight); 
+document.body.appendChild( renderer.domElement );//document.getElementById("body").appendChild( renderer.domElement );
+
+//everything in the universe's reference frame should be added to this group
+var universe = new THREE.Group()
+
+//light
+const light = new THREE.AmbientLight( 0x404040 ); // soft white light
+scene.add( light );
+
+const light2 = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
+scene.add( light2 );
+
+// White directional light at half intensity shining from the top.
+/*const directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
+scene.add( directionalLight );*/
+
+
+//pointer camera controls
+controls = new THREE.PointerLockControls( camera, document.body );
+function start(){
+	controls.lock();
+	//music.playbackRate = 0.5;
+	//music.play()
+}
+function end(){
+	console.log("esc")
+	controls.unlock();
+}
+//scene.add(controls.getobject())
 
 //controls handler
 document.addEventListener('keydown', keyDown);
@@ -47,7 +86,11 @@ function keyDown(){
 			p = 0;
 			thrusters = 0;
 			break;
+		case 27:
+			end();
+			break;
 		//default:
+			//alert(event.keyCode);
 			//no default required for this
 	}
 }
@@ -98,27 +141,7 @@ function wheel(){
 }*/
 //ending here
 
-//setting up three.js
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000);			
 
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight); 
-document.body.appendChild( renderer.domElement );//document.getElementById("body").appendChild( renderer.domElement );
-
-//everything in the universe's reference frame should be added to this group
-var universe = new THREE.Group()
-
-//light
-const light = new THREE.AmbientLight( 0x404040 ); // soft white light
-scene.add( light );
-
-const light2 = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
-scene.add( light2 );
-
-// White directional light at half intensity shining from the top.
-/*const directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
-scene.add( directionalLight );*/
 
 
 //finally, everything is set up, so universe can begin to be built

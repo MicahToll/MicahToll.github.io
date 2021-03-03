@@ -3,14 +3,17 @@ camera.position.z = 100;
 camera.lookAt(0,0,0)//Math.sqrt(2)/2,Math.sqrt(2)/2);
 
 universe.matrixAutoUpdate = false;
-function animate(timestamp) {
+var last_timestamp = Date.now();
 
-
-
+function animate(timestamp) {//note about timestamp - delta from last render is the most useful metric for reletivity I think in case you want to use that.
+	//create delta time //consider adding special reletivity here.
+	var delta_t = timestamp - last_timestamp;//in milliseconds usually equal to 1/60*1000 = 16.6-
+	last_timestamp = timestamp;
+	
     //insert universe animations
-	//cube.rotation.x += 0.01;
-	//cube.rotation.y += 0.01;
-	//line.rotation.x += 0.02;
+	cube.rotation.x += 0.001*delta_t;//.1 per 1/60 sec
+	cube.rotation.y += 0.001*delta_t;
+	line.rotation.x += 0.001*delta_t;
 
 	//controls
 	if(w){
@@ -31,9 +34,6 @@ function animate(timestamp) {
 	if(e){
 		camera.rotation.z -= .01;//not sure
 	}
-	//direction.x = Math.sqrt(2)/2;//Math.sqrt(2)/2;
-    //direction.y = 0;//Math.sqrt(2)/2;
-    //direction.z = Math.sqrt(2)/2;
     camera.getWorldDirection(direction);
 	//calculating velocity and the like
 	p += thrusters/60;//momentum = F*time ... this is assuming 60 fps
@@ -77,4 +77,4 @@ function animate(timestamp) {
     //get new frame
 	requestAnimationFrame(animate);
 }
-animate();
+animate(last_timestamp - 1);//the very first tick has a delta of 1 ms no matter what.
