@@ -1,5 +1,6 @@
 scene.add( universe );
 camera.position.z = 100;
+position_vector.z = 100;
 camera.lookAt(0,0,0)//Math.sqrt(2)/2,Math.sqrt(2)/2);
 
 universe.matrixAutoUpdate = false;
@@ -36,43 +37,52 @@ function animate(timestamp) {//note about timestamp - delta from last render is 
 	}
     camera.getWorldDirection(direction);
 	//calculating velocity and the like
-	p += thrusters/60;//momentum = F*time ... this is assuming 60 fps
+	p_vector.addScaledVector(direction, thrusters/60);
+	p = p_vector.length()
+	var v_unit_vector = new THREE.Vector3;
+	if (p!=0){
+		v_unit_vector.set(p_vector.x/p,p_vector.y/p,p_vector.z/p);
+	}
+	else{
+		v_unit_vector.set(0,0,0)
+	}
+	if (p!=0){
+
+	}
 	if (p < 0){//NEGATIVE VALUES are squared, so rip
         v = -Math.sqrt((p/m)**2/(1+(p/m)**2/(c**2)));
     }
     else {
         v = Math.sqrt((p/m)**2/(1+(p/m)**2/(c**2)));
     }
+	var length_contraction;
     if (hyperdrive){
-		length_contraction = Math.sqrt(1-(v/c)**2);
+		var length_contraction = Math.sqrt(1-(v/c)**2);
 		
 		//create the matrix
 		var len1 = length_contraction-1;
-		var u1 = direction.x;
-		var u2 = direction.y;
-		var u3 = direction.z;
+		var u1 = v_unit_vector.x;
+		var u2 = v_unit_vector.y;
+		var u3 = v_unit_vector.z;
 		universe.matrix.set(
 			1+len1*u1*u1, 0+len1*u2*u1, 0+len1*u3*u1, 0,
 			0+len1*u1*u2, 1+len1*u2*u2, 0+len1*u3*u2, 0,
 			0+len1*u1*u3, 0+len1*u2*u3, 1+len1*u3*u3, 0,
 			0,            0,            0,            1
 		);
-		
-		//keeps camera in the right spot in the universe
-        camera.position.applyMatrix4(universe.matrix);//this makes the camera move with the universe.  originally, I wasn't a fan of it, but now I actually think it is ok.  either way, nothing should be too dependent on this system, so it would be easy to fix later.
 	}
 	else {
-		//v /= 10;this would need editing.  I don't like it.  
+		length_contraction = 1;//v /= 10;this would need editing.  I don't like it.  
 	}
-	camera.position.addScaledVector(direction, v);//I need to change everything, but for the time being, this is good.
+	position_vector.addScaledVector(v_unit_vector, v/length_contraction);//camera.position.addScaledVector(direction, v/p);//camera.position.addScaledVector(direction, v);//I need to change everything, but for the time being, this is good.
+	camera.position.copy(position_vector);
+	camera.position.applyMatrix4(universe.matrix);
+	
     //render
 	renderer.render(scene,camera);
 
     //update dashboard
     document.getElementById("speed").innerHTML = "Speed: "+v;
-
-	//returns camera to the unscaled universe.  might change later.
-	camera.position.applyMatrix4(universe.matrix.invert());
 
     //get new frame
 	requestAnimationFrame(animate);

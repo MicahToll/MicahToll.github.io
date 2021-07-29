@@ -4,10 +4,12 @@
 const c = 1; // in units of light seconds per second.  
 const m = 1; // in kg
 var thrusters = 0;// in __  
-var direction = new THREE.Vector3;//direction of camera
+var direction = new THREE.Vector3;//direction of the ship.  (unit vector)
 var hyperdrive = false;// when caps lock is on and a key is pressed, hyper driver is turned on
 var p = 0;//momentum
+var p_vector = new THREE.Vector3;//momentum vector
 var v = 0;//velocity
+var position_vector = new THREE.Vector3;
 
 //keyboard variables, 
 var w = false;
@@ -22,14 +24,18 @@ var e = false;
 
 //setting up three.js
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000);			
+const camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 15000);			
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight); 
 document.body.appendChild( renderer.domElement );//document.getElementById("body").appendChild( renderer.domElement );
 
 //everything in the universe's reference frame should be added to this group
-var universe = new THREE.Group()
+var universe = new THREE.Group();//the size should be approximately equal to the size of the solar system i think (which is 15,000 lsecond radius), on second thought, lets aim for closer to 1,500
+
+//create spaceship
+var spaceship = new THREE.Group();
+spaceship.add(camera);
 
 //light
 const light = new THREE.AmbientLight( 0x404040 ); // soft white light
@@ -84,6 +90,7 @@ function keyDown(){
 			break;
 		case 32:
 			p = 0;
+			p_vector.set(0,0,0)
 			thrusters = 0;
 			break;
 		case 27:
@@ -145,159 +152,6 @@ function wheel(){
 
 
 //finally, everything is set up, so universe can begin to be built
-
-//first tutorial (a cube spinning)
-
-// now everything is set up, so the coding cube can be placed
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//moved to galaxy.js
-/*
-//green cube
-const geometry = new THREE.BoxGeometry();
-const material = new THREE.MeshBasicMaterial({color:0x00ff00});
-const cube = new THREE.Mesh(geometry, material);
-
-universe.add(cube);
-
-//green cube 2
-const geometry3 = new THREE.BoxGeometry(1,1,80);
-const cube2 = new THREE.Mesh(geometry3, material);
-cube2.position.y = 20;
-
-universe.add(cube2)
-
-
-//create a blue LineBasicMaterial
-const blueMaterial = new THREE.LineBasicMaterial( { color: 0x0000ff } );
-
-const points = [];
-points.push( new THREE.Vector3( - 10, 0, 0 ) );
-points.push( new THREE.Vector3( 0, 10, 0 ) );
-points.push( new THREE.Vector3( 10, 0, 0 ) );
-
-const geometry2 = new THREE.BufferGeometry().setFromPoints( points );
-const line = new THREE.Line( geometry2, material );
-
-universe.add(line);
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//moved to animate.js
-/* 
-scene.add( universe );
-camera.position.z = 100;
-camera.lookAt(0,0,0);
-
-universe.matrix.matrixAutoUpdate = false;
-function animate() {
-
-
-
-    //insert universe
-	cube.rotation.x += 0.01;
-	cube.rotation.y += 0.01;
-	line.rotation.x += 0.02;
-
-	//controls
-	if(w){
-		camera.rotation.x += .01;
-	}
-	if(a){
-		camera.rotation.y += .01;
-	}
-	if(s){
-		camera.rotation.x -= .01;
-	}
-	if(d){
-		camera.rotation.y -= .01;
-	}
-	if(q){
-		camera.rotation.z += .01;//not sure
-	}
-	if(e){
-		camera.rotation.z -= .01;//not sure
-	}
-	camera.getWorldDirection(direction);
-	var T = new THREE.Matrix4();
-	//calculating velocity and the like
-	p += thrusters/60;//momentum = F*time ... this is assuming 60 fps
-	if (hyperdrive){
-		if (p < 0){//NEGATIVE VALUES are squared, so rip
-			v = -Math.sqrt((p/m)**2/(1+(p/m)**2/(c**2)));
-		}
-		else {
-			v = Math.sqrt((p/m)**2/(1+(p/m)**2/(c**2)));
-		}
-		length_contraction = Math.sqrt(1-(v/c)**2);
-		
-		//create the matrix
-		var len1 = length_contraction-1;
-		var u1 = direction.x;
-		var u2 = direction.y;
-		var u3 = direction.z;
-		T.set(
-			1+len1*u1*u1, 0+len1*u2*u1, 0+len1*u3*u1, 0,
-			0+len1*u1*u2, 1+len1*u2*u2, 0+len1*u3*u2, 0,
-			0+len1*u1*u3, 0+len1*u2*u3, 1+len1*u3*u3, 0,
-			0,            0,            0,            1
-		);
-        //apply matrix
-		universe.applyMatrix4(T);
-	}
-	else {
-		v = p/m; // v*m = p
-	}
-	camera.position.addScaledVector(direction, v);//I need to change everything, but for the time being, this is good.
-    //render
-	renderer.render(scene,camera);
-    //reset the scale of the universe
-	universe.position.set(0,0,0);
-	universe.rotation.set(0,0,0);
-	universe.scale.set(1,1,1);
-    //get new frame
-	requestAnimationFrame(animate);
-}
-animate();
-*/
 
 // interesting space pirates game idea:  kinda like the sea pirates game, but where you upgrade your ship.  
 // in it, you have up to 4 people all working together to pilate a space craft, this means: stir the ship, fire the cannons, man the shields, and repair any damages.  if there is pvp, the ships is insured, however pve, ship is not fully ensured.

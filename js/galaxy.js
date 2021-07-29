@@ -2,6 +2,7 @@
 const geometry = new THREE.BoxGeometry();
 const material = new THREE.MeshLambertMaterial({color:0x00ff00});//MeshBasicMaterial
 const cube = new THREE.Mesh(geometry, material);
+cube.position.z = 200;
 
 universe.add(cube);
 

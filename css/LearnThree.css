@@ -7,3 +7,10 @@
 	display:block;
     color:white;
 }
+.over_canvas_dash {
+	position: absolute;
+	/*text-align: center;*/
+	z-index: 90;
+	/*display:block;
+    color:white;*/
+}
