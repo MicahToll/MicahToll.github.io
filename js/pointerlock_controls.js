@@ -38,6 +38,10 @@ THREE.PointerLockControls = function ( camera, domElement ) {
 		var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
 		var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
 
+		if (Math.abs(movementX) > 500 || Math.abs(movementY) > 500){//This is inserted code that attempts to fix the teleporting camera
+			movementX = 0;
+			movementY = 0;	
+		}//end inserted code
 		euler.setFromQuaternion( camera.quaternion );
 
 		euler.y -= movementX * 0.002;
