@@ -49,3 +49,50 @@ const material7 = new THREE.PointsMaterial( { color: 0x888888 } );
 const points7 = new THREE.Points( geometry7, material7 );
 
 universe.add( points7 );
+
+//planets
+const planet_geometry = new THREE.SphereBufferGeometry(10, 64, 32);
+const planet_material = new THREE.MeshLambertMaterial({color:0xFF9900})
+const planet1 = new THREE.Mesh(planet_geometry, planet_material);
+planet1.position.x = 50;
+
+universe.add(planet1);
+
+
+//import GLTFLoader from "js/GLTFLoader.js";
+// Instantiate a loader
+const loader = new GLTFLoader();
+
+// Optional: Provide a DRACOLoader instance to decode compressed mesh data
+//looks cool but would need to import. ignore for now
+/*const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath( '/examples/js/libs/draco/' );
+loader.setDRACOLoader( dracoLoader );*/
+
+// Load a glTF resource
+var obj;
+loader.load(
+	// resource URL
+	'models/doughnut3.glb',
+	// called when the resource is loaded
+	function ( loadedObject ) {
+		loadedMesh = loadedObject.scene;
+		/*loadedMesh.traverse( function(child){
+			if (child instanceof THREE.Mesh){
+				child.material = material;
+				console.log("hi");
+			}
+			console.log("there");
+		});*/
+        universe.add(loadedMesh);
+	},
+	// called while loading is progressing
+	function ( xhr ) {
+		console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+	},
+	// called when loading has errors
+	function ( error ) {
+		console.log( 'An error happened' );
+		console.log(error);
+	}
+);
