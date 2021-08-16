@@ -35,6 +35,9 @@ var universe = new THREE.Group();//the size should be approximately equal to the
 
 //create spaceship
 var spaceship = new THREE.Group();
+const spaceshipcube = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshLambertMaterial({color:0x00ff00}));
+spaceship.add(spaceshipcube);
+spaceshipcube.position.z=-10
 spaceship.add(camera);
 
 //light

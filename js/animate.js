@@ -1,7 +1,6 @@
 scene.add( universe );
-camera.position.z = 100;
+scene.add( spaceship );
 position_vector.z = 100;
-camera.lookAt(0,0,0)//Math.sqrt(2)/2,Math.sqrt(2)/2);
 
 universe.matrixAutoUpdate = false;
 var last_timestamp = Date.now();
@@ -18,24 +17,24 @@ function animate(timestamp) {//note about timestamp - delta from last render is 
 
 	//controls
 	if(w){
-		camera.rotation.x += .01;
+		spaceship.rotation.x += .01;
 	}
 	if(a){
-		camera.rotation.y += .01;
+		spaceship.rotation.y += .01;
 	}
 	if(s){
-		camera.rotation.x -= .01;
+		spaceship.rotation.x -= .01;
 	}
 	if(d){
-		camera.rotation.y -= .01;
+		spaceship.rotation.y -= .01;
 	}
 	if(q){
-		camera.rotation.z += .01;//not sure
+		spaceship.rotation.z += .01;//not sure
 	}
 	if(e){
-		camera.rotation.z -= .01;//not sure
+		spaceship.rotation.z -= .01;//not sure
 	}
-    camera.getWorldDirection(direction);
+	spaceship.getWorldDirection(direction);
 	//calculating velocity and the like
 	p_vector.addScaledVector(direction, thrusters/60);
 	p = p_vector.length()
@@ -75,12 +74,13 @@ function animate(timestamp) {//note about timestamp - delta from last render is 
 		length_contraction = 1;//v /= 10;this would need editing.  I don't like it.  
 	}
 	position_vector.addScaledVector(v_unit_vector, v/length_contraction);//camera.position.addScaledVector(direction, v/p);//camera.position.addScaledVector(direction, v);//I need to change everything, but for the time being, this is good.
-	camera.position.copy(position_vector);
-	camera.position.applyMatrix4(universe.matrix);
+	spaceship.position.copy(position_vector);
+	spaceship.position.applyMatrix4(universe.matrix);
 	
     //render
+	
 	renderer.render(scene,camera);
-
+	
     //update dashboard
     document.getElementById("speed").innerHTML = "Speed: "+v;
 
