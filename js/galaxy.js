@@ -59,9 +59,6 @@ planet1.position.x = 50;
 universe.add(planet1);
 
 
-//import GLTFLoader from "js/GLTFLoader.js";
-// Instantiate a loader
-const loader = new GLTFLoader();
 
 // Optional: Provide a DRACOLoader instance to decode compressed mesh data
 //looks cool but would need to import. ignore for now

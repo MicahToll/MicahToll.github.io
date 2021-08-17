@@ -18,6 +18,7 @@ var s = false;
 var d = false;
 var q = false;
 var e = false;
+var space = false;
 
 //define ambiant sound
 //var music = document.getElementById("myAudio");
@@ -30,21 +31,33 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight); 
 document.body.appendChild( renderer.domElement );//document.getElementById("body").appendChild( renderer.domElement );
 
+//import GLTFLoader from "js/GLTFLoader.js";
+// Instantiate a loader
+const loader = new GLTFLoader();
+
 //everything in the universe's reference frame should be added to this group
 var universe = new THREE.Group();//the size should be approximately equal to the size of the solar system i think (which is 15,000 lsecond radius), on second thought, lets aim for closer to 1,500
 
 //create spaceship
 var spaceship = new THREE.Group();
-const spaceshipcube = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshLambertMaterial({color:0x00ff00}));
-spaceship.add(spaceshipcube);
-spaceshipcube.position.z=-10
+var UFO;
+loader.load(
+	'models/UFO2.glb',
+	function ( loadedObject ) {
+		UFO = loadedObject.scene;
+        spaceship.add(UFO);
+		UFO.position.y=-1.75
+	},
+	function ( xhr ) {console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );},
+	function ( error ) {console.log( 'An error happened' );console.log(error);}
+);
 spaceship.add(camera);
 
 //light
 const light = new THREE.AmbientLight( 0x404040 ); // soft white light
 scene.add( light );
 
-const light2 = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
+const light2 = new THREE.HemisphereLight( 0xffffbb, 0x080820, 5 );
 scene.add( light2 );
 
 // White directional light at half intensity shining from the top.
@@ -92,9 +105,7 @@ function keyDown(){
 			e = true;
 			break;
 		case 32:
-			p = 0;
-			p_vector.set(0,0,0)
-			thrusters = 0;
+			space = true;
 			break;
 		case 27:
 			end();
@@ -126,6 +137,9 @@ function keyUp(){
 		case 69:
 			e = false;
 			break;
+		case 32:
+			space = false;
+			break;
 		//default:
 			//no default required for this
 	}
@@ -137,7 +151,7 @@ function keyUp(){
 }
 function wheel(){
 	//console.log(event.deltaY);
-	thrusters -= event.deltaY/100;//not sure why this has to be negative
+	thrusters += event.deltaY/100;//not sure why this has to be negative
 }
 
 //this is a web GL compatibility checked //didn't seem to work

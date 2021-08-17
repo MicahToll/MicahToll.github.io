@@ -17,22 +17,34 @@ function animate(timestamp) {//note about timestamp - delta from last render is 
 
 	//controls
 	if(w){
-		spaceship.rotation.x += .01;
+		spaceship.rotateX(.01);
 	}
 	if(a){
-		spaceship.rotation.y += .01;
+		spaceship.rotateY(.01);
 	}
 	if(s){
-		spaceship.rotation.x -= .01;
+		spaceship.rotateX(-.01);
 	}
 	if(d){
-		spaceship.rotation.y -= .01;
+		spaceship.rotateY(-.01);
 	}
 	if(q){
-		spaceship.rotation.z += .01;//not sure
+		spaceship.rotateZ(.01);//not sure
 	}
 	if(e){
-		spaceship.rotation.z -= .01;//not sure
+		spaceship.rotateZ(-.01);//not sure
+	}
+	if(space){
+		if (v>.1){
+			var scale_p = p*.95;
+			p = scale_p;
+			p_vector.setLength(scale_p);
+			thrusters = 0;
+		} else {
+			p = 0;
+			p_vector.set(0,0,0);
+			thrusters = 0;
+		}
 	}
 	spaceship.getWorldDirection(direction);
 	//calculating velocity and the like
