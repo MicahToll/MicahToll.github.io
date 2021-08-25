@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+    <head> 
+		<meta charset="utf-8">
+		<title>Relativity Race</title>
+		<style> body {margin: 0;}</style>
+		<link rel="stylesheet" type="text/css" href="css/space.css">
+		<script src="js/three.js"></script>
+		<script src="js/pointerlock_controls.js"></script>
+		<script src="js/GLTFLoader.js"></script>
+	</head>
+	<body id="body" onclick="start();">
+		<audio id="myAudio">
+			<source src="other/test.m4a" type="audio/ogg">
+			Your browser does not support the audio element.
+		</audio>
+		<div id="over_canvas">
+			<div id="visor">
+				<!--menues and buttons-->
+				<div id="selectButton" class="visor button" onclick="select();">Select</div>
+				<div id="shopButton" class="visor button" onclick="shop();">Shop</div>
+				<div id="settingsButton" class="visor button" onclick="settings();">Settings</div>
+				<!--status displays-->
+				<div id="fuel" class="visor">Fuel: </div>
+				<div id="log" class="visor">Log</div>
+				<div id="speed" class="">Speed: </div>
+				<div id="propulsion" class="visor">Propulsion</div>
+			</div>
+			<div id="select" class="popup">
+	
+			</div>
+			<div id="shop" class="popup">
+	
+			</div>
+			<div id="settings" class="popup">
+				<div>save</div>
+				<div>load save</div>
+				<div>sound<input type="range" min="0" max="1" value=".2" step=".1"/></div>
+				<div>invert Y axis<input type="checkbox"/></div>
+			</div>
+			<div id="dashboard">
+				<!--<svg width="100vw" height="100vh" class="over_canvas_dash">
+					<line x1="8vw" y1="0" x2="48vw" y2="100vh" stroke="#111111" stroke-width="4"/>
+					<line x1="8vw" y1="0" x2="48vw" y2="100vh" stroke="gray" stroke-width="4"/>
+					<line x1="92vw" y1="0" x2="52vw" y2="100vh" stroke="#111111" stroke-width="4"/>
+					<line x1="92vw" y1="0" x2="52vw" y2="100vh" stroke="gray" stroke-width="4"/>
+					<ellipse cx="50vw" cy="100vh" rx="75vw" ry="25vh" stroke="#111111" stroke-width="2" fill="gray"/>
+				</svg>-->
+			</div>
+		</div>
+		<script src="js/settings.js"></script>
+		<script src="js/shop.js"></script>
+		<script src="js/select.js"></script>
+		<script src="js/space.js"></script><!--this file sets up the global varables and the controls-->
+		<script src="js/galaxy.js"></script><!--this file adds objects to the universe-->
+		<script src="js/animate.js"></script><!--this file animates those objects-->
+		<script src="js/genes.js"></script>
+	</body>
+</html>

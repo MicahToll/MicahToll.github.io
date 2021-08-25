@@ -32,7 +32,7 @@ THREE.PointerLockControls = function ( camera, domElement ) {
 	var vec = new THREE.Vector3();
 
 	function onMouseMove( event ) {
-
+		console.log("1")
 		if ( scope.isLocked === false ) return;
 
 		var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;

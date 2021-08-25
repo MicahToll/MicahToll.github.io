@@ -5,7 +5,7 @@ const c = 1; // in units of light seconds per second.
 const m = 1; // in kg
 var thrusters = 0;// in __  
 var direction = new THREE.Vector3;//direction of the ship.  (unit vector)
-var hyperdrive = false;// when caps lock is on and a key is pressed, hyper driver is turned on
+var hyperdrive = true;// when caps lock is on and a key is pressed, hyper driver is turned on
 var p = 0;//momentum
 var p_vector = new THREE.Vector3;//momentum vector
 var v = 0;//velocity
@@ -27,7 +27,7 @@ var space = false;
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 15000);			
 
-const renderer = new THREE.WebGLRenderer();
+const renderer = new THREE.WebGLRenderer();//to add anti aliasing, sdd { antialias: true } to the parameter
 renderer.setSize(window.innerWidth, window.innerHeight); 
 document.body.appendChild( renderer.domElement );//document.getElementById("body").appendChild( renderer.domElement );
 
@@ -69,7 +69,8 @@ scene.add( directionalLight );*/
 controls = new THREE.PointerLockControls( camera, document.body );
 function start(){
 	controls.lock();
-	//music.playbackRate = 0.5;
+	//music.playbackRate = 1/3;//0.0625;
+	//music.volume = .05;
 	//music.play()
 }
 function end(){
@@ -143,32 +144,15 @@ function keyUp(){
 		//default:
 			//no default required for this
 	}
-	if (event.getModifierState("CapsLock")) {
+	/*if (event.getModifierState("CapsLock")) {
     	hyperdrive = true;
   	} else {
     	hyperdrive = false;
-  	}
+  	}*/
 }
 function wheel(){
 	//console.log(event.deltaY);
-	thrusters += event.deltaY/100;//not sure why this has to be negative
+	thrusters += event.deltaY/500;//not sure why this has to be negative
 }
 
-//this is a web GL compatibility checked //didn't seem to work
-//starting here
-/*if ( WEBGL.isWebGLAvailable() ) {
-	// Initiate function or other initializations here
-	animate();
-} else {
-	const warning = WEBGL.getWebGLErrorMessage();
-	document.getElementById( 'container' ).appendChild( warning );
-}*/
-//ending here
-
-
-
-
 //finally, everything is set up, so universe can begin to be built
-
-// interesting space pirates game idea:  kinda like the sea pirates game, but where you upgrade your ship.  
-// in it, you have up to 4 people all working together to pilate a space craft, this means: stir the ship, fire the cannons, man the shields, and repair any damages.  if there is pvp, the ships is insured, however pve, ship is not fully ensured.

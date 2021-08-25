@@ -17,13 +17,13 @@ function animate(timestamp) {//note about timestamp - delta from last render is 
 
 	//controls
 	if(w){
-		spaceship.rotateX(.01);
+		spaceship.rotateX(-.01);
 	}
 	if(a){
 		spaceship.rotateY(.01);
 	}
 	if(s){
-		spaceship.rotateX(-.01);
+		spaceship.rotateX(.01);
 	}
 	if(d){
 		spaceship.rotateY(-.01);
@@ -35,7 +35,7 @@ function animate(timestamp) {//note about timestamp - delta from last render is 
 		spaceship.rotateZ(-.01);//not sure
 	}
 	if(space){
-		if (v>.1){
+		if (v>.05){
 			var scale_p = p*.95;
 			p = scale_p;
 			p_vector.setLength(scale_p);
