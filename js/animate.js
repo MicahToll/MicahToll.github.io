@@ -66,25 +66,19 @@ function animate(timestamp) {//note about timestamp - delta from last render is 
     else {
         v = Math.sqrt((p/m)**2/(1+(p/m)**2/(c**2)));
     }
-	var length_contraction;
-    if (hyperdrive){
-		var length_contraction = Math.sqrt(1-(v/c)**2);
-		
-		//create the matrix
-		var len1 = length_contraction-1;
-		var u1 = v_unit_vector.x;
-		var u2 = v_unit_vector.y;
-		var u3 = v_unit_vector.z;
-		universe.matrix.set(
-			1+len1*u1*u1, 0+len1*u2*u1, 0+len1*u3*u1, 0,
-			0+len1*u1*u2, 1+len1*u2*u2, 0+len1*u3*u2, 0,
-			0+len1*u1*u3, 0+len1*u2*u3, 1+len1*u3*u3, 0,
-			0,            0,            0,            1
-		);
-	}
-	else {
-		length_contraction = 1;//v /= 10;this would need editing.  I don't like it.  
-	}
+	var length_contraction = Math.sqrt(1-(v/c)**2);
+	
+	//create the matrix
+	var len1 = length_contraction-1;
+	var u1 = v_unit_vector.x;
+	var u2 = v_unit_vector.y;
+	var u3 = v_unit_vector.z;
+	universe.matrix.set(
+		1+len1*u1*u1, 0+len1*u2*u1, 0+len1*u3*u1, 0,
+		0+len1*u1*u2, 1+len1*u2*u2, 0+len1*u3*u2, 0,
+		0+len1*u1*u3, 0+len1*u2*u3, 1+len1*u3*u3, 0,
+		0,            0,            0,            1
+	);
 	position_vector.addScaledVector(v_unit_vector, v/length_contraction);//camera.position.addScaledVector(direction, v/p);//camera.position.addScaledVector(direction, v);//I need to change everything, but for the time being, this is good.
 	spaceship.position.copy(position_vector);
 	spaceship.position.applyMatrix4(universe.matrix);
@@ -95,6 +89,7 @@ function animate(timestamp) {//note about timestamp - delta from last render is 
 	
     //update dashboard
     document.getElementById("speed").innerHTML = "Speed: "+v;
+	document.getElementById("propulsion").innerHTML = "Propulsion: "+thrusters;
 
     //get new frame
 	requestAnimationFrame(animate);

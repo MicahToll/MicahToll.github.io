@@ -5,7 +5,6 @@ const c = 1; // in units of light seconds per second.
 const m = 1; // in kg
 var thrusters = 0;// in __  
 var direction = new THREE.Vector3;//direction of the ship.  (unit vector)
-var hyperdrive = true;// when caps lock is on and a key is pressed, hyper driver is turned on
 var p = 0;//momentum
 var p_vector = new THREE.Vector3;//momentum vector
 var v = 0;//velocity
@@ -144,11 +143,6 @@ function keyUp(){
 		//default:
 			//no default required for this
 	}
-	/*if (event.getModifierState("CapsLock")) {
-    	hyperdrive = true;
-  	} else {
-    	hyperdrive = false;
-  	}*/
 }
 function wheel(){
 	//console.log(event.deltaY);
