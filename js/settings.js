@@ -11,6 +11,7 @@ var unlockedShieldGenerators = [];
 //saved settings stuff
 var volume = .2;
 var invertY = true;
+var antialias = true;
 
 function loadSave(){
     if (localStorage.getItem("credits")==null||localStorage.getItem("ownedShips")==null){
@@ -26,6 +27,7 @@ function loadSave(){
         unlockedShieldGenerators=localStorage.getItem("unlockedShieldGenerators");
         volume=localStorage.getItem("volume");
         invertY=localStorage.getItem("invertY");
+        antialias=localStorage.getItem("antialias");
     }
 }
 function save(){
@@ -38,6 +40,7 @@ function save(){
     localStorage.setItem("unlockedShieldGenerators", unlockedShieldGenerators);
     localStorage.setItem("volume", volume);
     localStorage.setItem("invertY", invertY);
+    localStorage.setItem("antialias", antialias);
 }
 
 function closeAllWindows(){

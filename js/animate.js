@@ -7,13 +7,9 @@ var last_timestamp = Date.now();
 
 function animate(timestamp) {//note about timestamp - delta from last render is the most useful metric for reletivity I think in case you want to use that.
 	//create delta time //consider adding special reletivity here.
-	var delta_t = timestamp - last_timestamp;//in milliseconds usually equal to 1/60*1000 = 16.6-
-	last_timestamp = timestamp;
-	
-    //insert universe animations
-	cube.rotation.x += 0.001*delta_t;//.1 per 1/60 sec
-	cube.rotation.y += 0.001*delta_t;
-	line.rotation.x += 0.001*delta_t;
+	//var delta_t = timestamp - last_timestamp;//in milliseconds usually equal to 1/60*1000 = 16.6-
+	//last_timestamp = timestamp;
+	spaceship_time += 1/60;
 
 	//controls
 	if(w){
@@ -50,7 +46,6 @@ function animate(timestamp) {//note about timestamp - delta from last render is 
 	//calculating velocity and the like
 	p_vector.addScaledVector(direction, thrusters/60);
 	p = p_vector.length()
-	var v_unit_vector = new THREE.Vector3;
 	if (p!=0){
 		v_unit_vector.set(p_vector.x/p,p_vector.y/p,p_vector.z/p);
 	}
@@ -68,6 +63,11 @@ function animate(timestamp) {//note about timestamp - delta from last render is 
     }
 	var length_contraction = Math.sqrt(1-(v/c)**2);
 	
+	//more time update here
+	cube.position.y = spaceship_time/10;
+	//for
+
+
 	//create the matrix
 	var len1 = length_contraction-1;
 	var u1 = v_unit_vector.x;
@@ -79,12 +79,11 @@ function animate(timestamp) {//note about timestamp - delta from last render is 
 		0+len1*u1*u3, 0+len1*u2*u3, 1+len1*u3*u3, 0,
 		0,            0,            0,            1
 	);
-	position_vector.addScaledVector(v_unit_vector, v/length_contraction);//camera.position.addScaledVector(direction, v/p);//camera.position.addScaledVector(direction, v);//I need to change everything, but for the time being, this is good.
+	position_vector.addScaledVector(v_unit_vector, v/length_contraction/60);//camera.position.addScaledVector(direction, v/p);//camera.position.addScaledVector(direction, v);//I need to change everything, but for the time being, this is good.
 	spaceship.position.copy(position_vector);
 	spaceship.position.applyMatrix4(universe.matrix);
 	
     //render
-	
 	renderer.render(scene,camera);
 	
     //update dashboard

@@ -9,6 +9,8 @@ var p = 0;//momentum
 var p_vector = new THREE.Vector3;//momentum vector
 var v = 0;//velocity
 var position_vector = new THREE.Vector3;
+var spaceship_time = 0;
+var v_unit_vector = new THREE.Vector3;
 
 //keyboard variables, 
 var w = false;
@@ -51,6 +53,9 @@ loader.load(
 	function ( error ) {console.log( 'An error happened' );console.log(error);}
 );
 spaceship.add(camera);
+var ship_scale = new THREE.Matrix4();
+ship_scale.set(1/3,0,0,0,0,1/3,0,0,0,0,1/3,0,0,0,0,1)
+spaceship.applyMatrix4(ship_scale);
 
 //light
 const light = new THREE.AmbientLight( 0x404040 ); // soft white light
@@ -148,5 +153,25 @@ function wheel(){
 	//console.log(event.deltaY);
 	thrusters += event.deltaY/500;//not sure why this has to be negative
 }
+
+//this is a function that uses space ship time, spaceship position, given object position, and given velocity to calculate obj time in space ship reference frame
+function get_object_time(object_position, v_unit_vector, length_contraction){
+	r = object_position.sub(position_vector);
+	return spaceship_time*(1-length_contraction*v_unit_vector.dot(r));
+}
+
+// expand THREE.js Sphere to support collision tests vs Box3
+// we are creating a vector outside the method scope to
+// avoid spawning a new instance of Vector3 on every check
+THREE.Sphere.__closest = new THREE.Vector3();
+THREE.Sphere.prototype.intersectsBox = function (box) {
+    // get box closest point to sphere center by clamping
+    THREE.Sphere.__closest.set(this.center.x, this.center.y, this.center.z);
+    THREE.Sphere.__closest.clamp(box.min, box.max);
+
+    var distance =  this.center.distanceToSquared(THREE.Sphere.__closest);
+    return distance < (this.radius * this.radius);
+};
+//source: developer.mozilla.orgen-US/docs/Games/Techniques/3D_collision_detection/Bounding_volume_collision_detection_with_THREE.js
 
 //finally, everything is set up, so universe can begin to be built
