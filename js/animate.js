@@ -11,39 +11,44 @@ function animate(timestamp) {//note about timestamp - delta from last render is 
 	//last_timestamp = timestamp;
 
 	//controls
-	if(w){
-		spaceship.rotateX(-.01);
+	if (gamepad_is_connected){
+		update_gamepad();
 	}
-	if(a){
-		spaceship.rotateY(.01);
-	}
-	if(s){
-		spaceship.rotateX(.01);
-	}
-	if(d){
-		spaceship.rotateY(-.01);
-	}
-	if(q){
-		spaceship.rotateZ(.01);//not sure
-	}
-	if(e){
-		spaceship.rotateZ(-.01);//not sure
-	}
-	if(space){
-		if (v>.05){
-			var scale_p = p*.95;
-			p = scale_p;
-			p_vector.setLength(scale_p);
-			thrusters = 0;
-		} else {
-			p = 0;
-			p_vector.set(0,0,0);
-			thrusters = 0;
+	else{
+		if(w){
+			spaceship.rotateX(-.01);
+		}
+		if(a){
+			spaceship.rotateY(.01);
+		}
+		if(s){
+			spaceship.rotateX(.01);
+		}
+		if(d){
+			spaceship.rotateY(-.01);
+		}
+		if(q){
+			spaceship.rotateZ(.01);//not sure
+		}
+		if(e){
+			spaceship.rotateZ(-.01);//not sure
+		}
+		if(space){
+			if (v>.05){
+				var scale_p = p*.95;
+				p = scale_p;
+				p_vector.setLength(scale_p);
+				thrusters = 0;
+			} else {
+				p = 0;
+				p_vector.set(0,0,0);
+				thrusters = 0;
+			}
 		}
 	}
 	spaceship.getWorldDirection(direction);
 	//calculating velocity and the like
-	p_vector.addScaledVector(direction, thrusters/60);
+	p_vector.addScaledVector(direction, thrusters);
 	p = p_vector.length()
 	if (p!=0){
 		v_unit_vector.set(p_vector.x/p,p_vector.y/p,p_vector.z/p);
@@ -74,12 +79,12 @@ function animate(timestamp) {//note about timestamp - delta from last render is 
 	var u1 = v_unit_vector.x;
 	var u2 = v_unit_vector.y;
 	var u3 = v_unit_vector.z;
-	/*universe.matrix.set(
+	universe.matrix.set(
 		1+len1*u1*u1, 0+len1*u2*u1, 0+len1*u3*u1, 0,
 		0+len1*u1*u2, 1+len1*u2*u2, 0+len1*u3*u2, 0,
 		0+len1*u1*u3, 0+len1*u2*u3, 1+len1*u3*u3, 0,
 		0,            0,            0,            1
-	);*/
+	);
 	//add collision detection around here
 
 

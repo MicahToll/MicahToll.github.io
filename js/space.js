@@ -2,8 +2,18 @@
 
 //initialize your variables here
 const c = 1; // in units of light seconds per second.  
-const m = 1; // in kg
-var thrusters = 0;// in __  
+//these are the space ship stats
+var m = 1; // in kg
+var engine_power = 1;// units of momentum/s.  this is the maximum momentum output in one second.  
+var maneuvering = 1;// units of radians per second
+var shield_efficiency = 1;//
+var engine_efficiency = 1;// proportion of fuel used usefully.  For example, if 300 joules go into thrust, and the efficiency is 90%, then the actual amount used is 300/.9
+var air_resistance = 1;
+var brakes = 1; // not sure about this one
+var fuel_capacity; // in joules?
+var head_speed_per_tick = 1.1/60;
+
+var thrusters = 0;// in momentum per tick 
 var direction = new THREE.Vector3;//direction of the ship.  (unit vector)
 var p = 0;//momentum
 var p_vector = new THREE.Vector3;//momentum vector
@@ -74,13 +84,14 @@ scene.add( directionalLight );*/
 controls = new THREE.PointerLockControls( camera, document.body );
 function start(){
 	controls.lock();
+	document.getElementById("lockMouse").hidden = true;
 	//music.playbackRate = 1/3;//0.0625;
 	//music.volume = .05;
 	//music.play()
 }
 function end(){
-	console.log("esc")
 	controls.unlock();
+	//document.getElementById("lockMouse").hidden = false;//I can't get this to work on chrome for some reason.
 }
 //scene.add(controls.getobject())
 

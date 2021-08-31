@@ -63,7 +63,7 @@ THREE.PointerLockControls = function ( camera, domElement ) {
 			scope.isLocked = true;
 
 		} else {
-
+			document.getElementById("lockMouse").hidden = false;//I added this
 			scope.dispatchEvent( unlockEvent );
 
 			scope.isLocked = false;

@@ -8,8 +8,9 @@
 		<script src="js/three.js"></script>
 		<script src="js/pointerlock_controls.js"></script>
 		<script src="js/GLTFLoader.js"></script>
+		<script src="js/controller.js"></script>
 	</head>
-	<body id="body" onclick="start();">
+	<body id="body">
 		<audio id="myAudio">
 			<source src="other/test.m4a" type="audio/ogg">
 			Your browser does not support the audio element.
@@ -20,6 +21,7 @@
 				<div id="selectButton" class="visor button" onclick="select();">Select</div>
 				<div id="shopButton" class="visor button" onclick="shop();">Shop</div>
 				<div id="settingsButton" class="visor button" onclick="settings();">Settings</div>
+				<div id="lockMouse" class="visor button"  onclick="start();">Lock Mouse</div>
 				<!--status displays-->
 				<div id="fuel" class="visor">Fuel: </div>
 				<div id="log" class="visor">Log</div>
@@ -37,6 +39,7 @@
 				<div>load save</div>
 				<div>sound<input type="range" min="0" max="1" value=".2" step=".1"/></div>
 				<div>invert Y axis<input type="checkbox"/></div>
+				<div onclick="connect_controller()">connect controller</div>
 			</div>
 			<div id="dashboard">
 				<!--<svg width="100vw" height="100vh" class="over_canvas_dash">
