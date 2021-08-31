@@ -1,6 +1,6 @@
 scene.add( universe );
 scene.add( spaceship );
-position_vector.z = 100;
+position_vector.z = 5;
 
 universe.matrixAutoUpdate = false;
 var last_timestamp = Date.now();
@@ -9,7 +9,6 @@ function animate(timestamp) {//note about timestamp - delta from last render is 
 	//create delta time //consider adding special reletivity here.
 	//var delta_t = timestamp - last_timestamp;//in milliseconds usually equal to 1/60*1000 = 16.6-
 	//last_timestamp = timestamp;
-	spaceship_time += 1/60;
 
 	//controls
 	if(w){
@@ -64,21 +63,27 @@ function animate(timestamp) {//note about timestamp - delta from last render is 
 	var length_contraction = Math.sqrt(1-(v/c)**2);
 	
 	//more time update here
-	cube.position.y = spaceship_time/10;
-	//for
-
+	spaceship_time += 1/60;
+	universe_time += 1/60/length_contraction;
+	for (var time_dependent_obj of time_dependent_objects){
+		time_dependent_obj.F(length_contraction);
+	}
 
 	//create the matrix
 	var len1 = length_contraction-1;
 	var u1 = v_unit_vector.x;
 	var u2 = v_unit_vector.y;
 	var u3 = v_unit_vector.z;
-	universe.matrix.set(
+	/*universe.matrix.set(
 		1+len1*u1*u1, 0+len1*u2*u1, 0+len1*u3*u1, 0,
 		0+len1*u1*u2, 1+len1*u2*u2, 0+len1*u3*u2, 0,
 		0+len1*u1*u3, 0+len1*u2*u3, 1+len1*u3*u3, 0,
 		0,            0,            0,            1
-	);
+	);*/
+	//add collision detection around here
+
+
+
 	position_vector.addScaledVector(v_unit_vector, v/length_contraction/60);//camera.position.addScaledVector(direction, v/p);//camera.position.addScaledVector(direction, v);//I need to change everything, but for the time being, this is good.
 	spaceship.position.copy(position_vector);
 	spaceship.position.applyMatrix4(universe.matrix);

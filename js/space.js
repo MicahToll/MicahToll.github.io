@@ -10,6 +10,7 @@ var p_vector = new THREE.Vector3;//momentum vector
 var v = 0;//velocity
 var position_vector = new THREE.Vector3;
 var spaceship_time = 0;
+var universe_time = 0;
 var v_unit_vector = new THREE.Vector3;
 
 //keyboard variables, 
@@ -154,11 +155,6 @@ function wheel(){
 	thrusters += event.deltaY/500;//not sure why this has to be negative
 }
 
-//this is a function that uses space ship time, spaceship position, given object position, and given velocity to calculate obj time in space ship reference frame
-function get_object_time(object_position, v_unit_vector, length_contraction){
-	r = object_position.sub(position_vector);
-	return spaceship_time*(1-length_contraction*v_unit_vector.dot(r));
-}
 
 // expand THREE.js Sphere to support collision tests vs Box3
 // we are creating a vector outside the method scope to

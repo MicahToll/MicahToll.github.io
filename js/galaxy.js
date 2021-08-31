@@ -98,8 +98,8 @@ class level{}
 levels=[];
 
 var universe_children = universe.children;
-time_dependent_objects = [];
-all_objects = [];
+var time_dependent_objects = [];
+var all_objects = [];
 //for this class to work right, you must first put the objects in the universe group.
 /*class collider{
 	bounding_box = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
@@ -118,17 +118,30 @@ class object {//extends collider
 		this.collision_type = collision_type;
 		this.bounding_box = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
 		this.update_bounding_box();
+		all_objects.push(this);
+		universe.add(this.mesh);
 	}
 	update_bounding_box(){
 		this.bounding_box.setFromObject(this.mesh);
 	}
 }
 class time_dependent_object extends object{
-	constructor(mesh,collision_type){
+	F(length_contraction){};
+	r;
+	constructor(mesh,collision_type,F){
 		super(mesh,collision_type);
+		this.r = new THREE.Vector3();
+		this.F = F
+		time_dependent_objects.push(this);
 	}
-	F(){
-		log("time passes");
+	get_object_time(length_contraction){//this is a function that uses space ship time, spaceship position, given object position, and given velocity to calculate obj time in space ship reference frame
+		this.mesh.getWorldPosition(this.r).sub(position_vector);
+		if (v==0){
+			return universe_time;
+		}
+		else{
+			return universe_time+((1-length_contraction)*v_unit_vector.dot(this.r))/c;
+		}
 	}
 }
 
@@ -137,32 +150,25 @@ class time_dependent_object extends object{
 const geometry = new THREE.BoxGeometry();
 const material = new THREE.MeshLambertMaterial({color:0x00ff00});//MeshBasicMaterial
 const cube = new THREE.Mesh(geometry, material);
-universe.add(cube);
-time_dependent_objects.push(new time_dependent_object(cube,"solid"));
+new time_dependent_object(cube,"solid",function(length_contraction){
+	this.mesh.position.y = this.get_object_time(length_contraction)/10;//spaceship_time/10;
+});
 
 
 //create a blue LineBasicMaterial
 const blueMaterial = new THREE.LineBasicMaterial( { color: 0x0000ff } );
-
 const points = [];
 points.push( new THREE.Vector3( - 10, 0, 0 ) );
 points.push( new THREE.Vector3( 0, 10, 0 ) );
 points.push( new THREE.Vector3( 10, 0, 0 ) );
-
 const geometry2 = new THREE.BufferGeometry().setFromPoints( points );
 const line = new THREE.Line( geometry2, blueMaterial );
-
-universe.add(line);
-time_dependent_objects.push(new time_dependent_object(line,"solid"));
-
-
-all_objects = time_dependent_objects;
-
+new time_dependent_object(line,"solid",function(length_contraction){
+	this.mesh.rotation.x = this.get_object_time(length_contraction)/10;
+});
 
 //green cube 2
 const geometry3 = new THREE.BoxGeometry(1,1,80);
 const cube2 = new THREE.Mesh(geometry3, material);
 cube2.position.y = 20;
-
-universe.add(cube2)
-all_objects.push(new time_dependent_object(cube2,"solid"));
+new object(cube2,"solid");
