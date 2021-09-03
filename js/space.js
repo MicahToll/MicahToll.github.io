@@ -12,16 +12,35 @@ var air_resistance = 1;
 var brakes = 1; // not sure about this one
 var fuel_capacity; // in joules?
 var head_speed_per_tick = 1.1/60;
+var shield_radius = 3;//light seconds
 
 var thrusters = 0;// in momentum per tick 
-var direction = new THREE.Vector3;//direction of the ship.  (unit vector)
+var direction = new THREE.Vector3();//direction of the ship.  (unit vector)
 var p = 0;//momentum
-var p_vector = new THREE.Vector3;//momentum vector
+var p_vector = new THREE.Vector3();//momentum vector
 var v = 0;//velocity
-var position_vector = new THREE.Vector3;
+var position_vector = new THREE.Vector3();
 var spaceship_time = 0;
 var universe_time = 0;
-var v_unit_vector = new THREE.Vector3;
+var v_unit_vector = new THREE.Vector3();
+var v_displacement_per_tick = new THREE.Vector3();//units of light seconds per tick
+var position_vector_for_collision_detection = new THREE.Vector3(0,0,0);//aka: actually affected by length contraction
+var min_vec = new THREE.Vector3();
+var max_vec = new THREE.Vector3();
+var spaceship_boundingbox = new THREE.Box3(min_vec, max_vec);
+var raycaster_angles = [];
+raycaster_angles.length = 21;
+var phi = (1+Math.sqrt(5))/2;
+var dodecahredron_cords = [[1,1,1],[1,1,-1],[1,-1,1],[1,-1,-1],[-1,1,1],[-1,1,-1],[-1,-1,1],[-1,-1,-1],[0,phi,1/phi],[0,phi,-1/phi],[0,-phi,1/phi],[0,-phi,-1/phi],[1/phi,0,phi],[1/phi,0,-phi],[-1/phi,0,phi],[-1/phi,0,-phi],[phi,1/phi,0],[phi,-1/phi,0],[-phi,1/phi,0],[-phi,-1/phi,0]]
+for (var i = 0; i<raycaster_angles.length-1; i++){
+	raycaster_angles[i] = new THREE.Vector3(dodecahredron_cords[i][0],dodecahredron_cords[i][1],dodecahredron_cords[i][2]);
+	raycaster_angles[i].normalize();
+}
+var raycasters = [];//new THREE.Raycaster();
+raycasters.length = 21;
+for (var i = 0; i<raycasters.length; i++){//this is a bit weird, just a warning
+	raycasters[i] = new THREE.Raycaster(position_vector_for_collision_detection, raycaster_angles[0], 0, shield_radius);
+}
 
 //keyboard variables, 
 var w = false;
@@ -52,6 +71,14 @@ var universe = new THREE.Group();//the size should be approximately equal to the
 
 //create spaceship
 var spaceship = new THREE.Group();
+
+//force shield
+var force_shield_geometry = new THREE.IcosahedronGeometry(shield_radius, 1);
+var shield_line_material = new THREE.LineBasicMaterial({color: 0x00ffc8, transparent: true, opacity:1});
+var force_shield_lines = new THREE.LineSegments(force_shield_geometry, shield_line_material);
+spaceship.add(force_shield_lines);
+
+//UFO
 var UFO;
 loader.load(
 	'models/UFO2.glb',
@@ -63,6 +90,14 @@ loader.load(
 	function ( xhr ) {console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );},
 	function ( error ) {console.log( 'An error happened' );console.log(error);}
 );
+/*var helpers = []; //helps diagnose collision detection problems
+helpers.length = 21;
+var zero = new THREE.Vector3(0,0,0);
+for (var i = 0; i<helpers.length; i++){//this is a bit weird, just a warning
+	helpers[i] = new THREE.ArrowHelper(raycaster_angles[i],zero,shield_radius, 0xff0000);
+	spaceship.add(helpers[i]);
+}*/
+
 spaceship.add(camera);
 var ship_scale = new THREE.Matrix4();
 ship_scale.set(1/3,0,0,0,0,1/3,0,0,0,0,1/3,0,0,0,0,1)

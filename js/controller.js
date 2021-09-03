@@ -62,7 +62,7 @@ function update_gamepad(){
         thrusters = -engine_power*1/60;
     }
     else if (gamepad1.buttons[7].pressed){
-        thrusters = -engine_power*1/60;
+        thrusters = -engine_power*gamepad1.buttons[7].value/60;
     }
     else {
         thrusters = 0;
@@ -84,11 +84,11 @@ function update_gamepad(){
     //12 through 15 are the d pad buttons
     //no clue what 16 is
     if (Math.abs(gamepad1.axes[0])>.12||Math.abs(gamepad1.axes[1])>.12){
-        spaceship.rotateY(-maneuvering_per_tick*gamepad1.axes[0]);
-        spaceship.rotateX(1.1*maneuvering_per_tick*gamepad1.axes[1]);
+        spaceship.rotateY(-maneuvering_per_tick*gamepad1.axes[0]/2);
+        spaceship.rotateX(maneuvering_per_tick*gamepad1.axes[1]);
     }
     if (Math.abs(gamepad1.axes[2])>.12||Math.abs(gamepad1.axes[3])>.12){
-        head.set(head.x-head_speed_per_tick*gamepad1.axes[3],head.y-head_speed_per_tick*gamepad1.axes[2],0);
+        head.set(Math.max(-Math.PI/2,Math.min(head.x-head_speed_per_tick*gamepad1.axes[3],Math.PI/2)), head.y-head_speed_per_tick*gamepad1.axes[2],0);
         camera.setRotationFromEuler(head);
     }
 }

@@ -72,6 +72,7 @@ function animate(timestamp) {//note about timestamp - delta from last render is 
 	universe_time += 1/60/length_contraction;
 	for (var time_dependent_obj of time_dependent_objects){
 		time_dependent_obj.F(length_contraction);
+		time_dependent_obj.update_bounding_box();
 	}
 
 	//create the matrix
@@ -85,20 +86,62 @@ function animate(timestamp) {//note about timestamp - delta from last render is 
 		0+len1*u1*u3, 0+len1*u2*u3, 1+len1*u3*u3, 0,
 		0,            0,            0,            1
 	);
-	//add collision detection around here
 
+	v_displacement_per_tick.set(0,0,0);
+	v_displacement_per_tick.addScaledVector(v_unit_vector, v/60);
 
-
-	position_vector.addScaledVector(v_unit_vector, v/length_contraction/60);//camera.position.addScaledVector(direction, v/p);//camera.position.addScaledVector(direction, v);//I need to change everything, but for the time being, this is good.
+	position_vector.addScaledVector(v_displacement_per_tick, 1/length_contraction);
+	//position_vector.addScaledVector(v_unit_vector, v/length_contraction/60);//camera.position.addScaledVector(direction, v/p);//camera.position.addScaledVector(direction
 	spaceship.position.copy(position_vector);
 	spaceship.position.applyMatrix4(universe.matrix);
 	
+	//collision detection
+	//bounding box for space ship
+	min_vec.set(
+		position_vector.x-shield_radius+Math.min(0,v_displacement_per_tick.x),
+		position_vector.y-shield_radius+Math.min(0,v_displacement_per_tick.y),
+		position_vector.z-shield_radius+Math.min(0,v_displacement_per_tick.z)
+	);
+	max_vec.set(
+		position_vector.x+shield_radius+Math.max(0,v_displacement_per_tick.x),
+		position_vector.y+shield_radius+Math.max(0,v_displacement_per_tick.y),
+		position_vector.z+shield_radius+Math.max(0,v_displacement_per_tick.z)
+	);
+	//this places all the raycasters in the rigth spot
+	position_vector_for_collision_detection.copy(spaceship.position);
+	for (var i = 0; i<raycasters.length-1; i++){
+		raycasters[i].set(position_vector_for_collision_detection, raycaster_angles[i]);
+	}
+	raycasters[20].set(position_vector_for_collision_detection, v_unit_vector);
+	//var results_array = []; moved inside
+	var distance_to_collided_obj = shield_radius+1;//this is just a big number;
+	for (var obj of all_objects){
+		if (obj.check_for_bounding_box_collision()){
+			console.log("checking")
+			for (var i = 0; i<raycasters.length; i++){
+				var results_array = raycasters[0].intersectObject(obj.mesh);
+				if (results_array.length != 0){
+					if (results_array[0].distance<distance_to_collided_obj){
+						console.log("might hit yet");
+						distance_to_collided_obj = results_array[0].distance;
+					}
+				}
+			}
+		}		
+	}
+	if (distance_to_collided_obj < shield_radius){
+		console.log("hit");
+		position_vector.addScaledVector(v_displacement_per_tick, -1/length_contraction);
+	}
+
+
+
     //render
 	renderer.render(scene,camera);
 	
     //update dashboard
     document.getElementById("speed").innerHTML = "Speed: "+v;
-	document.getElementById("propulsion").innerHTML = "Propulsion: "+thrusters;
+	document.getElementById("propulsion").innerHTML = "Propulsion: "+Math.abs(thrusters);
 
     //get new frame
 	requestAnimationFrame(animate);
