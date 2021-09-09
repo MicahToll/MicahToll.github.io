@@ -11,6 +11,7 @@ var unlockedShieldGenerators = [];
 //saved settings stuff
 var volume = .2;
 var invertY = true;
+var thirdPerson = false;
 var antialias = true;
 
 function loadSave(){
@@ -27,6 +28,7 @@ function loadSave(){
         unlockedShieldGenerators=localStorage.getItem("unlockedShieldGenerators");
         volume=localStorage.getItem("volume");
         invertY=localStorage.getItem("invertY");
+        thirdPerson=localStorage.getItem("thirdPerson");
         antialias=localStorage.getItem("antialias");
     }
 }
@@ -40,6 +42,7 @@ function save(){
     localStorage.setItem("unlockedShieldGenerators", unlockedShieldGenerators);
     localStorage.setItem("volume", volume);
     localStorage.setItem("invertY", invertY);
+    localStorage.setItem("thirdPerson", thirdPerson);
     localStorage.setItem("antialias", antialias);
 }
 

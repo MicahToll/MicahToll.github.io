@@ -10,9 +10,10 @@ var shield_efficiency = 1;//
 var engine_efficiency = 1;// proportion of fuel used usefully.  For example, if 300 joules go into thrust, and the efficiency is 90%, then the actual amount used is 300/.9
 var air_resistance = 1;
 var brakes = 1; // not sure about this one
-var fuel_capacity; // in joules?
+var fuel = 0;//current fuel
+var fuel_capacity = 0; // in joules?
 var head_speed_per_tick = 1.1/60;
-var shield_radius = 3;//light seconds
+var shield_radius = 1/50;//light seconds
 
 var thrusters = 0;// in momentum per tick 
 var direction = new THREE.Vector3();//direction of the ship.  (unit vector)
@@ -23,7 +24,8 @@ var position_vector = new THREE.Vector3();
 var spaceship_time = 0;
 var universe_time = 0;
 var v_unit_vector = new THREE.Vector3();
-var v_displacement_per_tick = new THREE.Vector3();//units of light seconds per tick
+var maneuvering_per_tick = maneuvering/60;
+//var v_displacement_per_tick = new THREE.Vector3();//units of light seconds per tick
 var position_vector_for_collision_detection = new THREE.Vector3(0,0,0);//aka: actually affected by length contraction
 var min_vec = new THREE.Vector3();
 var max_vec = new THREE.Vector3();
@@ -56,7 +58,7 @@ var space = false;
 
 //setting up three.js
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 15000);			
+const camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 200*1000);			
 
 const renderer = new THREE.WebGLRenderer();//to add anti aliasing, sdd { antialias: true } to the parameter
 renderer.setSize(window.innerWidth, window.innerHeight); 
@@ -73,7 +75,8 @@ var universe = new THREE.Group();//the size should be approximately equal to the
 var spaceship = new THREE.Group();
 
 //force shield
-var force_shield_geometry = new THREE.IcosahedronGeometry(shield_radius, 1);
+var ship_scale_factor = 200;
+var force_shield_geometry = new THREE.IcosahedronGeometry(shield_radius*ship_scale_factor, 1);
 var shield_line_material = new THREE.LineBasicMaterial({color: 0x00ffc8, transparent: true, opacity:1});
 var force_shield_lines = new THREE.LineSegments(force_shield_geometry, shield_line_material);
 spaceship.add(force_shield_lines);
@@ -86,6 +89,7 @@ loader.load(
 		UFO = loadedObject.scene;
         spaceship.add(UFO);
 		UFO.position.y=-1.75
+		UFO.rotateY(Math.PI);
 	},
 	function ( xhr ) {console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );},
 	function ( error ) {console.log( 'An error happened' );console.log(error);}
@@ -94,21 +98,28 @@ loader.load(
 helpers.length = 21;
 var zero = new THREE.Vector3(0,0,0);
 for (var i = 0; i<helpers.length; i++){//this is a bit weird, just a warning
-	helpers[i] = new THREE.ArrowHelper(raycaster_angles[i],zero,shield_radius, 0xff0000);
+	helpers[i] = new THREE.ArrowHelper(raycaster_angles[i],zero,shield_radius*ship_scale_factor, 0xff0000);
 	spaceship.add(helpers[i]);
 }*/
 
 spaceship.add(camera);
+camera.rotateY(Math.PI);
 var ship_scale = new THREE.Matrix4();
-ship_scale.set(1/3,0,0,0,0,1/3,0,0,0,0,1/3,0,0,0,0,1)
+ship_scale.set(1/ship_scale_factor,0,0,0,0,1/ship_scale_factor,0,0,0,0,1/ship_scale_factor,0,0,0,0,1);
 spaceship.applyMatrix4(ship_scale);
+camera.position.y = 1;
+camera.position.z = -5;
+
 
 //light
-const light = new THREE.AmbientLight( 0x404040 ); // soft white light
+const light = new THREE.AmbientLight(0x404040, 1); // soft white light
 scene.add( light );
 
-const light2 = new THREE.HemisphereLight( 0xffffbb, 0x080820, 5 );
+const light2 = new THREE.HemisphereLight( 0xffffbb, 0x080820, 5);
 scene.add( light2 );
+
+//const directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
+//scene.add( directionalLight );
 
 // White directional light at half intensity shining from the top.
 /*const directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
@@ -163,7 +174,7 @@ function keyDown(){
 			end();
 			break;
 		//default:
-			//alert(event.keyCode);
+			//console.log(event.keyCode);
 			//no default required for this
 	}
 }
@@ -198,7 +209,7 @@ function keyUp(){
 }
 function wheel(){
 	//console.log(event.deltaY);
-	thrusters += event.deltaY/500;//not sure why this has to be negative
+	thrusters = Math.max(0,Math.min(thrusters-event.deltaY/500,engine_power*1/60));//not sure why this has to be negative
 }
 
 

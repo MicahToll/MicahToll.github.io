@@ -1,6 +1,5 @@
 scene.add( universe );
 scene.add( spaceship );
-position_vector.z = 5;
 
 universe.matrixAutoUpdate = false;
 var last_timestamp = Date.now();
@@ -16,35 +15,37 @@ function animate(timestamp) {//note about timestamp - delta from last render is 
 	}
 	else{
 		if(w){
-			spaceship.rotateX(-.01);
+			spaceship.rotateX(maneuvering_per_tick);
 		}
 		if(a){
-			spaceship.rotateY(.01);
+			spaceship.rotateY(maneuvering_per_tick/2);
 		}
 		if(s){
-			spaceship.rotateX(.01);
+			spaceship.rotateX(-maneuvering_per_tick);
 		}
 		if(d){
-			spaceship.rotateY(-.01);
+			spaceship.rotateY(-maneuvering_per_tick/2);
 		}
 		if(q){
-			spaceship.rotateZ(.01);//not sure
+			spaceship.rotateZ(-maneuvering_per_tick);
 		}
 		if(e){
-			spaceship.rotateZ(-.01);//not sure
+			spaceship.rotateZ(maneuvering_per_tick);
 		}
 		if(space){
-			if (v>.05){
-				var scale_p = p*.95;
+			if (v>.05){// this number is arbitrary
+				var scale_p = p*.95;// this number is also arbitrary, I might relate this to air resistance
 				p = scale_p;
 				p_vector.setLength(scale_p);
 				thrusters = 0;
 			} else {
 				p = 0;
 				p_vector.set(0,0,0);
-				thrusters = 0;
 			}
 		}
+		//if (){
+		//	thrusters = -engine_power*1/60;
+		//}
 	}
 	spaceship.getWorldDirection(direction);
 	//calculating velocity and the like
@@ -72,7 +73,10 @@ function animate(timestamp) {//note about timestamp - delta from last render is 
 	universe_time += 1/60/length_contraction;
 	for (var time_dependent_obj of time_dependent_objects){
 		time_dependent_obj.F(length_contraction);
-		time_dependent_obj.update_bounding_box();
+		//time_dependent_obj.update_bounding_box();
+	}
+	for (var obj of all_objects){
+		obj.update_bounding_box();
 	}
 
 	//create the matrix
@@ -87,28 +91,16 @@ function animate(timestamp) {//note about timestamp - delta from last render is 
 		0,            0,            0,            1
 	);
 
-	v_displacement_per_tick.set(0,0,0);
-	v_displacement_per_tick.addScaledVector(v_unit_vector, v/60);
-
-	position_vector.addScaledVector(v_displacement_per_tick, 1/length_contraction);
-	//position_vector.addScaledVector(v_unit_vector, v/length_contraction/60);//camera.position.addScaledVector(direction, v/p);//camera.position.addScaledVector(direction
+	position_vector.addScaledVector(v_unit_vector, v/length_contraction/60);//camera.position.addScaledVector(direction, v/p);//camera.position.addScaledVector(direction
 	spaceship.position.copy(position_vector);
 	spaceship.position.applyMatrix4(universe.matrix);
 	
 	//collision detection
 	//bounding box for space ship
-	min_vec.set(
-		position_vector.x-shield_radius+Math.min(0,v_displacement_per_tick.x),
-		position_vector.y-shield_radius+Math.min(0,v_displacement_per_tick.y),
-		position_vector.z-shield_radius+Math.min(0,v_displacement_per_tick.z)
-	);
-	max_vec.set(
-		position_vector.x+shield_radius+Math.max(0,v_displacement_per_tick.x),
-		position_vector.y+shield_radius+Math.max(0,v_displacement_per_tick.y),
-		position_vector.z+shield_radius+Math.max(0,v_displacement_per_tick.z)
-	);
-	//this places all the raycasters in the rigth spot
 	position_vector_for_collision_detection.copy(spaceship.position);
+	min_vec.set(position_vector_for_collision_detection.x-shield_radius,position_vector_for_collision_detection.y-shield_radius,position_vector_for_collision_detection.z-shield_radius);
+	max_vec.set(position_vector_for_collision_detection.x+shield_radius,position_vector_for_collision_detection.y+shield_radius,position_vector_for_collision_detection.z+shield_radius);
+	//this places all the raycasters in the rigth spot
 	for (var i = 0; i<raycasters.length-1; i++){
 		raycasters[i].set(position_vector_for_collision_detection, raycaster_angles[i]);
 	}
@@ -122,7 +114,7 @@ function animate(timestamp) {//note about timestamp - delta from last render is 
 				var results_array = raycasters[0].intersectObject(obj.mesh);
 				if (results_array.length != 0){
 					if (results_array[0].distance<distance_to_collided_obj){
-						console.log("might hit yet");
+						///console.log("might hit yet");
 						distance_to_collided_obj = results_array[0].distance;
 					}
 				}
@@ -130,8 +122,12 @@ function animate(timestamp) {//note about timestamp - delta from last render is 
 		}		
 	}
 	if (distance_to_collided_obj < shield_radius){
-		console.log("hit");
-		position_vector.addScaledVector(v_displacement_per_tick, -1/length_contraction);
+		//console.log("hit");
+		position_vector.addScaledVector(v_unit_vector, -v/length_contraction/60);
+		shield_line_material.opacity = 1;
+	}
+	else if (shield_line_material.opacity>.1) {
+		shield_line_material.opacity *= .95;
 	}
 
 
@@ -142,6 +138,8 @@ function animate(timestamp) {//note about timestamp - delta from last render is 
     //update dashboard
     document.getElementById("speed").innerHTML = "Speed: "+v;
 	document.getElementById("propulsion").innerHTML = "Propulsion: "+Math.abs(thrusters);
+	document.getElementById("fuel").innerHTML = "Fuel: "+fuel+"/"+fuel_capacity;
+	document.getElementById("log").innerHTML = "_";
 
     //get new frame
 	requestAnimationFrame(animate);

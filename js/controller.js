@@ -22,16 +22,14 @@ function gamepadHandler(event, connecting) {
 window.addEventListener("gamepadconnected", function(e) { gamepadHandler(e, true); }, false);
 window.addEventListener("gamepaddisconnected", function(e) { gamepadHandler(e, false); }, false);
 
-var head = new THREE.Euler(0,0,0,"YXZ");
-var maneuvering_per_tick; 
+var head = new THREE.Euler(0,Math.PI,0,"YXZ");
 function update_gamepad(){
-    maneuvering_per_tick = maneuvering/60;
     gamepad1 = navigator.getGamepads()[0]
     if (gamepad1.buttons[0].pressed){
-        spaceship.rotateZ(maneuvering_per_tick);
+        spaceship.rotateZ(-maneuvering_per_tick);
     }
     if (gamepad1.buttons[1].pressed){
-        spaceship.rotateZ(-maneuvering_per_tick);
+        spaceship.rotateZ(maneuvering_per_tick);
     }
     if (gamepad1.buttons[2].pressed){
         shop();
@@ -59,10 +57,10 @@ function update_gamepad(){
         }
     }
     if (gamepad1.buttons[5].pressed){
-        thrusters = -engine_power*1/60;
+        thrusters = engine_power*1/60;
     }
     else if (gamepad1.buttons[7].pressed){
-        thrusters = -engine_power*gamepad1.buttons[7].value/60;
+        thrusters = engine_power*gamepad1.buttons[7].value/60;
     }
     else {
         thrusters = 0;
@@ -78,16 +76,16 @@ function update_gamepad(){
     }*/
     if (gamepad1.buttons[11].pressed){
         //recenter camera
-        head.set(0,0,0);
+        head.set(0,Math.PI,0);
         camera.setRotationFromEuler(head);
     }
     //12 through 15 are the d pad buttons
     //no clue what 16 is
-    if (Math.abs(gamepad1.axes[0])>.12||Math.abs(gamepad1.axes[1])>.12){
+    if (Math.abs(gamepad1.axes[0])>.15||Math.abs(gamepad1.axes[1])>.15){
         spaceship.rotateY(-maneuvering_per_tick*gamepad1.axes[0]/2);
-        spaceship.rotateX(maneuvering_per_tick*gamepad1.axes[1]);
+        spaceship.rotateX(-maneuvering_per_tick*gamepad1.axes[1]);
     }
-    if (Math.abs(gamepad1.axes[2])>.12||Math.abs(gamepad1.axes[3])>.12){
+    if (Math.abs(gamepad1.axes[2])>.15||Math.abs(gamepad1.axes[3])>.15){
         head.set(Math.max(-Math.PI/2,Math.min(head.x-head_speed_per_tick*gamepad1.axes[3],Math.PI/2)), head.y-head_speed_per_tick*gamepad1.axes[2],0);
         camera.setRotationFromEuler(head);
     }
