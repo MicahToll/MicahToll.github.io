@@ -1,6 +1,7 @@
 //source: https://developer.mozilla.org/en-US/docs/Web/API/Gamepad_API/Using_the_Gamepad_API
 var gamepad1;//var gamepads = {};
 var gamepad_is_connected = false;
+var gamepad1index;
 
 function gamepadHandler(event, connecting) {
     var gamepad = event.gamepad;
@@ -8,6 +9,7 @@ function gamepadHandler(event, connecting) {
     // gamepad === navigator.getGamepads()[gamepad.index]
     if (connecting) {
         gamepad1 = gamepad;//gamepads[gamepad.index] = gamepad;
+        gamepad1index = gamepad.index;
         document.getElementById("lockMouse").hidden = true;
         gamepad_is_connected = true;
         console.log("gamepad connected");
@@ -24,7 +26,7 @@ window.addEventListener("gamepaddisconnected", function(e) { gamepadHandler(e, f
 
 var head = new THREE.Euler(0,Math.PI,0,"YXZ");
 function update_gamepad(){
-    gamepad1 = navigator.getGamepads()[0]
+    gamepad1 = navigator.getGamepads()[gamepad1index];
     if (gamepad1.buttons[0].pressed){
         spaceship.rotateZ(-maneuvering_per_tick);
     }
@@ -34,9 +36,9 @@ function update_gamepad(){
     if (gamepad1.buttons[2].pressed){
         shop();
     }
-    /*if (gamepad1.buttons[3].pressed){
-        //y button is pressed
-    }*/
+    if (gamepad1.buttons[3].pressed){
+        closeAllWindows();
+    }
     if (gamepad1.buttons[4].pressed){
         if (v>.05){// this number is arbitrary
             var scale_p = p*.95;// this number is also arbitrary, I might relate this to air resistance
@@ -83,7 +85,7 @@ function update_gamepad(){
     //no clue what 16 is
     if (Math.abs(gamepad1.axes[0])>.15||Math.abs(gamepad1.axes[1])>.15){
         spaceship.rotateY(-maneuvering_per_tick*gamepad1.axes[0]/2);
-        spaceship.rotateX(-invertY*maneuvering_per_tick*gamepad1.axes[1]);
+        spaceship.rotateX(-invertY_axis*maneuvering_per_tick*gamepad1.axes[1]);
     }
     if (Math.abs(gamepad1.axes[2])>.15||Math.abs(gamepad1.axes[3])>.15){
         head.set(Math.max(-Math.PI/2,Math.min(head.x-head_speed_per_tick*gamepad1.axes[3],Math.PI/2)), head.y-head_speed_per_tick*gamepad1.axes[2],0);

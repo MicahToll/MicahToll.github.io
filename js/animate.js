@@ -15,13 +15,13 @@ function animate(timestamp) {//note about timestamp - delta from last render is 
 	}
 	else{
 		if(w){
-			spaceship.rotateX(invertY*maneuvering_per_tick);
+			spaceship.rotateX(invertY_axis*maneuvering_per_tick);
 		}
 		if(a){
 			spaceship.rotateY(maneuvering_per_tick/2);
 		}
 		if(s){
-			spaceship.rotateX(-invertY*maneuvering_per_tick);
+			spaceship.rotateX(-invertY_axis*maneuvering_per_tick);
 		}
 		if(d){
 			spaceship.rotateY(-maneuvering_per_tick/2);

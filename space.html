@@ -28,18 +28,23 @@
 				<div id="speed" class="">Speed: </div>
 				<div id="propulsion" class="visor">Propulsion</div>
 			</div>
-			<div id="select" class="popup">
+			<div id="select" class="popup" hidden="true">
+				<div class="x button" onclick="closeAllWindows()">x</div>
 	
 			</div>
-			<div id="shop" class="popup">
+			<div id="shop" class="popup" hidden="true">
+				<div class="x button" onclick="closeAllWindows()">x</div>
 	
 			</div>
-			<div id="settings" class="popup">
-				<div>save</div>
-				<div>load save</div>
-				<div onclick="update_settings()">sound<input id="sound" type="range" min="0" max="1" value=".2" step=".1"/></div>
-				<div onclick="update_settings()">invert Y axis<input id="invert_y" type="checkbox" checked=true/></div>
-				<div onclick="update_settings()">third person camera<input id="third_person_view" type="checkbox" checked=true/></div>
+			<div id="settings" class="popup" hidden="true">
+				<div class="x button" onclick="closeAllWindows()">x</div>
+				<h1>Settings</h1>
+				<div class="button settings_button" onclick="save()">save</div>
+				<div class="button settings_button" onclick="loadSave()">load save</div>
+				<div onclick="update_settings()">Sound<input id="sound" type="range" min="0" max="1" value=".2" step=".1"/></div>
+				<div onclick="update_settings()">Invert Y axis<input id="invert_y" type="checkbox" checked=true/></div>
+				<div onclick="update_settings()">Third person camera<input id="third_person_view" type="checkbox" checked=true/></div>
+				<!--<div onclick="update_settings()">Anti aliasing<input id="anti_aliasing" type="checkbox" checked=true/></div>-->
 				<!--<div onclick="connect_controller()">connect controller</div>-->
 			</div>
 			<div id="dashboard">

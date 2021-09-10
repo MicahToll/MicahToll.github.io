@@ -10,8 +10,8 @@ var unlockedShieldGenerators = [];
 
 //saved settings stuff
 var volume = .2;
-var invertY = 1;//1 for true, -1 for false.
-var thirdPerson = false;
+var invertY = true;
+var thirdPerson = true;
 var antialias = true;
 
 function loadSave(){
@@ -19,31 +19,32 @@ function loadSave(){
         window.alert("no save found");
     }
     else{
-        credits=localStorage.getItem("credits");
-        unlockedMaps=localStorage.getItem("unlockedMaps");
-        unlockedShips=localStorage.getItem("unlockedShips");
-        unlockedPrimaryEngines=localStorage.getItem("unlockedPrimaryEngines");
-        unlockedFuelTanks=localStorage.getItem("unlockedFuelTanks");
-        unlockedManeuveringEngines=localStorage.getItem("unlockedManeuveringEngines");
-        unlockedShieldGenerators=localStorage.getItem("unlockedShieldGenerators");
-        volume=localStorage.getItem("volume");
-        invertY=localStorage.getItem("invertY");
-        thirdPerson=localStorage.getItem("thirdPerson");
-        antialias=localStorage.getItem("antialias");
+        credits=JSON.parse(localStorage.getItem("credits"));
+        unlockedMaps=JSON.parse(localStorage.getItem("unlockedMaps"));
+        unlockedShips=JSON.parse(localStorage.getItem("unlockedShips"));
+        unlockedPrimaryEngines=JSON.parse(localStorage.getItem("unlockedPrimaryEngines"));
+        unlockedFuelTanks=JSON.parse(localStorage.getItem("unlockedFuelTanks"));
+        unlockedManeuveringEngines=JSON.parse(localStorage.getItem("unlockedManeuveringEngines"));
+        unlockedShieldGenerators=JSON.parse(localStorage.getItem("unlockedShieldGenerators"));
+        volume=JSON.parse(localStorage.getItem("volume"));
+        invertY=JSON.parse(localStorage.getItem("invertY"));
+        thirdPerson=JSON.parse(localStorage.getItem("thirdPerson"));
+        antialias=JSON.parse(localStorage.getItem("antialias"));
     }
+    change_settings();
 }
 function save(){
-    localStorage.setItem("credits", credits);
-    localStorage.setItem("unlockedMaps", unlockedMaps);
-    localStorage.setItem("unlockedShips", unlockedShips);
-    localStorage.setItem("unlockedPrimaryEngines", unlockedPrimaryEngines);
-    localStorage.setItem("unlockedFuelTanks", unlockedFuelTanks);
-    localStorage.setItem("unlockedManeuveringEngines", unlockedManeuveringEngines);
-    localStorage.setItem("unlockedShieldGenerators", unlockedShieldGenerators);
-    localStorage.setItem("volume", volume);
-    localStorage.setItem("invertY", invertY);
-    localStorage.setItem("thirdPerson", thirdPerson);
-    localStorage.setItem("antialias", antialias);
+    localStorage.setItem("credits", JSON.stringify(credits));
+    localStorage.setItem("unlockedMaps", JSON.stringify(unlockedMaps));
+    localStorage.setItem("unlockedShips", JSON.stringify(unlockedShips));
+    localStorage.setItem("unlockedPrimaryEngines", JSON.stringify(unlockedPrimaryEngines));
+    localStorage.setItem("unlockedFuelTanks", JSON.stringify(unlockedFuelTanks));
+    localStorage.setItem("unlockedManeuveringEngines", JSON.stringify(unlockedManeuveringEngines));
+    localStorage.setItem("unlockedShieldGenerators", JSON.stringify(unlockedShieldGenerators));
+    localStorage.setItem("volume", JSON.stringify(volume));
+    localStorage.setItem("invertY", JSON.stringify(invertY));
+    localStorage.setItem("thirdPerson", JSON.stringify(thirdPerson));
+    localStorage.setItem("antialias", JSON.stringify(antialias));
 }
 
 function closeAllWindows(){
@@ -53,16 +54,27 @@ function closeAllWindows(){
 }
 
 function settings(){
-    if (document.getElementById("settings").hidden){
-        closeAllWindows();
-        document.getElementById("settings").hidden = false;
-    } else {
-        closeAllWindows();
-    }
+    closeAllWindows();
+    document.getElementById("settings").hidden = false;
+
+}
+
+function change_settings(){
+    document.getElementById("third_person_view").checked = thirdPerson;
+    document.getElementById("invert_y").checked = invertY;
+    document.getElementById("sound").value = volume;
+    implement_settings();
 }
 
 function update_settings(){
-    if (document.getElementById("third_person_view").checked){
+    thirdPerson = document.getElementById("third_person_view").checked;
+    invertY = document.getElementById("invert_y").checked;
+    volume = document.getElementById("sound").value;
+    implement_settings();
+}
+
+function implement_settings(){
+    if (thirdPerson){
         camera.position.z = -5;
         camera.position.y = 1;
     }
@@ -70,12 +82,11 @@ function update_settings(){
         camera.position.z = 0;
         camera.position.y = 0;
     }
-    if (document.getElementById("invert_y").checked){
-        invertY = 1;
+    if (invertY){
+        invertY_axis = 1;
     }
     else{
-        invertY = -1;
+        invertY_axis = -1;
     }
     //add sound settings here
-    //console.log(document.getElementById("sound").value);
 }

@@ -25,6 +25,7 @@ var spaceship_time = 0;
 var universe_time = 0;
 var v_unit_vector = new THREE.Vector3();
 var maneuvering_per_tick = maneuvering/60;
+var invertY_axis = 1;
 //var v_displacement_per_tick = new THREE.Vector3();//units of light seconds per tick
 var position_vector_for_collision_detection = new THREE.Vector3(0,0,0);//aka: actually affected by length contraction
 var min_vec = new THREE.Vector3();
@@ -60,7 +61,7 @@ var space = false;
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 200*1000);			
 
-const renderer = new THREE.WebGLRenderer();//to add anti aliasing, sdd { antialias: true } to the parameter
+const renderer = new THREE.WebGLRenderer({ antialias: true });//to add anti aliasing, sdd { antialias: true } to the parameter
 renderer.setSize(window.innerWidth, window.innerHeight); 
 document.body.appendChild( renderer.domElement );//document.getElementById("body").appendChild( renderer.domElement );
 

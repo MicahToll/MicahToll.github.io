@@ -26,10 +26,6 @@ base ship
 */
 
 function shop(){
-    if (document.getElementById("shop").hidden){
-        closeAllWindows();
-        document.getElementById("shop").hidden = false;
-    } else {
-        closeAllWindows();
-    }
+    closeAllWindows();
+    document.getElementById("shop").hidden = false;
 }
