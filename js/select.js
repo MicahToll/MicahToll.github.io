@@ -1,4 +1,8 @@
 function select(){
-    closeAllWindows();
-    document.getElementById("select").hidden = false;
+    if (document.getElementById("select").hidden){
+        closeAllWindows();
+        document.getElementById("select").hidden = false;
+    } else {
+        closeAllWindows();
+    }
 }

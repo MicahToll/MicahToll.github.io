@@ -10,7 +10,7 @@ var unlockedShieldGenerators = [];
 
 //saved settings stuff
 var volume = .2;
-var invertY = true;
+var invertY = 1;//1 for true, -1 for false.
 var thirdPerson = false;
 var antialias = true;
 
@@ -53,6 +53,29 @@ function closeAllWindows(){
 }
 
 function settings(){
-    closeAllWindows();
-    document.getElementById("settings").hidden = false;
+    if (document.getElementById("settings").hidden){
+        closeAllWindows();
+        document.getElementById("settings").hidden = false;
+    } else {
+        closeAllWindows();
+    }
+}
+
+function update_settings(){
+    if (document.getElementById("third_person_view").checked){
+        camera.position.z = -5;
+        camera.position.y = 1;
+    }
+    else{
+        camera.position.z = 0;
+        camera.position.y = 0;
+    }
+    if (document.getElementById("invert_y").checked){
+        invertY = 1;
+    }
+    else{
+        invertY = -1;
+    }
+    //add sound settings here
+    //console.log(document.getElementById("sound").value);
 }

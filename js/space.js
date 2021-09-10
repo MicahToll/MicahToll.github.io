@@ -107,8 +107,7 @@ camera.rotateY(Math.PI);
 var ship_scale = new THREE.Matrix4();
 ship_scale.set(1/ship_scale_factor,0,0,0,0,1/ship_scale_factor,0,0,0,0,1/ship_scale_factor,0,0,0,0,1);
 spaceship.applyMatrix4(ship_scale);
-camera.position.y = 1;
-camera.position.z = -5;
+update_settings();
 
 
 //light

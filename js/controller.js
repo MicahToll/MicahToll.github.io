@@ -83,7 +83,7 @@ function update_gamepad(){
     //no clue what 16 is
     if (Math.abs(gamepad1.axes[0])>.15||Math.abs(gamepad1.axes[1])>.15){
         spaceship.rotateY(-maneuvering_per_tick*gamepad1.axes[0]/2);
-        spaceship.rotateX(-maneuvering_per_tick*gamepad1.axes[1]);
+        spaceship.rotateX(-invertY*maneuvering_per_tick*gamepad1.axes[1]);
     }
     if (Math.abs(gamepad1.axes[2])>.15||Math.abs(gamepad1.axes[3])>.15){
         head.set(Math.max(-Math.PI/2,Math.min(head.x-head_speed_per_tick*gamepad1.axes[3],Math.PI/2)), head.y-head_speed_per_tick*gamepad1.axes[2],0);

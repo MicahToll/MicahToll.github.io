@@ -37,10 +37,10 @@
 			<div id="settings" class="popup">
 				<div>save</div>
 				<div>load save</div>
-				<div>sound<input type="range" min="0" max="1" value=".2" step=".1"/></div>
-				<div>invert Y axis<input type="checkbox"/></div>
-				<div>third person camera<input type="checkbox"/></div>
-				<div onclick="connect_controller()">connect controller</div>
+				<div onclick="update_settings()">sound<input id="sound" type="range" min="0" max="1" value=".2" step=".1"/></div>
+				<div onclick="update_settings()">invert Y axis<input id="invert_y" type="checkbox" checked=true/></div>
+				<div onclick="update_settings()">third person camera<input id="third_person_view" type="checkbox" checked=true/></div>
+				<!--<div onclick="connect_controller()">connect controller</div>-->
 			</div>
 			<div id="dashboard">
 				<!--<svg width="100vw" height="100vh" class="over_canvas_dash">
