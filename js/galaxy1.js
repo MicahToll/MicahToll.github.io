@@ -37,10 +37,12 @@ var dodecahedron_Geometry_instanced = new THREE.DodecahedronGeometry(1, 0);
 var green_material_instanced = new THREE.MeshLambertMaterial({color:0xffcc66});
 for (var i = 0; i<10; i++){
     let dodecahedron_Geometry_mesh = new THREE.Mesh(dodecahedron_Geometry_instanced,green_material_instanced);
-    dodecahedron_Geometry_mesh.position.z = 10*i;
-    new time_dependent_object(dodecahedron_Geometry_mesh,"solid",function(length_contraction){
-	    this.mesh.position.x = this.get_object_time(length_contraction)/10;
+    dodecahedron_Geometry_mesh.position.z = Math.cos(i*10)+150;
+    dodecahedron_Geometry_mesh.position.y = Math.sin(i*10)-3.5;
+    let astroid = new time_dependent_object(dodecahedron_Geometry_mesh,"solid",function(length_contraction){
+	    this.mesh.position.x = this.get_object_time(length_contraction)/10+5*this.i-30-20;
     });
+    astroid.i = i;
 }
 
 
@@ -75,14 +77,31 @@ waves_lines.rotateX(-Math.PI/2);
 new time_dependent_object(waves_lines,"solid",function(length_contraction){waves_geometry.attributes.position.needsUpdate = true;});*/
 
 
-var level1_curve = new THREE.CubicBezierCurve3(
+/*var level1_curve = new THREE.CubicBezierCurve3(
     new THREE.Vector3( 0, 0, 10 ),
-    new THREE.Vector3( -40, 0, 60 ),
+    new THREE.Vector3( -50, 0, 60 ),
     new THREE.Vector3( 10, -20, 110 ),
     new THREE.Vector3( 0, 0, 160 )
+);*/
+var level1_curve = new THREE.CubicBezierCurve3(
+    new THREE.Vector3( 0, 0, 50 ),
+    new THREE.Vector3( 0, 0, 100 ),
+    new THREE.Vector3( -50, 0, 160 ),
+    new THREE.Vector3( 10, -20, 220 )
 );
 var tube_geometry = new THREE.TubeGeometry( level1_curve, 20, 2, 8, false );
 var tube_mesh = new THREE.Mesh( tube_geometry, waves_material );
 new object(tube_mesh,"solid");
 var tube_lines = new THREE.LineSegments(tube_geometry, waves_line_material);
 universe.add(tube_lines);
+
+var cyl_geometry = new THREE.CylinderGeometry(2, 50, 40, 8, 8, true);
+var cyl_mesh = new THREE.Mesh( cyl_geometry, waves_material );
+new object(cyl_mesh,"solid");
+var cyl_lines = new THREE.LineSegments(cyl_geometry, waves_line_material);
+universe.add(cyl_lines);
+
+cyl_mesh.position.z=10-40/2+40//height over two
+cyl_lines.position.z=10-40/2+40//height over two
+cyl_geometry.rotateX(Math.PI/2);
+//cyl_geometry.position.z=10-20/2//height over two
