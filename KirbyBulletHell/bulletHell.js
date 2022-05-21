@@ -1,9 +1,9 @@
 //define ambiant sound
-//var music = document.getElementById("myAudio");
+var music = document.getElementById("myAudio");
 
 //setting up three.js
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000);			
+const camera = new THREE.PerspectiveCamera( 45, window.innerWidth/window.innerHeight, .1, 1000);			
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });//to add anti aliasing, sdd { antialias: true } to the parameter
 renderer.setSize(window.innerWidth, window.innerHeight); 
@@ -21,31 +21,38 @@ scene.add( universe );
 
 var all_bullets = [];
 var all_enemies = [];
+var background = [];
 let player_x = 0;
 let player_y = 0;
 //let player_dx = 0;
 //let player_dy = 0;
-let half_window_width = 0;
-let half_window_height = 0;
-let player_radius = 5;
+let player_radius = 2;
 let health = 100;
-let ship;
 let time = 0;
+let kirby;
+let kirby_bullets = [];
+let window_width;
+let window_height;
 function init(){
-    camera.position.z = 5;
+    camera.position.z = 50/(Math.tan((Math.PI/4)/2));
     camera.lookAt(0,0,0);
-    half_window_width = window.innerWidth/2;
-    half_window_height = window.innerHeight/2;
-    /*universe.position.x = half_window_width;//this makes zero zero at the middle of the screen
-    universe.position.y = half_window_height;*/
-    //document.body.addEventListener("mousemove", updatePlayer, false);
+    document.body.addEventListener("mousemove", updatePlayer, false);
 
-    gameloop(1);
+    window_width = window.innerWidth;
+    window_height = window.innerHeight;
 
-    const material = new THREE.SpriteMaterial( {color: 0xff0000} );
-    const sprite = new THREE.Sprite(material);
-    //sprite.scale.set(200, 200, 1)
-    universe.add( sprite );
+    const kirby_map = new THREE.TextureLoader().load( 'assets/kirby.png' );
+    const kirby_material = new THREE.SpriteMaterial( { map: kirby_map } );
+    kirby = new THREE.Sprite( kirby_material );
+    kirby.scale.set(player_radius*2, player_radius*2, 1);
+    universe.add( kirby );
+
+    const map2 = new THREE.TextureLoader().load( 'assets/bullets/longboy.png' );
+    const material2 = new THREE.SpriteMaterial( { map: map2 } );
+
+    const sprite2 = new THREE.Sprite( material2 );
+    sprite2.scale.set(4, 4, 1);
+    universe.add( sprite2 );
 
     const vertices = [];
     for ( let i = 0; i < 10000; i ++ ) {
@@ -60,6 +67,10 @@ function init(){
 	var starMaterial = new THREE.PointsMaterial({color:0x888888})
 	var stars = new THREE.Points( starGeometry, starMaterial );
 	universe.add(stars);
+
+    //music.play();
+
+    gameloop(1);
 }
 
 function gameloop(timestamp){
@@ -86,20 +97,15 @@ function gameloop(timestamp){
 }
 
 function updatePlayer(event) {
-    player_x = event.x-half_window_width;
-    player_y = event.y-half_window_height;
-    ship.x = player_x;
-    ship.y = player_y;
+    player_x = (event.x/window_width*100-50)*window_width/window_height;
+    player_y = -event.y/window_height*100+50;
+    kirby.position.x = player_x;
+    kirby.position.y = player_y;
 }
 
 function update_dash(){
     document.getElementById("health").innerHTML = "health: "+health+"%"
 }
-
-var c1 = 0xe32d2d;
-var c2 = 0x32a852;
-var c3 = 0x10a9e0;
-var c4 = 0x710dbd;
 
 //currently assuming all 
 class Bullet{
