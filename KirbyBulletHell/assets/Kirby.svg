@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
+   sodipodi:docname="Kirby.svg"
+   inkscape:export-filename="C:\Users\tollm\Documents\MicahToll.github.io\KirbyBullletHell\assets\kirby.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.4"
+     inkscape:cx="448.77425"
+     inkscape:cy="951.88666"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="986"
+     inkscape:window-x="-11"
+     inkscape:window-y="471"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="fill:#f7e908;fill-opacity:1;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 0.89426864,22.890067 C -0.37797736,32.98363 13.094461,34.25135 13.445295,38.05871 c 0.350835,3.80736 -7.9260224,15.99857 -0.763783,19.73035 7.162239,3.73178 13.761183,-7.45819 18.304721,-7.24937 4.54353,0.20882 15.50484,10.03623 18.52865,6.82342 3.02381,-3.21281 -2.85415,-15.86347 -1.23809,-19.649 1.61606,-3.78554 12.041864,-9.854054 12.215124,-15.513248 C 60.665177,16.541668 44.668443,19.394209 41.422023,17.30648 38.175593,15.218751 35.183063,1.1240336 30.442723,0.89534959 25.70238,0.66666759 23.347972,15.66242 19.894969,17.519454 16.441964,19.376487 2.7334776,17.899178 0.89426864,22.890067 Z"
+       id="path4624"
+       inkscape:connector-curvature="0" />
+    <circle
+       style="fill:#eca0a5;fill-opacity:1;stroke-width:0.25316453;stroke-miterlimit:4;stroke-dasharray:none"
+       id="path4540-0"
+       cx="42.427822"
+       cy="16.258192"
+       r="4.7247019" />
+    <circle
+       style="fill:#eca0a5;fill-opacity:1;stroke-width:0.23797466;stroke-miterlimit:4;stroke-dasharray:none"
+       id="path4540-2-6"
+       cx="18.142851"
+       cy="18.431547"
+       r="4.4412193" />
+    <ellipse
+       style="fill:#da0059;fill-opacity:1;stroke-width:0.3203907;stroke-miterlimit:4;stroke-dasharray:none"
+       id="path4540-7-2"
+       cx="24.662939"
+       cy="29.203875"
+       rx="4.9136901"
+       ry="7.276041" />
+    <ellipse
+       style="fill:#da0059;fill-opacity:1;stroke-width:0.27579835;stroke-miterlimit:4;stroke-dasharray:none"
+       id="path4540-8-9"
+       cx="38.364574"
+       cy="29.959826"
+       rx="4.0632434"
+       ry="6.5200887" />
+    <circle
+       style="fill:#eca0a5;fill-opacity:1;stroke-width:0.65822786;stroke-miterlimit:4;stroke-dasharray:none"
+       id="path4540-9-9"
+       cx="30.899546"
+       cy="22.305807"
+       r="12.284225" />
+  </g>
+</svg>

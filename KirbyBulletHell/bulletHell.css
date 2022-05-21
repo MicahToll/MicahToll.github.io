@@ -1,0 +1,13 @@
+canvas {
+    display:block;
+}
+body {
+    cursor:crosshair;
+}
+#visor {
+	font-family: "Courier New", "Lucida Console", monospace;
+	z-index: 2;
+	color:lightblue;
+    position: absolute;
+	display:block;
+}
