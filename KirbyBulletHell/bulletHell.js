@@ -10,49 +10,58 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild( renderer.domElement );//document.getElementById("body").appendChild( renderer.domElement );
 
 //everything in the universe's reference frame should be added to this group
-var universe = new THREE.Group();//the size should be approximately equal to the size of the solar system i think (which is 15,000 lsecond radius), on second thought, lets aim for closer to 1,500
+let universe = new THREE.Group();//the size should be approximately equal to the size of the solar system i think (which is 15,000 lsecond radius), on second thought, lets aim for closer to 1,500
+let background = new THREE.Group();
+universe.add(background);
 
 //create spaceship
-var spaceship = new THREE.Group();
+let spaceship = new THREE.Group();
 
 //add atuff to the scene
 scene.add( universe );
 
 
-var all_bullets = [];
-var all_enemies = [];
-var background = [];
+let all_bullets = [];
+let all_enemies = [];
+let background_things = [];
 let player_x = 0;
-let player_y = 0;
+let player_y = -25;
 //let player_dx = 0;
 //let player_dy = 0;
 let player_radius = 2;
 let health = 100;
 let time = 0;
 let kirby;
-let kirby_bullets = [];
 let window_width;
 let window_height;
+let camera_width;
+let camera_height = 100;
+let is_mousedown = false;
+
+const kirby_bullet_map = new THREE.TextureLoader().load( 'assets/bullets/kirby_bullet.png' );
+const kirby_bullet_material = new THREE.SpriteMaterial( { map: kirby_bullet_map } );
+
+
 function init(){
-    camera.position.z = 50/(Math.tan((Math.PI/4)/2));
+    camera.position.z = (camera_height/2)/(Math.tan((Math.PI/4)/2));
     camera.lookAt(0,0,0);
     document.body.addEventListener("mousemove", updatePlayer, false);
+    document.body.addEventListener("mousedown", mousedown, false);
+    document.body.addEventListener("mouseup", mouseup, false);
 
     window_width = window.innerWidth;
     window_height = window.innerHeight;
+    camera_width = camera_height*window_width/window_height
 
     const kirby_map = new THREE.TextureLoader().load( 'assets/kirby.png' );
     const kirby_material = new THREE.SpriteMaterial( { map: kirby_map } );
     kirby = new THREE.Sprite( kirby_material );
     kirby.scale.set(player_radius*2, player_radius*2, 1);
+    kirby.position.y = -camera_height/4
     universe.add( kirby );
 
-    const map2 = new THREE.TextureLoader().load( 'assets/bullets/longboy.png' );
-    const material2 = new THREE.SpriteMaterial( { map: map2 } );
+    //all_bullets.push(new Bullet(1, [[0,25],[0,-1/4]], kirby_bullet_material));
 
-    const sprite2 = new THREE.Sprite( material2 );
-    sprite2.scale.set(4, 4, 1);
-    universe.add( sprite2 );
 
     const vertices = [];
     for ( let i = 0; i < 10000; i ++ ) {
@@ -66,7 +75,7 @@ function init(){
 	starGeometry.setAttribute('position', new THREE.Float32BufferAttribute( vertices, 3 ));
 	var starMaterial = new THREE.PointsMaterial({color:0x888888})
 	var stars = new THREE.Points( starGeometry, starMaterial );
-	universe.add(stars);
+	background.add(stars);
 
     //music.play();
 
@@ -74,22 +83,30 @@ function init(){
 }
 
 function gameloop(timestamp){
+    background.position.y -= .1;
+    /*for (thing in background){
+        thing.update();
+    }*/
     for (var enemy of all_enemies){
         //enemy.update();
     }
-    for (var bullet of all_bullets){
-        //bullet.update_bullet();
-        /*if (bullet.check_collision()){
+    if (is_mousedown){
+        all_bullets.push(new Bullet(1, [[player_x,player_y+player_radius],[0,+2]], kirby_bullet_material));
+    }
+    for (var i = all_bullets.length; i--;) {
+        all_bullets[i].update_bullet();
+        if (all_bullets[i].check_onscreen()){
+            all_bullets[i].delete_sprite();
+            all_bullets.splice(i, 1);
+            continue;
+        }
+        if (all_bullets[i].check_collision()){
             //console.log("boom");
             health -= 1;
             update_dash();
-        }*/
-    }
-    for (var i = all_bullets.length; i--;) {
-        /*if (all_bullets[i].check_onscreen()){
-            all_bullets[i].destroy_graphics();
+            all_bullets[i].delete_sprite();
             all_bullets.splice(i, 1);
-        }*/
+        }
     }
     time = timestamp;
     renderer.render(scene,camera);
@@ -97,10 +114,16 @@ function gameloop(timestamp){
 }
 
 function updatePlayer(event) {
-    player_x = (event.x/window_width*100-50)*window_width/window_height;
-    player_y = -event.y/window_height*100+50;
+    player_x = camera_width*(event.x/window_width-(1/2));
+    player_y = -camera_height*(event.y/window_height-(1/2));
     kirby.position.x = player_x;
     kirby.position.y = player_y;
+}
+function mousedown() {
+    is_mousedown = true;
+}
+function mouseup() {
+    is_mousedown = false;
 }
 
 function update_dash(){
@@ -109,12 +132,13 @@ function update_dash(){
 
 //currently assuming all 
 class Bullet{
-    constructor(radius, vectors, geometry){
+    constructor(radius, vectors, material){
         this.radius = radius;
         this.vectors = vectors;
         this.dimensions = vectors.length;
-        this.graphics = new PIXI.Graphics(geometry);
-        everything.addChild(this.graphics);
+        this.sprite = new THREE.Sprite(material);
+        this.sprite.scale.set(radius*2, radius*2, 1);
+        universe.add(this.sprite);
     }
     update_bullet(){
         let v = this.vectors;
@@ -124,29 +148,39 @@ class Bullet{
                 v[i-1][0] += v[i][0];
                 v[i-1][1] += v[i][1];
             }
-            this.graphics.x = v[0][0];
-            this.graphics.y = v[0][1];
+            this.sprite.position.x = v[0][0];
+            this.sprite.position.y = v[0][1];
         }
     }
     check_collision(){
-        if ((this.graphics.x-player_x)**2+(this.graphics.y-player_y)**2 < (this.radius+player_radius)**2){
+        if ((this.sprite.position.x-player_x)**2+(this.sprite.position.y-player_y)**2 < (this.radius+player_radius)**2){
             return true;
         } else {
             return false;
         }
     }
     check_onscreen(){
-        if (Math.abs(this.graphics.x)+this.radius>half_window_width||Math.abs(this.graphics.y)+this.radius>half_window_height){
+        if (Math.abs(this.sprite.position.x)+this.radius>camera_width/2||Math.abs(this.sprite.position.y)+this.radius>camera_height/2){
             return true;
         }
         else {
             return false;
         }
     }
-    destroy_graphics(){
-        this.graphics.destroy();
+    delete_sprite(){
+        universe.remove(this.sprite);
     }
 }
+/*class Kirby_bullet extends Bullet{
+    check_collision(){
+        if ((this.sprite.position.x-player_x)**2+(this.sprite.position.y-player_y)**2 < (this.radius+player_radius)**2){
+            return true;
+        } else {
+            return false;
+        }
+    }
+}*/
+
 
 class Enemy{//radius, vectors, geometry
     constructor(enemy_geometry, hp, enemy_radius, period, movement, rotation, bullet_geometry){
