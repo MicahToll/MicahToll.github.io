@@ -60,50 +60,26 @@ function init(){
     kirby.position.y = -camera_height/4
     universe.add( kirby );
 
-    //all_bullets.push(new Bullet(1, [[0,25],[0,-1/4]], kirby_bullet_material));
-
-
-    const vertices = [];
-    for ( let i = 0; i < 10000; i ++ ) {
-        const x = THREE.MathUtils.randFloatSpread( 2000 );
-        const y = THREE.MathUtils.randFloatSpread( 2000 );
-        const z = THREE.MathUtils.randFloatSpread( 2000 );
-
-        vertices.push( x, y, z );
-    }
-    var starGeometry = new THREE.BufferGeometry();
-	starGeometry.setAttribute('position', new THREE.Float32BufferAttribute( vertices, 3 ));
-	var starMaterial = new THREE.PointsMaterial({color:0x888888})
-	var stars = new THREE.Points( starGeometry, starMaterial );
-	background.add(stars);
-
-    //music.play();
+    set_up_level1();
 
     gameloop(1);
 }
 
 function gameloop(timestamp){
-    background.position.y -= .1;
-    /*for (thing in background){
+    move_background();
+    for (thing of background_things){
         thing.update();
-    }*/
+    }
     for (var enemy of all_enemies){
         //enemy.update();
+        enemy.check_collision();
     }
     if (is_mousedown){
-        all_bullets.push(new Bullet(1, [[player_x,player_y+player_radius],[0,+2]], kirby_bullet_material));
+        all_bullets.push(new Kirby_bullet(1, [[player_x,player_y+player_radius],[0,+2]], kirby_bullet_material,1));
     }
     for (var i = all_bullets.length; i--;) {
         all_bullets[i].update_bullet();
-        if (all_bullets[i].check_onscreen()){
-            all_bullets[i].delete_sprite();
-            all_bullets.splice(i, 1);
-            continue;
-        }
-        if (all_bullets[i].check_collision()){
-            //console.log("boom");
-            health -= 1;
-            update_dash();
+        if (all_bullets[i].check_onscreen()||all_bullets[i].check_collision()){
             all_bullets[i].delete_sprite();
             all_bullets.splice(i, 1);
         }
@@ -130,12 +106,15 @@ function update_dash(){
     document.getElementById("health").innerHTML = "health: "+health+"%"
 }
 
+function move_background(){}
+
 //currently assuming all 
 class Bullet{
-    constructor(radius, vectors, material){
+    constructor(radius, vectors, material, damage){
         this.radius = radius;
         this.vectors = vectors;
         this.dimensions = vectors.length;
+        this.damage = damage;
         this.sprite = new THREE.Sprite(material);
         this.sprite.scale.set(radius*2, radius*2, 1);
         universe.add(this.sprite);
@@ -154,6 +133,8 @@ class Bullet{
     }
     check_collision(){
         if ((this.sprite.position.x-player_x)**2+(this.sprite.position.y-player_y)**2 < (this.radius+player_radius)**2){
+            health -= this.damage;
+            update_dash();
             return true;
         } else {
             return false;
@@ -171,28 +152,38 @@ class Bullet{
         universe.remove(this.sprite);
     }
 }
-/*class Kirby_bullet extends Bullet{
+class Kirby_bullet extends Bullet{
     check_collision(){
-        if ((this.sprite.position.x-player_x)**2+(this.sprite.position.y-player_y)**2 < (this.radius+player_radius)**2){
-            return true;
-        } else {
-            return false;
+        //return false
+        let x_pos = this.sprite.position.x;
+        let y_pos = this.sprite.position.y;
+        for (let enemy of all_enemies){
+            if ((x_pos-enemy.x)**2+(y_pos-enemy.y)**2 < (this.radius+enemy.radius)**2){
+                enemy.hp -= this.damage;
+                return true;
+            }
         }
+        return false;
     }
-}*/
-
+}
 
 class Enemy{//radius, vectors, geometry
-    constructor(enemy_geometry, hp, enemy_radius, period, movement, rotation, bullet_geometry){
+    constructor(sprite, hp, radius, period, movement, rotation, bullet_materials, damage = 1){
         this.hp = hp;
-        this.enemy_radius = enemy_radius;
+        this.radius = radius;
         this.period = period;
         this.movement = movement;
         this.rotation = rotation;
-        this.bullet_geometry = bullet_geometry;
-        this.graphics = new PIXI.Graphics(enemy_geometry);
-        everything.addChild(this.graphics);
+        this.bullet_materials = bullet_materials;
+        this.sprite = sprite//new THREE.Sprite(sprite);
+        this.sprite.scale.set(radius*2, radius*2, 1);
+        this.damage = damage;
+        universe.add(this.sprite);
+        this.state = 0;
+        this.x = 0;
+        this.y = 0;
     }
+    movement(){}
     update(){
         this.move();
         this.shoot();
@@ -201,12 +192,12 @@ class Enemy{//radius, vectors, geometry
         this.graphics.x = half_window_width*Math.cos(time*2*Math.PI/this.period);
         this.graphics.y = 0;
         //this.graphics.y = half_window_height;
-        /*for (a of movement.x.a){
+        for (a of movement.x.a){
             //something
         }
         something = movement.x.a[0]/2 + Math.cos() + Math.sin()
         //do something
-        */
+        
     }
     rotate(){}
     shoot(){
@@ -214,20 +205,70 @@ class Enemy{//radius, vectors, geometry
             all_bullets.push(new Bullet(10, [[this.graphics.x,-half_window_height/2],[.3,.2],[0,.01]], this.bullet_geometry));
         }
     }
-    
-    /*check_collision(){
-        if ((this.graphics.x-player_x)**2+(this.graphics.y-player_y)**2 < (this.radius+player_radius)**2){
+    check_collision(){
+        if ((this.sprite.position.x-player_x)**2+(this.sprite.position.y-player_y)**2 < (this.radius+player_radius)**2){
+            health -= this.damage;
+            update_dash();
             return true;
         } else {
             return false;
         }
-    }*/
+    }
     destroy_graphics(){
         this.graphics.destroy();
     }
 }
-/*class sub_enemy extends enemy{
-    constructor(){
-        super()
+
+class Background {
+    constructor(update,mesh){
+        this.update = update;
+        this.mesh = mesh;
+        background.add(this.mesh);
     }
-}*/
+    update(){}
+    rotate(amount){
+        this.mesh.rotate.x += amount;
+    }
+    /*delete_sprite(){
+        background.remove(this.sprite);
+    }*/
+}
+
+
+/*
+//level 1
+*/
+function set_up_level1() {
+    const vertices = [];
+    for ( let i = 0; i < 1000; i ++ ) {
+        const x = THREE.MathUtils.randFloatSpread( 500 );
+        const y = THREE.MathUtils.randFloatSpread( 500 );
+        const z = THREE.MathUtils.randFloatSpread( 500 );
+
+        vertices.push( x, y, z );
+    }
+    var starGeometry = new THREE.BufferGeometry();
+	starGeometry.setAttribute('position', new THREE.Float32BufferAttribute( vertices, 3 ));
+	var starMaterial = new THREE.PointsMaterial({color:0x888888})
+	var stars = new THREE.Points( starGeometry, starMaterial );
+	background.add(stars);
+
+    const cgeometry = new THREE.BoxGeometry();
+    const cmaterial = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+    const cube = new THREE.Mesh( cgeometry, cmaterial );
+    background_things.push(new Background(function(){}, cube));
+
+    let b_bullet_map = new THREE.TextureLoader().load( 'assets/bullets/bbullet.png' );
+    let b_bullet_material = new THREE.SpriteMaterial( { map: b_bullet_map } );
+    let dark_matter_map = new THREE.TextureLoader().load( 'assets/enemies/darkmatter.png' );
+    let dark_matter_material = new THREE.SpriteMaterial( { map: dark_matter_map } );
+    dark_matter = new THREE.Sprite( dark_matter_material );
+
+    all_enemies.push(new Enemy(dark_matter, 100, 8, 1, function(){},0,b_bullet_material));
+
+    background.position.z = -100;//offset
+    //move_background = function() { background.position.y -= .1 }//translate
+    move_background = function() { background.rotation.x += .001 }//rotate
+
+    //music.play();
+}

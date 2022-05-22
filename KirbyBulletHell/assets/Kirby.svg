@@ -16,7 +16,7 @@
    id="svg8"
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    sodipodi:docname="Kirby.svg"
-   inkscape:export-filename="C:\Users\tollm\Documents\MicahToll.github.io\KirbyBullletHell\assets\kirby.png"
+   inkscape:export-filename="C:\Users\tollm\Documents\MicahToll.github.io\KirbyBulletHell\assets\kirby.png"
    inkscape:export-xdpi="96"
    inkscape:export-ydpi="96">
   <defs
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.4"
-     inkscape:cx="309.84568"
-     inkscape:cy="951.88666"
+     inkscape:zoom="0.35"
+     inkscape:cx="-585.76046"
+     inkscape:cy="830.34111"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -56,41 +56,41 @@
      inkscape:groupmode="layer"
      id="layer1">
     <path
-       style="fill:#f7e908;fill-opacity:1;stroke:#000000;stroke-width:0.72993541px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 20.552151,70.883312 c -3.509888,27.846235 33.658027,31.343638 34.62591,41.847428 0.967889,10.50378 -21.866397,44.13704 -2.107133,54.4323 19.759265,10.29528 37.964506,-20.57574 50.499262,-19.99964 12.53476,0.57611 42.77494,27.68805 51.11704,18.82454 8.34215,-8.86354 -7.87404,-43.76433 -3.41563,-54.20789 4.45839,-10.44359 33.22121,-27.185476 33.69919,-42.798123 C 185.4488,53.369277 141.31683,61.238901 132.36057,55.47925 123.40429,49.7196 115.14846,10.834936 102.07075,10.204042 88.993047,9.5731515 82.497677,50.943599 72.971495,56.066805 63.445304,61.190007 25.626182,57.114393 20.552151,70.883312 Z"
+       style="fill:#f7e908;fill-opacity:1;stroke:#000000;stroke-width:0.9067663px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 3.3100608,78.113837 c -4.360178,34.592143 41.8118722,38.936813 43.0142302,51.985193 1.202365,13.04838 -27.163653,54.82948 -2.617598,67.61883 24.546057,12.78937 47.161619,-25.56033 62.732987,-24.84467 15.57138,0.71568 53.13741,34.39564 63.50043,23.38489 10.36309,-11.01078 -9.78157,-54.36648 -4.24308,-67.34005 5.53846,-12.9736 41.26923,-33.771301 41.86301,-53.166199 C 208.15385,56.35693 153.33066,66.133014 142.2047,58.978055 131.07871,51.823098 120.82285,3.5184081 104.57699,2.7346765 88.331145,1.9509493 80.262236,53.343618 68.428283,59.707949 56.59432,66.072275 9.6133039,61.009321 3.3100608,78.113837 Z"
        id="path4624"
        inkscape:connector-curvature="0" />
     <circle
-       style="fill:#eca0a5;fill-opacity:1;stroke-width:0.69843316;stroke-miterlimit:4;stroke-dasharray:none"
+       style="fill:#eca0a5;fill-opacity:1;stroke-width:0.86763251;stroke-miterlimit:4;stroke-dasharray:none"
        id="path4540-0"
-       cx="135.13538"
-       cy="52.587234"
-       r="13.034561" />
+       cx="145.6517"
+       cy="55.385433"
+       r="16.192257" />
     <circle
-       style="fill:#eca0a5;fill-opacity:1;stroke-width:0.6565271;stroke-miterlimit:4;stroke-dasharray:none"
+       style="fill:#eca0a5;fill-opacity:1;stroke-width:0.81557447;stroke-miterlimit:4;stroke-dasharray:none"
        id="path4540-2-6"
-       cx="68.137726"
-       cy="58.583107"
-       r="12.252484" />
+       cx="62.423508"
+       cy="62.833839"
+       r="15.220716" />
     <ellipse
-       style="fill:#da0059;fill-opacity:1;stroke-width:0.88389742;stroke-miterlimit:4;stroke-dasharray:none"
+       style="fill:#da0059;fill-opacity:1;stroke-width:1.09802651;stroke-miterlimit:4;stroke-dasharray:none"
        id="path4540-7-2"
-       cx="86.12542"
-       cy="88.30191"
-       rx="13.555943"
-       ry="20.073225" />
+       cx="84.768822"
+       cy="99.75219"
+       rx="16.839945"
+       ry="24.936075" />
     <ellipse
-       style="fill:#da0059;fill-opacity:1;stroke-width:0.76087558;stroke-miterlimit:4;stroke-dasharray:none"
+       style="fill:#da0059;fill-opacity:1;stroke-width:0.94520193;stroke-miterlimit:4;stroke-dasharray:none"
        id="path4540-8-9"
-       cx="123.92565"
-       cy="90.387451"
-       rx="11.209722"
-       ry="17.987694" />
+       cx="131.72636"
+       cy="102.34296"
+       rx="13.925339"
+       ry="22.345312" />
     <circle
-       style="fill:#eca0a5;fill-opacity:1;stroke-width:1.81592643;stroke-miterlimit:4;stroke-dasharray:none"
+       style="fill:#eca0a5;fill-opacity:1;stroke-width:2.25584483;stroke-miterlimit:4;stroke-dasharray:none"
        id="path4540-9-9"
-       cx="103.33104"
-       cy="69.271454"
-       r="33.889858" />
+       cx="106.1426"
+       cy="76.111496"
+       r="42.099865" />
   </g>
 </svg>
