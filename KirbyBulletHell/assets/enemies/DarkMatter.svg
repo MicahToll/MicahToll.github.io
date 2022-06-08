@@ -15,7 +15,10 @@
    version="1.1"
    id="svg1316"
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
-   sodipodi:docname="DarkMatter.svg">
+   sodipodi:docname="DarkMatter.svg"
+   inkscape:export-filename="C:\Users\tollm\Documents\MicahToll.github.io\KirbyBulletHell\assets\enemies\darkmatter.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96">
   <defs
      id="defs1310" />
   <sodipodi:namedview
@@ -27,7 +30,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="1.4"
      inkscape:cx="426.43779"
-     inkscape:cy="777.96108"
+     inkscape:cy="806.5325"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -53,7 +56,9 @@
      inkscape:groupmode="layer"
      id="layer1">
     <g
-       id="g1990">
+       id="g1990"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96">
       <circle
          r="13.418155"
          cy="70.78125"
@@ -145,9 +150,12 @@
          style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.80000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
     </g>
     <path
-       style="fill:#aa0000;fill-opacity:1;stroke:#000000;stroke-width:0.80000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m 181.84036,61.754591 -12.4349,17.846455 a 16.347469,16.347469 0 0 0 -0.69143,0.992187 l -0.0987,0.141595 0.007,0.0088 a 16.347469,16.347469 0 0 0 -2.50165,8.653219 16.347469,16.347469 0 0 0 16.34784,16.347323 16.347469,16.347469 0 0 0 16.34732,-16.347323 16.347469,16.347469 0 0 0 -4.51807,-11.272697 z"
+       style="fill:#000000;fill-opacity:1;stroke:#aa0000;stroke-width:0.80000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 186.56506,57.218877 -12.43489,17.846455 a 16.347469,16.347469 0 0 0 -0.69143,0.992187 l -0.0987,0.141595 0.007,0.0088 a 16.347469,16.347469 0 0 0 -2.50165,8.653219 16.347469,16.347469 0 0 0 16.34783,16.347317 16.347469,16.347469 0 0 0 16.34732,-16.347317 16.347469,16.347469 0 0 0 -4.51807,-11.272697 z"
        id="path1968"
-       inkscape:connector-curvature="0" />
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="C:\Users\tollm\Documents\MicahToll.github.io\KirbyBulletHell\assets\bullets\darkmattertear.png"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96" />
   </g>
 </svg>
