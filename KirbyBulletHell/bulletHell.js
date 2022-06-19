@@ -37,9 +37,14 @@ let window_height;
 let camera_width;
 let camera_height = 100;
 let is_mousedown = false;
+let charge_frame = 0;
 
 const kirby_bullet_map = new THREE.TextureLoader().load( 'assets/bullets/kirby_bullet.png' );
+const kirby_bullet_orange_map = new THREE.TextureLoader().load( 'assets/bullets/kirby_bullet_orange.png' );
+const kirby_bullet_lightblue_map = new THREE.TextureLoader().load( 'assets/bullets/kirby_bullet_lightblue.png' );
 const kirby_bullet_material = new THREE.SpriteMaterial( { map: kirby_bullet_map } );
+const kirby_bullet_orange_material = new THREE.SpriteMaterial( { map: kirby_bullet_orange_map } );
+const kirby_bullet_lightblue_material = new THREE.SpriteMaterial( { map: kirby_bullet_lightblue_map } );
 
 
 function init(){
@@ -62,7 +67,7 @@ function init(){
 
     set_up_level1();
 
-    gameloop(1);
+    gameloop(0);
 }
 
 function gameloop(timestamp){
@@ -75,7 +80,20 @@ function gameloop(timestamp){
         enemy.check_collision();
     }
     if (is_mousedown){
-        all_bullets.push(new Kirby_bullet(1, [[player_x,player_y+player_radius],[0,+2]], kirby_bullet_material,1));
+        if (charge_frame < 60){
+            all_bullets.push(new Kirby_bullet(1, [[player_x,player_y+player_radius],[0,+2]], kirby_bullet_orange_material,1));
+        }
+        else if(charge_frame < 180){
+            all_bullets.push(new Kirby_bullet(2, [[player_x,player_y+player_radius],[0,+2]], kirby_bullet_lightblue_material,3));
+            charge_frame = 0;
+        }
+        else{
+            all_bullets.push(new Kirby_bullet(3, [[player_x,player_y+player_radius],[0,+2]], kirby_bullet_material,6));
+            charge_frame = 0;
+        }
+    }
+    else{
+        charge_frame++;
     }
     for (var i = all_bullets.length; i--;) {
         all_bullets[i].update_bullet();
@@ -101,6 +119,20 @@ function mousedown() {
 function mouseup() {
     is_mousedown = false;
 }
+/*function charging(){
+    if (!is_mousedown){
+        if (time - start_charge_time > 1900){
+            charge_state = 2;
+        } 
+        else if (time - start_charge_time > 900){
+            charge_state = 1;
+        }
+        else{
+            charge_state = 0;
+        }
+    }
+    console.log(charge_state);
+}*/
 
 function update_dash(){
     document.getElementById("health").innerHTML = "health: "+health+"%"
@@ -280,12 +312,26 @@ function set_up_level1() {
 
     all_enemies.push(new Enemy(
         dark_matter_material, 1000, 8, function(){
-            this.x = camera_width/2*3/4*Math.sin(Math.PI/60/4*this.frame_count)
-            if(this.frame_count%4==0){
-                all_bullets.push(new Bullet(1, [[this.x,this.y],[0,-.5]], this.bullet_materials[0],10));
+            if(this.state == 0) {//phase 1
+                this.x = camera_width/2*3/4*Math.sin(Math.PI/60/4*this.frame_count)
+                if(this.frame_count%4==0){
+                    all_bullets.push(new Bullet(1, [[this.x,this.y],[0,-.5]], this.bullet_materials[0],10));
+                }
+                this.move();
+                this.frame_count++
+                if(this.frame_count >= 10*60){
+                    this.state = 1;
+                }
             }
-            this.move();
-            this.frame_count++
+            else if(this.state == 1){//phase 2
+                this.x = camera_width/2*3/4*Math.sin(Math.PI/60/4*this.frame_count)
+                this.y = 25+camera_width/6*3/4*Math.sin(Math.PI/60/3*this.frame_count)
+                if(this.frame_count%4==0){
+                    all_bullets.push(new Bullet(1, [[this.x,this.y],[0,-.5]], this.bullet_materials[1],15));
+                }
+                this.move();
+                this.frame_count++
+            }
         }, [
             b_bullet_material,
             dark_matter_tear_material

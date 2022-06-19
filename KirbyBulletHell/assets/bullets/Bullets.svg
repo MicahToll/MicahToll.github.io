@@ -2,24 +2,24 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:xlink="http://www.w3.org/1999/xlink"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="210mm"
    height="297mm"
    viewBox="0 0 210 297"
    version="1.1"
    id="svg140"
-   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
+   inkscape:version="1.2 (dc2aedaf03, 2022-05-15)"
    sodipodi:docname="Bullets.svg"
    inkscape:export-filename="C:\Users\tollm\Documents\MicahToll.github.io\KirbyBulletHell\assets\bullets\kirby_bullet.png"
    inkscape:export-xdpi="96"
-   inkscape:export-ydpi="96">
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <defs
      id="defs134" />
   <sodipodi:namedview
@@ -30,8 +30,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.4"
-     inkscape:cx="323.07814"
-     inkscape:cy="502.44284"
+     inkscape:cx="476.42857"
+     inkscape:cy="902.14286"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -39,7 +39,10 @@
      inkscape:window-height="986"
      inkscape:window-x="-11"
      inkscape:window-y="471"
-     inkscape:window-maximized="1" />
+     inkscape:window-maximized="1"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
   <metadata
      id="metadata137">
     <rdf:RDF>
@@ -48,7 +51,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -954,8 +957,8 @@
        height="100%"
        transform="translate(30.413897,77.353049)" />
     <path
-       style="fill:#0089ff;fill-opacity:1;stroke:#000000;stroke-width:0.42214957px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 112.87783,37.262571 c -2.0299,16.104548 19.46572,18.127228 20.02549,24.201968 0.55977,6.07474 -12.64617,25.52614 -1.21864,31.48028 11.42755,5.95416 21.95633,-11.89974 29.20566,-11.56656 7.24933,0.33319 24.73838,16.01306 29.56293,10.88695 4.82459,-5.12612 -4.55385,-25.31058 -1.97538,-31.35049 2.57846,-6.03992 19.21309,-15.72239 19.48952,-24.751788 0.27646,-9.02939 -25.24675,-4.47809 -30.4265,-7.80911 -5.17976,-3.33102 -9.95442,-25.81951 -17.51776,-26.18438 -7.56333,-0.36488 -11.31985,23.56124 -16.8292,26.52418 -5.50936,2.96295 -27.38161,0.60587 -30.31612,8.56895 z"
+       style="fill:#0089ff;fill-opacity:1;stroke:#000000;stroke-width:0.42215px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 113.63378,73.926261 c -2.0299,16.104548 19.46572,18.127228 20.02549,24.201968 0.55977,6.074741 -12.64617,25.526141 -1.21864,31.480281 11.42755,5.95416 21.95633,-11.89974 29.20566,-11.56656 7.24933,0.33319 24.73838,16.01306 29.56293,10.88695 4.82459,-5.12612 -4.55385,-25.31058 -1.97538,-31.350491 2.57846,-6.03992 19.21309,-15.72239 19.48952,-24.751788 0.27646,-9.02939 -25.24675,-4.47809 -30.4265,-7.80911 -5.17976,-3.33102 -9.95442,-25.81951 -17.51776,-26.18438 -7.56333,-0.36488 -11.31985,23.56124 -16.8292,26.52418 -5.50936,2.96295 -27.38161,0.60587 -30.31612,8.56895 z"
        id="path4624"
        inkscape:connector-curvature="0"
        inkscape:export-xdpi="96"
@@ -968,5 +971,21 @@
        r="16.630953"
        inkscape:export-xdpi="96"
        inkscape:export-ydpi="96" />
+    <path
+       style="fill:#ff8d1c;fill-opacity:1;stroke:#000000;stroke-width:0.264061px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 37.436615,238.78398 c -1.26973,10.0736 12.176063,11.33881 12.526206,15.13864 0.350144,3.79983 -7.910345,15.96694 -0.762276,19.69133 7.148083,3.72441 13.733973,-7.44343 18.268524,-7.23503 4.534551,0.20842 15.474178,10.01638 18.491998,6.80993 3.017844,-3.20645 -2.848492,-15.8321 -1.235626,-19.61014 1.612861,-3.77805 12.01804,-9.83456 12.19095,-15.48257 0.172929,-5.648 -15.792173,-2.8011 -19.032174,-4.8847 -3.240006,-2.0836 -6.226619,-16.15045 -10.957587,-16.37867 -4.730962,-0.22824 -7.080715,14.73786 -10.526886,16.59121 -3.446176,1.85337 -17.127555,0.37899 -18.963129,5.36 z"
+       id="path4624-2"
+       inkscape:connector-curvature="0"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96"
+       inkscape:export-filename="kirbybullet_orange.png" />
+    <path
+       style="fill:#00ffff;fill-opacity:1;stroke:#000000;stroke-width:0.42215px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 109.38156,211.7281 c -2.0299,16.10455 19.46572,18.12723 20.02549,24.20197 0.55977,6.07474 -12.64617,25.52614 -1.21864,31.48028 11.42755,5.95416 21.95633,-11.89974 29.20566,-11.56656 7.24933,0.33319 24.73838,16.01306 29.56293,10.88695 4.82459,-5.12612 -4.55385,-25.31058 -1.97538,-31.35049 2.57846,-6.03992 19.21309,-15.72239 19.48952,-24.75179 0.27646,-9.02939 -25.24675,-4.47809 -30.4265,-7.80911 -5.17976,-3.33102 -9.95442,-25.81951 -17.51776,-26.18438 -7.56333,-0.36488 -11.31985,23.56124 -16.8292,26.52418 -5.50936,2.96295 -27.38161,0.60587 -30.31612,8.56895 z"
+       id="path4624-4"
+       inkscape:connector-curvature="0"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96"
+       inkscape:export-filename="kirby_bullet_lightblue.png" />
   </g>
 </svg>
