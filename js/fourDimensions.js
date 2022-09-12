@@ -1,4 +1,4 @@
-/*Java Script code
+/*
     Fourth Dimensional Projections
     
     Micah Toll and Lizzy Milford
@@ -38,8 +38,8 @@ var vanPointx3 = 0;
 var vanPointy3 = 0;
 */
 //this is the corrdinates of the vanishing point for the fourth dimension
-var vanPointx4 = 500;
-var vanPointy4 = 350;
+var vanPointx4 = 750/2;
+var vanPointy4 = 500/2;
 
 //user inputted data 
 var userVerticies = []; //is an int[][] when "save data" button is pressed
@@ -168,7 +168,7 @@ function updateSliderRange(){
 
 function updateDisplay(){
     clearCanvas();
-    document.getElementById("x").innerHTML = x;
+    /*document.getElementById("x").innerHTML = x;
     document.getElementById("y").innerHTML = y;
     document.getElementById("z").innerHTML = z;
     document.getElementById("w").innerHTML = w;
@@ -177,7 +177,7 @@ function updateDisplay(){
     document.getElementById("x-w").innerHTML = angle[2];
     document.getElementById("y-z").innerHTML = angle[3];
     document.getElementById("y-w").innerHTML = angle[4];
-    document.getElementById("z-w").innerHTML = angle[5];
+    document.getElementById("z-w").innerHTML = angle[5];*/
     drawShape();
 }
 
@@ -426,7 +426,7 @@ function rotate(xAxis,yAxis,changeInAngle){
 }*/
 
 function onload(){
-    document.addEventListener('keydown', (event) => {
+    /*document.addEventListener('keydown', (event) => {
         const keyName = event.key;
         if (keyName == "6"){
             w -= 10;
@@ -479,7 +479,7 @@ function onload(){
             updateDisplay();
         }
         updateDisplay()
-    });
+    });*/
     c = document.getElementById("myCanvas");
     ctx = c.getContext("2d");
     //c2 = document.getElementById("myCanvas2");
@@ -642,12 +642,12 @@ function turnOn3D() {
 
 var mRestPos = [0,0];
 
-function onClick(e) {
+/*function onClick(e) {
     mRestPos = [e.x, e.y];
     //document.addEventListener("onmousemove", function () {onMouseMove(event); alert("hwgkbjwgu")})
-}
+}*/
 
-function onMouseMove(e) {
+/*function onMouseMove(e) {
     if (!(mRestPos[0] == 0)){
         var adjx = e.x - mRestPos[0];
         var adjy = e.y - mRestPos[1];
@@ -667,7 +667,7 @@ function onMouseMove(e) {
 
         updateDisplay()
     }
-}
+}*/
 
 var toggleAngle = 0;
 

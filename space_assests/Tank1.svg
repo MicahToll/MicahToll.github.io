@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="400"
+   height="400"
+   viewBox="0 0 105.83333 105.83333"
+   version="1.1"
+   id="svg781"
+   inkscape:version="1.2 (dc2aedaf03, 2022-05-15)"
+   sodipodi:docname="Tank1.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview783"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="true"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="false"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     showgrid="false"
+     borderlayer="true"
+     inkscape:zoom="2.8284271"
+     inkscape:cx="239.00209"
+     inkscape:cy="200.11122"
+     inkscape:window-width="2880"
+     inkscape:window-height="1526"
+     inkscape:window-x="2869"
+     inkscape:window-y="-11"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs778" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       id="rect408"
+       style="fill:#cccccc;stroke:#000000;stroke-width:0.39687499;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+       d="m 63.240021,6.8354175 8.779287,-0.00425 H 92.653332 V 15.340945 H 74.524813 l 22.4467,76.225726 -0.115026,0.03232 h 0.08802 v 8.282727 H 24.613438 v -8.282705 h 0.04968 V 15.340943 H 7.4130338 V 6.8311651 H 33.044123 v 0.023816 h 0.0244 V 91.598983 h 55.16815 l -0.202483,0.01068 z"
+       sodipodi:nodetypes="cccccccccccccccccccccc" />
+    <path
+       id="rect1092"
+       style="fill:#ef89ff;stroke:#000000;stroke-width:0.39687499;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;fill-opacity:1"
+       d="M 65.721831,21.914195 H 34.638278 l -0.09354,68.157776 h 51.112517 z"
+       sodipodi:nodetypes="ccccc" />
+  </g>
+</svg>

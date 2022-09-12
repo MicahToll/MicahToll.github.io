@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="400"
+   height="400"
+   viewBox="0 0 105.83333 105.83333"
+   version="1.1"
+   id="svg781"
+   inkscape:version="1.2 (dc2aedaf03, 2022-05-15)"
+   sodipodi:docname="Tank3.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview783"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="true"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="false"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     showgrid="false"
+     borderlayer="true"
+     inkscape:zoom="2.8284271"
+     inkscape:cx="318.5516"
+     inkscape:cy="194.80792"
+     inkscape:window-width="2880"
+     inkscape:window-height="1526"
+     inkscape:window-x="2869"
+     inkscape:window-y="-11"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs778" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       id="rect408"
+       style="fill:#cccccc;stroke:#000000;stroke-width:0.396875;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+       d="m 77.764889,43.162163 1.910038,-5.802749 -0.02143,-17.60614 6.395019,-0.0654 0.153418,19.118475 -1.386273,4.7625 -8.248971,35.610043 -0.0814,0.02287 h 0.06229 v 5.861663 H 25.359084 v -5.861647 h 0.03516 V 25.23415 H 13.186406 v -6.022346 h 18.13905 v 0.01685 L 72.951215,35.025591 71.005523,41.211572 31.342726,25.441305 v 53.760441 h 39.042345 l -0.143297,0.0076 z"
+       sodipodi:nodetypes="ccccccccccccccccccccccccc" />
+    <path
+       id="rect1092"
+       style="fill:#ef89ff;fill-opacity:1;stroke:#000000;stroke-width:0.396875;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+       d="m 75.845631,44.435491 2.726476,-7.46321 0.104695,-8.105992 -19.285406,-0.175573 15.09194,5.351205 -2.952935,8.735889 -38.542898,-14.806122 -0.440382,50.105954 h 36.172185 z"
+       sodipodi:nodetypes="cccccccccc" />
+  </g>
+</svg>

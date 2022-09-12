@@ -4,12 +4,14 @@
 }
 h1 {
     text-align: center;
+    padding-top: 20px;
+    margin-top: 0px;
 }
 h2 {
     margin-left: 1vw;
     margin-right: 1vw;
     margin-top: 20px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     /*text-align: center;*/
 }
 p {

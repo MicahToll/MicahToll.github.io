@@ -1,4 +1,4 @@
-<!-- HTML code
+<!--
     Fourth Dimensional Projections
     
     Micah Toll and Lizzy Milford
@@ -12,78 +12,96 @@
         <script src="js/fourDimensions.js" type="text/javascript" charset="utf-8"></script>   
         <!--<script src="https://code.jquery.com/jquery-1.3.min.js" integrity="sha256-kAGRpEMRXYtIqdaNMGLos9cSlyeVG4YXRltIW68lMAY=" crossorigin="anonymous"></script>-->
         <link href="css/fourDimensions.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" type="text/css" href="css/style.css"><!--match site {
+        <script src="js/d3.min.js"></script>
+        <script src="js/three.js"></script>
+        <script src="js/code.js"></script>}-->
     </head>
-    <body onload="onload()" onmousemove="onMouseMove(event)">
-        <div class=column>
-            <canvas onclick="onClick(event)" id="myCanvas" width="1000" height="700"></canvas>
-        </div>
-        <div>
+    <body id="body" onload="onload();" ><!-- init(); --><!--onmousemove="onMouseMove(event)"-->
+        <!--<div id="d3-container" style="line-height: 0"></div>-->
+        <div><!-- id="page_content"-->
             <h1>4 Dimensional Projections</h1>
-            <h2> Select a Shape</h2>
-            <div class="input-field col s12">
-            <select id="shape" onChange="updateShape()">
-                <option value="tesseract">tesseract</option>
-                <option value="pentachoron">pentachoron</option>
-                <option value="hexadecachoron">hexadecachoron</option>
-                <option value="tetrahedralprism">tetrahedral prism</option>
-                <option value="octahedralprism">octahedral prism</option>
-            </select>
-        </div>
-            <!--<div>//commented out for comp
-                <h3> or enter your own points</h3>
+            <div class=column>
+                <canvas id="myCanvas" width="750" height="500"></canvas>
             </div>
             <div>
-                <textarea id="userInputVerticies" placeholder="Type in data points..."></textArea>
-            </div>
-            <h3>and connect your points with faces</h3>
-            <div>
-                <textarea id = "userInputFaces" rows="4" cols="50" placeholder="Type points as faces to be connected..."></textArea>
-            </div>-
-            <button onclick="saveUserInput()" >save data</button>
-            <span>
-                <div class=warningPrint id = "warningPrint" ></div>
-            </span>-->
-            <!--<button onClick="copyLink();">get perma link</button>-->
-            <!--<div id="userVerticies"></div>//commented out for comp
-            <div id="userFaces"></div>
-            <div>
-                <div><h2 id="TLabel">Translation</h2></div>
-                <div id="TSliders">
-                    <div>x: -100<input oninput="translateShape(0, this.value)" type="range" min="-100" max="100" step="1">100</div></div>
-                    <div>y: -100<input oninput="translateShape(1, this.value);" type="range" min="-100" max="100" step="1">100</div><div id="y"></div>
-                    <div>z: -100<input oninput="translateShape(2, this.value);" type="range" min="-100" max="100" step="1">100</div><div id="z"></div>
-                    <div>w: -100<input oninput="translateShape(3, this.value);" type="range" min="-100" max="100" step="1">100</div><div id="w"></div> 
-                </div>-->
-                <!--<div class=warningPrint id = "warningTrans" ></div>--><!--//commented out for comp
-            </div>
-            <div>
-                <div><h2 id="RLabel">Rotation</h2></div>
-                <div id="RSliders">
-                    <div>x-y: -360<input oninput="rotateShape(0, this.value);" type="range" min="-360" max="360" step="1">360</div>
-                    <div>x-z: -360<input oninput="rotateShape(1, this.value);" type="range" min="-360" max="360" step="1">360</div>
-                    <div>x-w: -360<input oninput="rotateShape(2, this.value);" type="range" min="-360" max="360" step="1">360</div>
-                    <div>y-z: -360<input oninput="rotateShape(3, this.value);" type="range" min="-360" max="360" step="1">360</div>
-                    <div>y-w: -360<input oninput="rotateShape(4, this.value);" type="range" min="-360" max="360" step="1">360</div>
-                    <div>z-w: -360<input oninput="rotateShape(5, this.value);" type="range" min="-360" max="360" step="1">360</div>
+                
+                <h2> Select a Shape</h2>
+                <div class="input-field col s12 basis">
+                    <select id="shape" onChange="updateShape()">
+                        <option value="tesseract">tesseract</option>
+                        <option value="pentachoron">pentachoron</option>
+                        <option value="hexadecachoron">hexadecachoron</option>
+                        <option value="tetrahedralprism">tetrahedral prism</option>
+                        <option value="octahedralprism">octahedral prism</option>
+                    </select>
                 </div>
-            </div>-->
-            <div>
-                <h2>Display Options</h2>
-                <label for="" >3D<input id="threeD" type="checkbox" onclick="turnOn3D()"/></label>
-            </div>
-            <h2>Coordinates</h2>
-            <span style="display:flex; flex-direction: row;">x: <div id="x"></div></span>
-            <span style="display:flex; flex-direction: row;">y: <div id="y"></div></span>
-            <span style="display:flex; flex-direction: row;">z: <div id="z"></div></span>
-            <span style="display:flex; flex-direction: row;">w: <div id="w"></div></span>
+                <!--<div>//commented out for comp
+                    <h3> or enter your own points</h3>
+                </div>
+                <div>
+                    <textarea id="userInputVerticies" placeholder="Type in data points..."></textArea>
+                </div>
+                <h3>and connect your points with faces</h3>
+                <div>
+                    <textarea id = "userInputFaces" rows="4" cols="50" placeholder="Type points as faces to be connected..."></textArea>
+                </div>-
+                <button onclick="saveUserInput()" >save data</button>
+                <span>
+                    <div class=warningPrint id = "warningPrint" ></div>
+                </span>-->
+                <!--<button onClick="copyLink();">get perma link</button>-->
+                <!--<div id="userVerticies"></div>//commented out for comp
+                <div id="userFaces"></div>
+                <div>
+                    <div><h2 id="TLabel">Translation</h2></div>
+                    <div id="TSliders">
+                        <div>x: -100<input oninput="translateShape(0, this.value)" type="range" min="-100" max="100" step="1">100</div></div>
+                        <div>y: -100<input oninput="translateShape(1, this.value);" type="range" min="-100" max="100" step="1">100</div><div id="y"></div>
+                        <div>z: -100<input oninput="translateShape(2, this.value);" type="range" min="-100" max="100" step="1">100</div><div id="z"></div>
+                        <div>w: -100<input oninput="translateShape(3, this.value);" type="range" min="-100" max="100" step="1">100</div><div id="w"></div> 
+                    </div>-->
+                    <!--<div class=warningPrint id = "warningTrans" ></div>--><!--//commented out for comp
+                </div>
+                <div>
+                    <div><h2 id="RLabel">Rotation</h2></div>
+                    <div id="RSliders">
+                        <div>x-y: -360<input oninput="rotateShape(0, this.value);" type="range" min="-360" max="360" step="1">360</div>
+                        <div>x-z: -360<input oninput="rotateShape(1, this.value);" type="range" min="-360" max="360" step="1">360</div>
+                        <div>x-w: -360<input oninput="rotateShape(2, this.value);" type="range" min="-360" max="360" step="1">360</div>
+                        <div>y-z: -360<input oninput="rotateShape(3, this.value);" type="range" min="-360" max="360" step="1">360</div>
+                        <div>y-w: -360<input oninput="rotateShape(4, this.value);" type="range" min="-360" max="360" step="1">360</div>
+                        <div>z-w: -360<input oninput="rotateShape(5, this.value);" type="range" min="-360" max="360" step="1">360</div>
+                    </div>
+                </div>-->
+                <div>
+                    <h2>Display Options</h2>
+                    <label class="basis" for="threeD" >3D<input id="threeD" type="checkbox" onclick="turnOn3D()"/></label>
+                </div>
+                <h2>Translations</h2>
+                <!--<div class="basis">x: <div id="x">0</div></div>
+                <div class="basis">y: <div id="y">0</div></div>
+                <div class="basis">z: <div id="z">0</div></div>
+                <div class="basis">w: <div id="w">0</div></div>-->
+                <div>x: -150<input oninput="translateShape(0, this.value)" type="range" min="-150" max="150" step="1">150</div></div>
+                <div>y: -150<input oninput="translateShape(1, this.value);" type="range" min="-150" max="150" step="1">150</div><div id="y"></div>
+                <div>z: -150<input oninput="translateShape(2, this.value);" type="range" min="-150" max="150" step="1">150</div><div id="z"></div>
+                <div>w: -150<input oninput="translateShape(3, this.value);" type="range" min="-150" max="150" step="1">150</div><div id="w"></div> 
 
-            <h2>Rotations</h2>
-            <span style="display:flex; flex-direction: row;">x-y: <div id="x-y"></div></span>
-            <span style="display:flex; flex-direction: row;">x-z: <div id="x-z"></div></span>
-            <span style="display:flex; flex-direction: row;">x-w: <div id="x-w"></div></span>
-            <span style="display:flex; flex-direction: row;">y-z: <div id="y-z"></div></span>
-            <span style="display:flex; flex-direction: row;">y-w: <div id="y-w"></div></span>
-            <span style="display:flex; flex-direction: row;">z-w: <div id="z-w"></div></span>
+                <h2>Rotations</h2>
+                <!--<span class="basis">x-y: <div id="x-y">0</div></span>
+                <span class="basis">x-z: <div id="x-z">0</div></span>
+                <span class="basis">x-w: <div id="x-w">0</div></span>
+                <span class="basis">y-z: <div id="y-z">0</div></span>
+                <span class="basis">y-w: <div id="y-w">0</div></span>
+                <span class="basis">z-w: <div id="z-w">0</div></span>-->
+                <div>x-y: -360<input oninput="rotateShape(0, this.value);" type="range" min="-360" max="360" step="1">360</div>
+                <div>x-z: -360<input oninput="rotateShape(1, this.value);" type="range" min="-360" max="360" step="1">360</div>
+                <div>x-w: -360<input oninput="rotateShape(2, this.value);" type="range" min="-360" max="360" step="1">360</div>
+                <div>y-z: -360<input oninput="rotateShape(3, this.value);" type="range" min="-360" max="360" step="1">360</div>
+                <div>y-w: -360<input oninput="rotateShape(4, this.value);" type="range" min="-360" max="360" step="1">360</div>
+                <div>z-w: -360<input oninput="rotateShape(5, this.value);" type="range" min="-360" max="360" step="1">360</div>
+            </div>
         </div>
     </body>
 </html>
