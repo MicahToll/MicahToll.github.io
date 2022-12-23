@@ -76,6 +76,15 @@ const materialsh = new THREE.ShaderMaterial( {
 /*
 //level 1
 */
+let star_positions;
+function test() {
+    for (let i = 0; i<star_positions.length; i++){ 
+        star_positions[i] *= 2;
+        console.log(star_positions[i]);
+    }
+    background.children[0].geometry.attributes.position.needsUpdate = true;
+    return star_positions[0];
+}
 function set_up_level1() {
     const vertices = [];
     for ( let i = 0; i < 1000; i ++ ) {
@@ -90,6 +99,7 @@ function set_up_level1() {
 	var starMaterial = new THREE.PointsMaterial({color:0x888888})
 	var stars = new THREE.Points( starGeometry, materialsh );
 	background.add(stars);
+    star_positions = starGeometry.attributes.position.array;
 
     let planel1_geometry = new THREE.IcosahedronGeometry(75);
     let planel1_edges = new THREE.EdgesGeometry( planel1_geometry );

@@ -86,4 +86,44 @@ base set, some maps, point material
 
 
 
+
+class particle group{
+    let the_the_set_of_points = [];
+    behavior = function that affects runs through each point()
+}
+
+
+class point group {
+    dimenstions = n;
+    points = [[],[],[]];
+    behavior = function that runs through points
+}
+
+set of points - each point has n dimensions
+each set of points also has a projection to 3d
+
+funtions
+projections
+
+
+
+
+
+
+
+
+
+
+GPU stuff:
+vertex shader thing is a projection function
+this will not handle fractals/behavior/symmetries/mirrors
+frag shader handles look
+
+All particles have:
+-vertex shader
+-frag shader
+-set of data
+-dimension of data
+-behavior that updates data (sometimes)
+
 */
