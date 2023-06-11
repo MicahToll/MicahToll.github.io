@@ -1,0 +1,40 @@
+/*.node {
+    stroke-width: 1px;
+    stroke: black;
+}*/
+/*
+network graph
+*/
+.edge {
+    /*stroke: black;*/
+}
+#mouse_over_rect {
+    fill:lightgray;
+}
+#mouse_over_text {
+    fill:black;
+    font-size:8px;
+}
+.label {
+    font: bold 12px sans-serif;
+    fill: #666666;
+    text-anchor: middle;
+    dominant-baseline: middle;
+}
+.key {
+    font: bold 20px sans-serif;
+    fill: #666666;
+    text-anchor: middle;
+    dominant-baseline: middle;
+}
+/*
+grid graph
+*/
+.col_label {
+    writing-mode: vertical-lr;
+    /*writing-mode: vertical-rl;*/
+    /*transform: rotate(9deg);*/
+}
+/*.row_label{}
+.row {}
+.grid_cell{}*/
