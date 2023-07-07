@@ -34,9 +34,11 @@
 }
 #select {
 	z-index:3;
+	text-align: center;
 }
 #shop {
 	z-index:4;
+	text-align: center;
 }
 #settings {
 	z-index:5;

@@ -119,11 +119,12 @@ function animate(timestamp) {//note about timestamp - delta from last render is 
 					}
 				}
 			}
-		}		
+		}
 	}
 	if (distance_to_collided_obj < shield_radius){
 		//console.log("hit");
 		position_vector.addScaledVector(v_unit_vector, -v/length_contraction/60);
+		p_vector.set(0,0,0);//v = 0;//change this to a reflection later
 		shield_line_material.opacity = 1;
 	}
 	else if (shield_line_material.opacity>.1) {

@@ -55,7 +55,7 @@ function gameloop(timestamp){
 function move_background(){}
 
 class Background {
-    constructor(update,mesh){
+    constructor(update, mesh){
         this.update = update;
         this.mesh = mesh;
         background.add(this.mesh);

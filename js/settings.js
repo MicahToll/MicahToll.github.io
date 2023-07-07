@@ -1,12 +1,8 @@
 //save data stuff
 var credits = 0;
-var unlockedMaps = [];
-var unlockedShips = [];
-var unlockedPrimaryEngines = [];
-var unlockedFuelTanks = [];
-var unlockedManeuveringEngines = [];
-var unlockedShieldGenerators = [];
-//var ownedblasters = [];
+var unlockedAreas = [];
+var unlockedParts = {};
+var equippedParts = {};
 
 //saved settings stuff
 var volume = .2;
@@ -15,36 +11,32 @@ var thirdPerson = true;
 var antialias = true;
 
 function loadSave(){
-    if (localStorage.getItem("credits")==null||localStorage.getItem("ownedShips")==null){
+    if (localStorage.getItem("save_data")==null){
         window.alert("no save found");
     }
     else{
-        credits=JSON.parse(localStorage.getItem("credits"));
-        unlockedMaps=JSON.parse(localStorage.getItem("unlockedMaps"));
-        unlockedShips=JSON.parse(localStorage.getItem("unlockedShips"));
-        unlockedPrimaryEngines=JSON.parse(localStorage.getItem("unlockedPrimaryEngines"));
-        unlockedFuelTanks=JSON.parse(localStorage.getItem("unlockedFuelTanks"));
-        unlockedManeuveringEngines=JSON.parse(localStorage.getItem("unlockedManeuveringEngines"));
-        unlockedShieldGenerators=JSON.parse(localStorage.getItem("unlockedShieldGenerators"));
-        volume=JSON.parse(localStorage.getItem("volume"));
-        invertY=JSON.parse(localStorage.getItem("invertY"));
-        thirdPerson=JSON.parse(localStorage.getItem("thirdPerson"));
-        antialias=JSON.parse(localStorage.getItem("antialias"));
+        save_data = JSON.parse(localStorage.getItem("save_data"));
+        
+        let settings = save_data["settings"];
+        volume = settings["volume"];
+        invertY = settings["invertY"];
+        thirdPerson = settings["thirdPerson"]; 
+        antialias = settings["antialias"];
+        
+        let progress = save_data["progress"];
+        credits = progress["credits"];
+        unlockedAreas = [];
+        unlockedParts = {};
+        equippedParts = {};
     }
     change_settings();
 }
 function save(){
-    localStorage.setItem("credits", JSON.stringify(credits));
-    localStorage.setItem("unlockedMaps", JSON.stringify(unlockedMaps));
-    localStorage.setItem("unlockedShips", JSON.stringify(unlockedShips));
-    localStorage.setItem("unlockedPrimaryEngines", JSON.stringify(unlockedPrimaryEngines));
-    localStorage.setItem("unlockedFuelTanks", JSON.stringify(unlockedFuelTanks));
-    localStorage.setItem("unlockedManeuveringEngines", JSON.stringify(unlockedManeuveringEngines));
-    localStorage.setItem("unlockedShieldGenerators", JSON.stringify(unlockedShieldGenerators));
-    localStorage.setItem("volume", JSON.stringify(volume));
-    localStorage.setItem("invertY", JSON.stringify(invertY));
-    localStorage.setItem("thirdPerson", JSON.stringify(thirdPerson));
-    localStorage.setItem("antialias", JSON.stringify(antialias));
+    let save_data = {
+        "settings":{"volume":volume, "invertY":invertY, "thirdPerson": thirdPerson, "antialias":antialias}, 
+        "progress":{"credits": credits, "unlockedAreas": unlockedAreas, "unlockedParts":unlockedParts, "equippedParts":equippedParts}
+    }
+    localStorage.setItem("save_data", JSON.stringify(save_data));
 }
 
 function closeAllWindows(){
