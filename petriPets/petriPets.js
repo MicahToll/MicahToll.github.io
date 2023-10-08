@@ -62,6 +62,8 @@ let friction = 1;
 let charge = 1;
 let radius = 5;
 let k = 5;
+let x_basis = new THREE.Vector3(radius, 0 ,0);
+let y_basis = new THREE.Vector3(radius/2, radius*Math.sqrt(3)/2 ,0);
 //let logistic_k = 4;//add this to change slope of activation function to 1 at x = x_0
 
 function init() {
@@ -83,7 +85,6 @@ function init() {
     universe.add( kirby );*/
 
     set_up_level2();
-
     gameloop(0);
 }
 
@@ -144,8 +145,51 @@ function gameloop(timestamp) {
     document.getElementById("health").innerHTML = "health: "+health+"%"
 }*/
 
+/*
+creature_cells structure:
+[
+    [cell,null,null,cell],
+    [cell,null,null,cell],
+    [cell,cell,cell,cell],
+    [cell,null,cell,cell]
+]
+creature_cells[y][x]
+*/
+
+class Creature {
+    constructor(creature_cells, bond_material, creature_position = new THREE.Vector3(0, 0, 0), creature_velocity = new THREE.Vector3(0, 0, 0)) {
+        for (let y = 0; y < creature_cells.length; y++) {
+            for (let x = 0; x < creature_cells[y].length; x++) {
+                let current_cell = creature_cells[y][x];
+                if (current_cell != null){
+                    current_cell.position_vector.addScaledVector(x_basis, x).addScaledVector(y_basis, -y).add(creature_position);
+                    current_cell.velocity_vector.add(creature_velocity)
+                }
+            }
+        }
+        for (let y = 0; y < creature_cells.length; y++) {
+            for (let x = 0; x < creature_cells[y].length; x++) {
+                let current_cell = creature_cells[y][x];
+                if (current_cell != null){
+                    if ( (x+1 <= creature_cells[y][x].length) && creature_cells[y][x+1] != null){
+                        new Bond(current_cell, creature_cells[y][x+1], bond_material);
+                    }
+                    if ( y+1 <= creature_cells[y].length ){
+                        if ( ( x+1 <= creature_cells[y][x].length ) && creature_cells[y+1][x+1] != null) {
+                            new Bond(current_cell, creature_cells[y+1][x+1], bond_material);
+                        }
+                        if (creature_cells[y+1][x] != null) {
+                            new Bond(current_cell, creature_cells[y+1][x], bond_material);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 class Cell {
-    constructor(mass, k, length, max_length, charge, position_vector, sprite_material, velocity_vector = new THREE.Vector3(0, 0, 0)) {
+    constructor(mass, k, length, max_length, charge, sprite_material, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0)) {
         this.mass = mass;
         this.k = k;
         this.length = length;
@@ -238,27 +282,26 @@ class Propulsor extends Cell {
 }
 
 function set_up_level2() {
-    let cell1 = new Cell(1, k, 1, 2*radius, 1, new THREE.Vector3(0, 0, 0), kirby_bullet_material);
-    let cell2 = new Propulsor(1, k, 1, 2*radius, 1, new THREE.Vector3(6, 0, 0), kirby_bullet_material, new THREE.Vector3(0, 0, 0), propulsion = 0);
-    //let cell2 = new Cell(1, k, 1, 2*radius, 1, new THREE.Vector3(6, 0, 0), kirby_bullet_material);
-    let cell3 = new Cell(1, k, 1, 2*radius, 1, new THREE.Vector3(3, 3, 0), kirby_bullet_material);
-    let cell4 = new Cell(1, k, 1, 2*radius, 1, new THREE.Vector3(3, -3, 0), kirby_bullet_material);
-    let bond1 = new Bond(cell1, cell2, bond_material_1);
-    let bond2 = new Bond(cell2, cell3, bond_material_1);
-    let bond3 = new Bond(cell1, cell3, bond_material_1);
-    let bond4 = new Bond(cell2, cell4, bond_material_1);
-    let bond5 = new Bond(cell1, cell4, bond_material_1);
+    let creature_1_cells = [
+        [new Cell(1, k, 1, 2*radius, 1, kirby_bullet_orange_material), null],
+        [new Cell(1, k, 1, 2*radius, 1, kirby_bullet_orange_material), new Cell(1, k, 1, 2*radius, 1, kirby_bullet_orange_material)],
+        [null, new Cell(1, k, 1, 2*radius, 1, kirby_bullet_orange_material)]
+    ]
+    let creature_1 = new Creature(creature_1_cells, bond_material_1, new THREE.Vector3(-50, -25, 0))
 
-    let v_x = -20;
-    let kell1 = new Cell(1, k, 1, 2*radius, 1, new THREE.Vector3(0+50, 0+1, 0), kirby_bullet_orange_material, new THREE.Vector3(v_x, 0, 0));
-    let kell2 = new Cell(1, k, 1, 2*radius, 1, new THREE.Vector3(6+50, 0+1, 0), kirby_bullet_orange_material, new THREE.Vector3(v_x, 0, 0));
-    let kell3 = new Cell(1, k, 1, 2*radius, 1, new THREE.Vector3(3+50, 3+1, 0), kirby_bullet_orange_material, new THREE.Vector3(v_x, 0, 0));
-    let kell4 = new Cell(1, k, 1, 2*radius, 1, new THREE.Vector3(3+50, -3+1, 0), kirby_bullet_orange_material, new THREE.Vector3(v_x, 0, 0));
-    let kbond1 = new Bond(kell1, kell2, bond_material_1);
-    let kbond2 = new Bond(kell2, kell3, bond_material_1);
-    let kbond3 = new Bond(kell1, kell3, bond_material_1);
-    let kbond4 = new Bond(kell2, kell4, bond_material_1);
-    let kbond5 = new Bond(kell1, kell4, bond_material_1);
+    let creature_2_cells = [
+        [new Cell(1, k, 1, 2*radius, 1, kirby_bullet_material), null],
+        [new Cell(1, k, 1, 2*radius, 1, kirby_bullet_material), new Cell(1, k, 1, 2*radius, 1, kirby_bullet_material)],
+        [null, new Cell(1, k, 1, 2*radius, 1, kirby_bullet_material)]
+    ]
+    let creature_2 = new Creature(creature_2_cells, bond_material_1, new THREE.Vector3(0, 0, 0))
+
+    let creature_3_cells = [
+        [new Cell(1, k, 1, 2*radius, 1, kirby_bullet_orange_material), null],
+        [new Cell(1, k, 1, 2*radius, 1, kirby_bullet_orange_material), new Cell(1, k, 1, 2*radius, 1, kirby_bullet_orange_material)],
+        [null, new Cell(1, k, 1, 2*radius, 1, kirby_bullet_orange_material)]
+    ]
+    let creature_3 = new Creature(creature_3_cells, bond_material_1, new THREE.Vector3(50, 1, 0), new THREE.Vector3(-20, 0, 0))
 }
 
 
