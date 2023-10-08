@@ -21,129 +21,491 @@ in      mid     mid     out
 in      mid     mid     out
 in      mid     mid     out
 */
-function init(){
-    app = new PIXI.Application({ width: window.innerWidth, height: window.innerHeight });
-    document.body.appendChild(app.view);
-    draw_hilbert(6)
-    /*let sprite = PIXI.Sprite.from('../petriPets/amras.png');
-    app.stage.addChild(sprite);
 
-    // Add a variable to count up the seconds our demo has been running
-    let elapsed = 0.0;
-    // Tell our application's ticker to run a new callback every frame, passing
-    // in the amount of time that has passed since the last tick
-    app.ticker.add((delta) => {
-        // Add the time to our total elapsed time
-        elapsed += delta;
-        // Update the sprite's X position based on the cosine of our elapsed time.  We divide
-        // by 50 to slow the animation down a bit...
-        sprite.x = 100.0 + Math.cos(elapsed/50.0) * 100.0;
-    });*/
+
+//define ambiant sound
+//var music = document.getElementById("myAudio");
+
+//setting up three.js
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera( 45, window.innerWidth/window.innerHeight, .1, 1000);			
+let camera_height = 100;
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });//to add anti aliasing, sdd { antialias: true } to the parameter
+renderer.setSize(window.innerWidth, window.innerHeight); 
+document.body.appendChild( renderer.domElement );//document.getElementById("body").appendChild( renderer.domElement );
+
+//everything in the universe's reference frame should be added to this group
+let universe = new THREE.Group();//the size should be approximately equal to the size of the solar system i think (which is 15,000 lsecond radius), on second thought, lets aim for closer to 1,500
+let background = new THREE.Group();
+universe.add(background);
+
+//add atuff to the scene
+scene.add( universe );
+
+
+
+const kirby_bullet_map = new THREE.TextureLoader().load( '../KirbyBulletHell/assets/bullets/kirby_bullet.png' );
+const kirby_bullet_orange_map = new THREE.TextureLoader().load( '../KirbyBulletHell/assets/bullets/kirby_bullet_orange.png' );
+const kirby_bullet_lightblue_map = new THREE.TextureLoader().load( '../KirbyBulletHell/assets/bullets/kirby_bullet_lightblue.png' );
+const kirby_bullet_material = new THREE.SpriteMaterial( { map: kirby_bullet_map } );
+const kirby_bullet_orange_material = new THREE.SpriteMaterial( { map: kirby_bullet_orange_map } );
+const kirby_bullet_lightblue_material = new THREE.SpriteMaterial( { map: kirby_bullet_lightblue_map } );
+
+//bond material
+const bond_material_1 = new THREE.LineBasicMaterial( { color: 0x0000ff } );
+
+let creatures = [];
+let cells = [];
+let bonds = [];
+let friction = 1;
+let charge = 1;
+let radius = 5;
+let k = 5;
+//let logistic_k = 4;//add this to change slope of activation function to 1 at x = x_0
+
+function init() {
+    camera.position.z = (camera_height/2)/(Math.tan((Math.PI/4)/2));
+    camera.lookAt(0, 0, 0);
+    //document.body.addEventListener("mousemove", updatePlayer, false);
+    //document.body.addEventListener("mousedown", mousedown, false);
+    //document.body.addEventListener("mouseup", mouseup, false);
+
+    window_width = window.innerWidth;
+    window_height = window.innerHeight;
+    camera_width = camera_height*window_width/window_height
+
+    /*const kirby_map = new THREE.TextureLoader().load( 'assets/kirby.png' );
+    const kirby_material = new THREE.SpriteMaterial( { map: kirby_map } );
+    kirby = new THREE.Sprite( kirby_material );
+    kirby.scale.set(player_radius*2, player_radius*2, 1);
+    kirby.position.y = -camera_height/4
+    universe.add( kirby );*/
+
+    set_up_level2();
+
+    gameloop(0);
+}
+
+let repel_dist_vector = new THREE.Vector3(0, 0, 0);
+
+function gameloop(timestamp) {
+    //update background
+    /*for (thing of background_things){
+        thing.update();
+    }*/
+
+    //update entities
+    /*for (var creature of creatures){
+        creature.update();
+        creature.check_collision();
+    }*/
+    for (let i = bonds.length-1; i > 0-1; i--) {
+        let bond = bonds[i];
+        //console.log(i);
+        bond.update_tensions(i);
+    }
+    /*for (var bond in bonds) {
+        bond.update_tensions;
+    }*/
+
+    for (let i = 0; i < cells.length; i++) {
+        let cell_1 = cells[i];
+        cell_1.update_cell();
+        for (let j = i+1; j < cells.length; j++) {
+            let cell_2 = cells[j];
+
+            repel_dist_vector.subVectors(cell_2.position_vector, cell_1.position_vector);
+            cell_1.repel_cell(cell_2, repel_dist_vector);
+        }
+    }
+
+    for (let i = 0; i < cells.length; i++) {
+        let cell = cells[i];
+        cell.update_position();
+    }
+    for (let i = 0; i < bonds.length; i++) {
+        let bond = bonds[i];
+        bond.update_position();
+    }
+    /*for (var cell in cells) {
+        cell.update_position();
+    }*/
+    //if (repel_dist_vector.subVectors(cells[0].position_vector, cells[1].position_vector).length() > 15) {
+    //    console.log("hey")
+    //}
+
+    //time = timestamp;
+    renderer.render(scene,camera);
+    window.requestAnimationFrame(gameloop);
+}
+
+/*function update_dash(){
+    document.getElementById("health").innerHTML = "health: "+health+"%"
+}*/
+
+class Cell {
+    constructor(mass, k, length, max_length, charge, position_vector, sprite_material, velocity_vector = new THREE.Vector3(0, 0, 0)) {
+        this.mass = mass;
+        this.k = k;
+        this.length = length;
+        this.max_length = max_length;
+        this.charge = charge;
+        this.position_vector = position_vector;
+        this.velocity_vector = velocity_vector;
+        this.force_vector = new THREE.Vector3(0, 0, 0);
+        this.sprite = new THREE.Sprite(sprite_material);
+        this.sprite.position.copy(this.position_vector);
+        this.orientation_vector = new THREE.Vector3(0, 1, 0);
+        universe.add(this.sprite);
+        cells.push(this);
+    }
+    update_position() {//and and add friction and reset force
+        this.force_vector.addScaledVector(this.velocity_vector, -friction/60);
+
+        this.velocity_vector.addScaledVector(this.force_vector, 1/60/this.mass);
+        this.position_vector.addScaledVector(this.velocity_vector, 1/60);
+        
+        this.sprite.position.copy(this.position_vector);
+        this.force_vector.set(0, 0, 0);
+    }
+    repel_cell(cell_2, repel_dist_vector) {
+        let dist = repel_dist_vector.length();
+        if (dist != 0) {
+            let force = k*this.charge*cell_2.charge/(dist/radius)**2/dist;// this is actually force times dist (so that dist gets divided out)
+
+            this.force_vector.addScaledVector(repel_dist_vector, -force);
+            cell_2.force_vector.addScaledVector(repel_dist_vector, force);
+        }
+    }
+    update_cell(){}
+    delete_sprite() {
+        universe.remove(this.sprite);
+    }
+}
+
+class Bond {
+    constructor(cell_1, cell_2, bond_material) {
+        this.k = ( cell_1.k + cell_2.k )/2;
+        this.dampening = ( cell_1.dampening + cell_2.dampening )/2;
+        this.length = ( cell_1.length + cell_2.length )/2;
+        this.max_length = ( cell_1.max_length + cell_2.max_length )/2;
+        this.cell_1 = cell_1;
+        this.cell_2 = cell_2;
+        this.geometry = new THREE.BufferGeometry().setFromPoints([cell_1.position_vector, cell_2.position_vector]);
+        this.bond_material = bond_material;
+        this.line = new THREE.Line( this.geometry, this.bond_material );
+        this.line_vertices = this.geometry.getAttribute( 'position' );
+
+        this.dist_vector = new THREE.Vector3(0, 0, 0);//cell_2_pos - cell_1_pos
+
+        universe.add(this.line);
+        bonds.push(this)
+    }
+    update_tensions(i) {
+        this.dist_vector.subVectors(this.cell_2.position_vector, this.cell_1.position_vector);
+        if (this.dist_vector.length() > this.max_length) {
+            this.break_bond(i);
+        }
+        else {
+            this.cell_2.force_vector.addScaledVector(this.dist_vector, -this.k/radius);
+            this.cell_1.force_vector.addScaledVector(this.dist_vector, this.k/radius);
+        }
+    }
+    update_position() {
+        this.line_vertices.setX(0, this.cell_1.position_vector.x);
+        this.line_vertices.setY(0, this.cell_1.position_vector.y);
+        this.line_vertices.setX(1, this.cell_2.position_vector.x);
+        this.line_vertices.setY(1, this.cell_2.position_vector.y);
+
+        this.line_vertices.needsUpdate = true;
+    }
+    break_bond(i) {
+        universe.remove(this.line);
+        bonds.splice(i, 1);
+    }
+}
+
+
+class Propulsor extends Cell {
+    constructor(mass, k, length, max_length, charge, position_vector, sprite_material, velocity_vector = new THREE.Vector3(0, 0, 0), propulsion) {
+        super(mass, k, length, max_length, charge, position_vector, sprite_material, velocity_vector)
+        this.propulsion = propulsion;//(does this mean that these points must have an orientation?)
+    }
+    update_cell(){
+        this.force_vector.addScaledVector(this.orientation_vector, this.propulsion);
+    }
+}
+
+function set_up_level2() {
+    let cell1 = new Cell(1, k, 1, 2*radius, 1, new THREE.Vector3(0, 0, 0), kirby_bullet_material);
+    let cell2 = new Propulsor(1, k, 1, 2*radius, 1, new THREE.Vector3(6, 0, 0), kirby_bullet_material, new THREE.Vector3(0, 0, 0), propulsion = 0);
+    //let cell2 = new Cell(1, k, 1, 2*radius, 1, new THREE.Vector3(6, 0, 0), kirby_bullet_material);
+    let cell3 = new Cell(1, k, 1, 2*radius, 1, new THREE.Vector3(3, 3, 0), kirby_bullet_material);
+    let cell4 = new Cell(1, k, 1, 2*radius, 1, new THREE.Vector3(3, -3, 0), kirby_bullet_material);
+    let bond1 = new Bond(cell1, cell2, bond_material_1);
+    let bond2 = new Bond(cell2, cell3, bond_material_1);
+    let bond3 = new Bond(cell1, cell3, bond_material_1);
+    let bond4 = new Bond(cell2, cell4, bond_material_1);
+    let bond5 = new Bond(cell1, cell4, bond_material_1);
+
+    let v_x = -20;
+    let kell1 = new Cell(1, k, 1, 2*radius, 1, new THREE.Vector3(0+50, 0+1, 0), kirby_bullet_orange_material, new THREE.Vector3(v_x, 0, 0));
+    let kell2 = new Cell(1, k, 1, 2*radius, 1, new THREE.Vector3(6+50, 0+1, 0), kirby_bullet_orange_material, new THREE.Vector3(v_x, 0, 0));
+    let kell3 = new Cell(1, k, 1, 2*radius, 1, new THREE.Vector3(3+50, 3+1, 0), kirby_bullet_orange_material, new THREE.Vector3(v_x, 0, 0));
+    let kell4 = new Cell(1, k, 1, 2*radius, 1, new THREE.Vector3(3+50, -3+1, 0), kirby_bullet_orange_material, new THREE.Vector3(v_x, 0, 0));
+    let kbond1 = new Bond(kell1, kell2, bond_material_1);
+    let kbond2 = new Bond(kell2, kell3, bond_material_1);
+    let kbond3 = new Bond(kell1, kell3, bond_material_1);
+    let kbond4 = new Bond(kell2, kell4, bond_material_1);
+    let kbond5 = new Bond(kell1, kell4, bond_material_1);
+}
+
+
+/*class Cell2 {
+    constructor() {
+        universe.add() // this is wrong
+    }
+    update_cell() {
+        //yeet
+    }
+    delete_sprite(){
+        universe.remove(this.sprite); // this is wrong
+    }
+}
+
+class Creature {
+    constructor() {
+        universe.add()
+    }
+    recalculate_creature(){
+        //yeet
+    }
+    update_creature() {
+        //yeet
+    }
+    delete_sprite(){
+        universe.remove(this.sprite);
+    }
+}*/
+
+/*class Neural_Network {
+    constructor(layers, ) {
+    }
+}
+
+class Neuron {
+    constructor(inputs, outputs) {
+        this.inputs = [];
+        this.outputs = [];
+        this.x_0 = 0;//this is the center of the activation logistic curve
+        this.current_activation_level = 0;
+    }
+    avtivation_function(x) {
+        return 1/( 1 + Math.E**( -(x-this.x_0) ) )//return 1/( 1 + Math.E**( -logistic_k*(x-this.x_0) ) )
+    }
+}*/
+
+//currently assuming all 
+class Bullet{
+    constructor(radius, vectors, material, damage){
+        this.radius = radius;
+        this.vectors = vectors;
+        this.dimensions = vectors.length;
+        this.damage = damage;
+        this.sprite = new THREE.Sprite(material);
+        this.sprite.scale.set(radius*2, radius*2, 1);
+        universe.add(this.sprite);
+    }
+    update_bullet(){
+        let v = this.vectors;
+        let d = this.dimensions;
+        if (d>1){
+            for (var i = d-1;i>0;i--){
+                v[i-1][0] += v[i][0];
+                v[i-1][1] += v[i][1];
+            }
+            this.sprite.position.x = v[0][0];
+            this.sprite.position.y = v[0][1];
+        }
+    }
+    check_collision(){
+        if ((this.sprite.position.x-player_x)**2+(this.sprite.position.y-player_y)**2 < (this.radius+player_radius)**2){
+            health -= this.damage;
+            update_dash();
+            return true;
+        } else {
+            return false;
+        }
+    }
+    check_onscreen(){
+        if (Math.abs(this.sprite.position.x)+this.radius>camera_width/2||Math.abs(this.sprite.position.y)+this.radius>camera_height/2){
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    delete_sprite(){
+        universe.remove(this.sprite);
+    }
+}
+class Kirby_bullet extends Bullet{
+    check_collision(){
+        //return false
+        let x_pos = this.sprite.position.x;
+        let y_pos = this.sprite.position.y;
+        for (var i = all_enemies.length; i--;) {
+            let enemy = all_enemies[i];
+            if ((x_pos-enemy.x)**2+(y_pos-enemy.y)**2 < (this.radius+enemy.radius)**2){
+                enemy.hp -= this.damage;
+                if (enemy.check_health()){
+                    enemy.delete_sprite();
+                    all_enemies.splice(i, 1);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+class Enemy{//radius, vectors, geometry
+    constructor(material, hp, radius, update, bullet_materials, damage = 1, init_x = 0, init_y = 0){
+        this.hp = hp;
+        this.radius = radius;
+        //this.period = period;
+        //this.movement = movement;
+        //this.rotation = rotation;
+        this.bullet_materials = bullet_materials;
+        this.sprite = new THREE.Sprite(material);
+        this.sprite.scale.set(radius*2, radius*2, 1);
+        this.damage = damage;
+        universe.add(this.sprite);
+        this.update = update;
+        this.state = 0;
+        this.frame_count = 0;
+        this.x = init_x;
+        this.y = init_y;
+        this.move();
+    }
+    update(){}
+    move(){
+        this.sprite.position.x=this.x;
+        this.sprite.position.y=this.y;
+    }
+    /*move(){
+        this.graphics.x = half_window_width*Math.cos(time*2*Math.PI/this.period);
+        this.graphics.y = 0;
+        //this.graphics.y = half_window_height;
+        for (a of movement.x.a){
+            //something
+        }
+        something = movement.x.a[0]/2 + Math.cos() + Math.sin()
+        //do something  
+    }*/
+    /*rotate(){}*/
+    /*shoot(){
+        if (Math.cos(time*2*Math.PI/(this.period/8))**2<.05){
+            all_bullets.push(new Bullet(10, [[this.graphics.x,-half_window_height/2],[.3,.2],[0,.01]], this.bullet_geometry));
+        }
+    }*/
+    check_collision(){
+        if ((this.sprite.position.x-player_x)**2+(this.sprite.position.y-player_y)**2 < (this.radius+player_radius)**2){
+            health -= this.damage;
+            update_dash();
+            return true;
+        } else {
+            return false;
+        }
+    }
+    check_health(){
+        if (this.hp <= 0){
+            return true;
+        }
+    }
+    delete_sprite(){
+        universe.remove(this.sprite);
+    }
+}
+
+class Background {
+    constructor(update,mesh){
+        this.update = update;
+        this.mesh = mesh;
+        background.add(this.mesh);
+    }
+    update(){}
+    /*delete_sprite(){
+        background.remove(this.sprite);
+    }*/
+}
+
 
 /*
-const template = new PIXI.Graphics();
-//template.drawRect(50, 50, 100, 100);
-graphics.beginFill(0xDE3249);
-graphics.drawRect(500, 500, 100, 100);
-graphics.endFill();
-// Create 5 duplicate objects
-for (let i = 0; i < 5; i++) {
-    // Initialize the duplicate using our template's pre-built geometry
-    let duplicate = new PIXI.Graphics(template.geometry);
-  }
-app.stage.addChild(template);
+//level 1
 */
-//var points = [];
-/*for (let i = 0; i < 20; i++) {
-    points.push(new PIXI.Point(i * 50, 0));
-};
-let rope = new PIXI.SimpleRope(PIXI.Texture.from('../petriPets/amras.png'), points);
-app.stage.addChild(rope);*/
-}
-//var points = [];
+function set_up_level1() {
+    const vertices = [];
+    for ( let i = 0; i < 1000; i ++ ) {
+        const x = THREE.MathUtils.randFloatSpread( 500 );
+        const y = THREE.MathUtils.randFloatSpread( 500 );
+        const z = THREE.MathUtils.randFloatSpread( 500 );
 
-up = 0xe32d2d;
-left = 0x32a852
-right = 0x10a9e0
-down = 0x710dbd
-let app;
-function hilbert(x1, y1, x2, y2, iterations){
-    //first, calculate midpoint
-    var xmid = (x1+x2)/2;
-    var ymid = (y1+y2)/2;
-    if (iterations > 1){
-        //do something
-        hilbert(x1, y1, xmid, ymid, iterations-1);//top left
-        hilbert(xmid, y1, x2, ymid, iterations-1);//top right
-        hilbert(xmid, ymid, x1, y2, iterations-1);//bottom left
-        hilbert(xmid, y2, x2, ymid, iterations-1);//bottom right
+        vertices.push( x, y, z );
     }
-    else{//to get some cool results switch around some x's and y's... it gives like a qr code thing
-        //do the actual thing
-        var xx1;
-        var yy1;
-        var xx2;
-        var yy2;
-        //top left
-        xx1 = x1;
-        yy1 = y1;
-        xx2 = xmid;
-        yy2 = ymid;
-        hilbert_graphics.beginFill(up);
-        hilbert_graphics.drawRect(Math.min(xx1, xx2), Math.min(yy1, yy2), Math.max(xx1, xx2)-Math.min(xx1, xx2), Math.max(yy1, yy2)-Math.min(yy1, yy2));
-        hilbert_graphics.endFill();
-        //top right: xmid,y1, x2, ymid
-        xx1 = xmid;
-        yy1 = y1;
-        xx2 = x2;
-        yy2 = ymid;
-        hilbert_graphics.beginFill(left);
-        hilbert_graphics.drawRect(Math.min(xx1, xx2), Math.min(yy1, yy2), Math.max(xx1, xx2)-Math.min(xx1, xx2), Math.max(yy1, yy2)-Math.min(yy1, yy2));
-        hilbert_graphics.endFill();
-        //bottom left: xmid, ymid, x1, y2
-        xx1 = xmid;
-        yy1 = ymid;
-        xx2 = x1;
-        yy2 = y2;
-        hilbert_graphics.beginFill(right);
-        hilbert_graphics.drawRect(Math.min(xx1, xx2), Math.min(yy1, yy2), Math.max(xx1, xx2)-Math.min(xx1, xx2), Math.max(yy1, yy2)-Math.min(yy1, yy2));
-        hilbert_graphics.endFill();
-        //bottom right: xmid, y2, x2, ymid
-        xx1 = xmid;
-        yy1 = y2;
-        xx2 = x2;
-        yy2 = ymid;
-        hilbert_graphics.beginFill(down);
-        hilbert_graphics.drawRect(Math.min(xx1, xx2), Math.min(yy1, yy2), Math.max(xx1, xx2)-Math.min(xx1, xx2), Math.max(yy1, yy2)-Math.min(yy1, yy2));
-        hilbert_graphics.endFill();
-    }
-}
-function draw_hilbert(iterations){
-    hilbert_graphics = new PIXI.Graphics();
-    var side_length = Math.min(window.innerWidth, window.innerHeight);
-    hilbert(0, 0, side_length, side_length, iterations);
-    app.stage.addChild(hilbert_graphics);
-}
+    var starGeometry = new THREE.BufferGeometry();
+	starGeometry.setAttribute('position', new THREE.Float32BufferAttribute( vertices, 3 ));
+	var starMaterial = new THREE.PointsMaterial({color:0x888888})
+	var stars = new THREE.Points( starGeometry, starMaterial );
+	background.add(stars);
 
-class creature{
-    constructor(brain, reserve, muscle){
-        this.brain = brain;
-        this.reserve = reserve;
-        this.muscle = muscle;
-    }
-    eat(direction){
+    let planel1_geometry = new THREE.IcosahedronGeometry(75);
+    let planel1_edges = new THREE.EdgesGeometry( planel1_geometry );
+    let planel1_material = new THREE.LineBasicMaterial( { color: 0x00ff00 } );
+    const planet1_line = new THREE.LineSegments( planel1_edges, planel1_material);
+    background_things.push(new Background(function(){
+        this.mesh.rotation.z -= .0005;
+        this.mesh.rotation.y += .001;
+    }, planet1_line));
 
-    }
-    move(direction){
-        eat(direction);
-    }
-    reproduce(direction){
-        eat(direction);
-    }
-    change_muscle(){
+    let b_bullet_map = new THREE.TextureLoader().load( 'assets/bullets/bbullet.png' );
+    let b_bullet_material = new THREE.SpriteMaterial( { map: b_bullet_map } );
+    let dark_matter_map = new THREE.TextureLoader().load( 'assets/enemies/darkmatter.png' );
+    let dark_matter_material = new THREE.SpriteMaterial( { map: dark_matter_map } );
+    let dark_matter_tear_map = new THREE.TextureLoader().load( 'assets/bullets/darkmattertear.png' );
+    let dark_matter_tear_material = new THREE.SpriteMaterial( { map: dark_matter_tear_map } );
 
-    }
-    take_turn(){
-        
-    }
+    all_enemies.push(new Enemy(
+        dark_matter_material, 1000, 8, function(){
+            if(this.state == 0) {//phase 1
+                this.x = camera_width/2*3/4*Math.sin(Math.PI/60/4*this.frame_count)
+                if(this.frame_count%4==0){
+                    all_bullets.push(new Bullet(1, [[this.x,this.y],[0,-.5]], this.bullet_materials[0],10));
+                }
+                this.move();
+                this.frame_count++
+                if(this.frame_count >= 10*60){
+                    this.state = 1;
+                }
+            }
+            else if(this.state == 1){//phase 2
+                this.x = camera_width/2*3/4*Math.sin(Math.PI/60/4*this.frame_count)
+                this.y = 25+camera_width/6*3/4*Math.sin(Math.PI/60/3*this.frame_count)
+                if(this.frame_count%4==0){
+                    all_bullets.push(new Bullet(1, [[this.x,this.y],[0,-.5]], this.bullet_materials[1],15));
+                }
+                this.move();
+                this.frame_count++
+            }
+        }, [
+            b_bullet_material,
+            dark_matter_tear_material
+        ], 1, 0, 25));
+
+    background.position.z = -200;//offset
+    //move_background = function() { background.position.y -= .1 }//translate
+    move_background = function() { background.rotation.x += .001 }//rotate
+
+    //music.play();
 }
