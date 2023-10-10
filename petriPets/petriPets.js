@@ -144,6 +144,7 @@ class Schematic {//we are going to change this
             for (let x = 0; x < this.creature_cells[y].length; x++) {
                 let current_cell = this.creature_cells[y][x];
                 if (current_cell != null){
+                    current_cell.update_schematics(this, x, y);
                     current_cell.add_cell_to_simulation();
                     current_cell.position_vector.addScaledVector(x_basis, x).addScaledVector(y_basis, -y).add(creature_position);
                     current_cell.velocity_vector.add(creature_velocity)
@@ -156,21 +157,27 @@ class Schematic {//we are going to change this
                 let current_cell = this.creature_cells[y][x];
                 if (current_cell != null){
                     if ( (x+1 <= this.creature_cells[y].length) && this.creature_cells[y][x+1] != null){
-                        new Bond(current_cell, this.creature_cells[y][x+1], this.bond_material);
+                        let current_bond_1 = new Bond(current_cell, this.creature_cells[y][x+1], this.bond_material);
+                        current_bond_1.add_bond_to_simulation();
+                        current_bond_1.update_index(2*x+1, 2*y);
                     }
                     if ( y+1 < this.creature_cells.length ){
                         if ( ( x+1 < this.creature_cells[y].length ) && this.creature_cells[y+1][x+1] != null) {
-                            new Bond(current_cell, this.creature_cells[y+1][x+1], this.bond_material);
+                            let current_bond_2 = new Bond(current_cell, this.creature_cells[y+1][x+1], this.bond_material);
+                            current_bond_2.add_bond_to_simulation();
+                            current_bond_2.update_index(2*x+1, (2*y+1));
                         }
                         if (this.creature_cells[y+1][x] != null) {
-                            new Bond(current_cell, this.creature_cells[y+1][x], this.bond_material);
+                            let current_bond_3 = new Bond(current_cell, this.creature_cells[y+1][x], this.bond_material);
+                            current_bond_3.add_bond_to_simulation();
+                            current_bond_3.update_index(2*x, (2*y+1));
                         }
                     }
                 }
             }
         }
     }
-    change_energy(energy_delta) {//returns true if energy change was successfull
+    change_energy(energy_delta) {//returns true if energy change was successfull //this will be moved to the cell class
         if (energy_delta < -this.energy){
             this.energy = Math.min( this.energy+energy_delta, this.max_energy);
             return true;
@@ -193,14 +200,23 @@ class Cell {
         this.force_vector = new THREE.Vector3(0, 0, 0);
         this.sprite = new THREE.Sprite(sprite_material);
         this.sprite.position.copy(this.position_vector);
-        this.cell_bonds = [];
+        //this.cell_bonds = [];
         this.input_total = 0;
         this.output = 0;
         this.x_0 = 0;
+
+        this.cell_schematics = null;
+        this.x_index = 0;
+        this.y_index = 0;
     }
     add_cell_to_simulation() {
         universe.add(this.sprite);
         cells.push(this);
+    }
+    update_schematics(cell_schematics, x_index = 0, y_index = 0) {//and index
+        this.cell_schematics = cell_schematics;
+        this.x_index = x_index;
+        this.y_index = y_index;
     }
     update_position() {//and and add friction and reset force
         this.force_vector.addScaledVector(this.velocity_vector, -friction/60);
@@ -246,18 +262,21 @@ class Bond {
         this.max_length = ( cell_1.max_length + cell_2.max_length )/2;
         this.cell_1 = cell_1;
         this.cell_2 = cell_2;
+        this.broken = false;
         this.geometry = new THREE.BufferGeometry().setFromPoints([cell_1.position_vector, cell_2.position_vector]);
         this.bond_material = bond_material;
         this.line = new THREE.Line( this.geometry, this.bond_material );
         this.line_vertices = this.geometry.getAttribute( 'position' );
-        this.cell_1.cell_bonds.push(this);
-        this.cell_2.cell_bonds.push(this);
+        //this.cell_1.cell_bonds.push(this);
+        //this.cell_2.cell_bonds.push(this);
         //this.cell_1_weight = cell_1_weight;
         //this.cell_2_weight = cell_2_weight;
   //      this.cell_1_weighted_output = 0;
   //      this.cell_2_weighted_output = 0;
         this.dist_vector = new THREE.Vector3(0, 0, 0);//cell_2_pos - cell_1_pos
-
+        //add an if statement here to add the bond to directed cells. (also could add to a break list...)
+    }
+    add_bond_to_simulation() {
         universe.add(this.line);
         bonds.push(this)
     }
@@ -271,6 +290,10 @@ class Bond {
             this.cell_1.force_vector.addScaledVector(this.dist_vector, this.k/radius);
         }
     }
+    update_index(x_index, y_index) {//the given indeces will be doubled to keep everything an int 
+        this.x_index = x_index;
+        this.y_index = y_index;
+    }
     update_position() {
         this.line_vertices.setX(0, this.cell_1.position_vector.x);
         this.line_vertices.setY(0, this.cell_1.position_vector.y);
@@ -280,8 +303,7 @@ class Bond {
         this.line_vertices.needsUpdate = true;
     }
     break_bond(i) {
-        //this.cell_1.remove();
-        //this.cell_1.remove();
+        this.broken = true;
         universe.remove(this.line);
         bonds.splice(i, 1);
     }
@@ -311,20 +333,36 @@ class Bond {
         this.direction.applyAxisAngle(z_axis, total_angle/this.cell_bonds.length)
     }
 }*/
+/*let angle_decoder = [//[y][x]
+    [0, -150, 150],
+    [-90, 0, 90],
+    [-30, 30, 0]
+]*/
+
 class Directed_Cell extends Cell {
-    constructor(mass, k, length, max_length, charge, position_vector, sprite_material, velocity_vector = new THREE.Vector3(0, 0, 0)) {
-        super(mass, k, length, max_length, charge, position_vector, sprite_material, velocity_vector)
+    constructor(mass, k, bond_length, max_length, charge, sprite_material, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond, desired_angle = 0) {//angle measured from vertical
+        super(mass, k, bond_length, max_length, charge, sprite_material, position_vector, velocity_vector)
         this.direction = new THREE.Vector3(0, 1, 0);
-        this.total_angle = 0;
-        //this.expected_angles = cell_schematics[this.x,this.y]
+        this.anchor_bond = anchor_bond;
+        if (this.anchor_bond.cell_1.x_index == this.x_index && this.anchor_bond.cell_1.y_index == this.y_index) {
+            this.anchor_cell = this.anchor_bond.cell_2;
+        } else {
+            this.anchor_cell = this.anchor_bond.cell_1;
+        }
+        this.desired_angle = desired_angle;
     }
     update_direction() {
-        //for (let i = 0; i < bonds.length; i++) {
-        //    let bond = bonds[i];
-        for (let bond of this.cell_bonds) {
-            //total_angle += (bond.angleTo(this.direction) - expected);
+        if (!this.anchor_bond.broken){
+            this.direction.subVectors(this.position_vector, this.anchor_cell.position_vector);
+            this.direction.normalize().negate();
+            //this.direction.applyAxsiAngle(z_axis, desired_angle);
+        } else {
+            this.anchor_bond = null;
+            this.anchor_cell = null;
         }
-        this.direction.applyAxisAngle(z_axis, total_angle/this.cell_bonds.length)
+    }
+    update_cell() {
+        this.update_direction();
     }
 }
 
