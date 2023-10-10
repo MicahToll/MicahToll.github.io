@@ -134,38 +134,41 @@ creature_cells structure:
 creature_cells[y][x]
 */
 
-class Creature {//we are going to change this
-    constructor(creature_cells, bond_material, creature_position = new THREE.Vector3(0, 0, 0), creature_velocity = new THREE.Vector3(0, 0, 0)) {
-        for (let y = 0; y < creature_cells.length; y++) {
-            for (let x = 0; x < creature_cells[y].length; x++) {
-                let current_cell = creature_cells[y][x];
+class Schematic {//we are going to change this
+    constructor(creature_cells, bond_material) {
+        this.creature_cells = creature_cells;
+        this.bond_material = bond_material;
+    }
+    build_schematic(creature_position = new THREE.Vector3(0, 0, 0), creature_velocity = new THREE.Vector3(0, 0, 0)) {
+        for (let y = 0; y < this.creature_cells.length; y++) {
+            for (let x = 0; x < this.creature_cells[y].length; x++) {
+                let current_cell = this.creature_cells[y][x];
                 if (current_cell != null){
+                    current_cell.add_cell_to_simulation();
                     current_cell.position_vector.addScaledVector(x_basis, x).addScaledVector(y_basis, -y).add(creature_position);
                     current_cell.velocity_vector.add(creature_velocity)
                     //current_cell.parent_creature = this;
                 }
             }
         }
-        for (let y = 0; y < creature_cells.length; y++) {
-            for (let x = 0; x < creature_cells[y].length; x++) {
-                let current_cell = creature_cells[y][x];
+        for (let y = 0; y < this.creature_cells.length; y++) {
+            for (let x = 0; x < this.creature_cells[y].length; x++) {
+                let current_cell = this.creature_cells[y][x];
                 if (current_cell != null){
-                    if ( (x+1 <= creature_cells[y].length) && creature_cells[y][x+1] != null){
-                        new Bond(current_cell, creature_cells[y][x+1], bond_material);
+                    if ( (x+1 <= this.creature_cells[y].length) && this.creature_cells[y][x+1] != null){
+                        new Bond(current_cell, this.creature_cells[y][x+1], this.bond_material);
                     }
-                    if ( y+1 < creature_cells.length ){
-                        if ( ( x+1 < creature_cells[y].length ) && creature_cells[y+1][x+1] != null) {
-                            new Bond(current_cell, creature_cells[y+1][x+1], bond_material);
+                    if ( y+1 < this.creature_cells.length ){
+                        if ( ( x+1 < this.creature_cells[y].length ) && this.creature_cells[y+1][x+1] != null) {
+                            new Bond(current_cell, this.creature_cells[y+1][x+1], this.bond_material);
                         }
-                        if (creature_cells[y+1][x] != null) {
-                            new Bond(current_cell, creature_cells[y+1][x], bond_material);
+                        if (this.creature_cells[y+1][x] != null) {
+                            new Bond(current_cell, this.creature_cells[y+1][x], this.bond_material);
                         }
                     }
                 }
             }
         }
-        this.creature_cells = creature_cells;
-        this.bond_material = bond_material;
     }
     change_energy(energy_delta) {//returns true if energy change was successfull
         if (energy_delta < -this.energy){
@@ -177,57 +180,6 @@ class Creature {//we are going to change this
         }
     }
 }
-
-/*function build_schematic(){
-    //yeet?
-}*/
-
-/*class Schematic {
-    constructor(creature_cells, bond_material, energy = 0, creature_position = new THREE.Vector3(0, 0, 0), creature_velocity = new THREE.Vector3(0, 0, 0)) {
-        let max_energy = 0;
-        for (let y = 0; y < creature_cells.length; y++) {
-            for (let x = 0; x < creature_cells[y].length; x++) {
-                let current_cell = creature_cells[y][x];
-                if (current_cell != null){
-                    current_cell.position_vector.addScaledVector(x_basis, x).addScaledVector(y_basis, -y).add(creature_position);
-                    current_cell.velocity_vector.add(creature_velocity)
-                    current_cell.parent_creature = this;
-                }
-            }
-        }
-        for (let y = 0; y < creature_cells.length; y++) {
-            for (let x = 0; x < creature_cells[y].length; x++) {
-                let current_cell = creature_cells[y][x];
-                if (current_cell != null){
-                    if ( (x+1 <= creature_cells[y][x].length) && creature_cells[y][x+1] != null){
-                        new Bond(current_cell, creature_cells[y][x+1], bond_material);
-                    }
-                    if ( y+1 <= creature_cells[y].length ){
-                        if ( ( x+1 <= creature_cells[y][x].length ) && creature_cells[y+1][x+1] != null) {
-                            new Bond(current_cell, creature_cells[y+1][x+1], bond_material);
-                        }
-                        if (creature_cells[y+1][x] != null) {
-                            new Bond(current_cell, creature_cells[y+1][x], bond_material);
-                        }
-                    }
-                }
-            }
-        }
-        this.creature_cells = creature_cells;
-        this.bond_material = bond_material;
-        this.energy = energy;
-        this.max_energy = max_energy;
-    }
-    change_energy(energy_delta) {//returns true if energy change was successfull
-        if (energy_delta < -this.energy){
-            this.energy = Math.min( this.energy+energy_delta, this.max_energy);
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-}*/
 
 class Cell {
     constructor(mass, k, bond_length, max_length, charge, sprite_material, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0)) {
@@ -241,11 +193,12 @@ class Cell {
         this.force_vector = new THREE.Vector3(0, 0, 0);
         this.sprite = new THREE.Sprite(sprite_material);
         this.sprite.position.copy(this.position_vector);
-        this.orientation_vector = new THREE.Vector3(0, 1, 0);//not used yet
         this.cell_bonds = [];
         this.input_total = 0;
         this.output = 0;
         this.x_0 = 0;
+    }
+    add_cell_to_simulation() {
         universe.add(this.sprite);
         cells.push(this);
     }
@@ -297,8 +250,8 @@ class Bond {
         this.bond_material = bond_material;
         this.line = new THREE.Line( this.geometry, this.bond_material );
         this.line_vertices = this.geometry.getAttribute( 'position' );
-        //this.cell_1.bonds.push(this);
-        //this.cell_2.bonds.push(this);
+        this.cell_1.cell_bonds.push(this);
+        this.cell_2.cell_bonds.push(this);
         //this.cell_1_weight = cell_1_weight;
         //this.cell_2_weight = cell_2_weight;
   //      this.cell_1_weighted_output = 0;
@@ -338,14 +291,34 @@ class Bond {
     }
 }
 
-class Directed_Cell extends Cell {
+/*class Directed_Bond extends Bond {
     constructor(mass, k, length, max_length, charge, position_vector, sprite_material, velocity_vector = new THREE.Vector3(0, 0, 0)) {
         super(mass, k, length, max_length, charge, position_vector, sprite_material, velocity_vector)
         this.direction = new THREE.Vector3(0, 1, 0);
         //this.expected_angles = cell_schematics[this.x,this.y]
     }
+    update_tensions(i) {
+        
+        super.update_tensions(i);
+    }
     update_direction() {
         let total_angle = 0;
+        //for (let i = 0; i < bonds.length; i++) {
+        //    let bond = bonds[i];
+        for (let bond of this.cell_bonds) {
+            //total_angle += (bond.angleTo(this.direction) - expected);
+        }
+        this.direction.applyAxisAngle(z_axis, total_angle/this.cell_bonds.length)
+    }
+}*/
+class Directed_Cell extends Cell {
+    constructor(mass, k, length, max_length, charge, position_vector, sprite_material, velocity_vector = new THREE.Vector3(0, 0, 0)) {
+        super(mass, k, length, max_length, charge, position_vector, sprite_material, velocity_vector)
+        this.direction = new THREE.Vector3(0, 1, 0);
+        this.total_angle = 0;
+        //this.expected_angles = cell_schematics[this.x,this.y]
+    }
+    update_direction() {
         //for (let i = 0; i < bonds.length; i++) {
         //    let bond = bonds[i];
         for (let bond of this.cell_bonds) {
@@ -435,26 +408,29 @@ class Ejector extends Cell {
 }*/
 
 function set_up_level2() {
-    let creature_1_cells = [
+    let schematic_1_cells = [
         [new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material), null],
         [new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material), new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material)],
         [null, new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material)]
     ]
-    let creature_1 = new Creature(creature_1_cells, bond_material_1, new THREE.Vector3(-50, -25, 0))
+    let schematic_1 = new Schematic(schematic_1_cells, bond_material_1)
+    schematic_1.build_schematic(new THREE.Vector3(-50, -25, 0));
 
-    let creature_2_cells = [
+    let schematic_2_cells = [
         [new Cell(1, k, radius, 2*radius, 1, kirby_bullet_material), null],
         [new Cell(1, k, radius, 2*radius, 1, kirby_bullet_material), new Cell(1, k, radius, 2*radius, 1, kirby_bullet_material)],
         [null, new Cell(1, k, radius, 2*radius, 1, kirby_bullet_material)]
     ]
-    let creature_2 = new Creature(creature_2_cells, bond_material_1, new THREE.Vector3(0, 0, 0))
+    let schematic_2 = new Schematic(schematic_2_cells, bond_material_1)
+    schematic_2.build_schematic(new THREE.Vector3(0, 0, 0));
 
-    let creature_3_cells = [
+    let schematic_3_cells = [
         [new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material), null],
         [new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material), new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material)],
         [null, new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material)]
     ]
-    let creature_3 = new Creature(creature_3_cells, bond_material_1, new THREE.Vector3(50, 1, 0), new THREE.Vector3(-20, 0, 0))
+    let schematic_3 = new Schematic(schematic_3_cells, bond_material_1)
+    schematic_3.build_schematic(new THREE.Vector3(50, 1, 0), new THREE.Vector3(-20, 0, 0));
 }
 
 /*class Neuron {
