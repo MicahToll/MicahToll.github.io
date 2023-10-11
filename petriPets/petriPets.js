@@ -1,6 +1,98 @@
 //define ambiant sound
 //var music = document.getElementById("myAudio");
 
+//keyboard variables, 
+class Key {
+    constructor() {
+        this.value = false;
+        /*this.w = false;
+        this.a = false;
+        this.s = false;
+        this.d = false;
+        this.q = false;
+        this.e = false;
+        this.space = false;*/
+    }
+}
+let w_key = new Key();
+let a_key = new Key();
+let s_key = new Key();
+let d_key = new Key();
+let q_key = new Key();
+let e_key = new Key();
+let space_key = new Key();
+
+function keyDown(){
+	//console.log(event.keyCode);
+	switch(event.keyCode) {
+		case 87:
+			w_key.value = true;
+			break;
+		case 65:
+			a_key.value = true;
+			break;
+		case 83:
+			s_key.value = true;
+			break;
+		case 68:
+			d_key.value = true;
+			break;
+		case 81:
+			q_key.value = true;
+			break;
+		case 69:
+			e_key.value = true;
+			break;
+		case 32:
+			space_key.value = true;
+			break;
+		//default:
+			//console.log(event.keyCode);
+			//no default required for this
+	}
+}
+
+function keyUp(){
+	//console.log(event.keyCode);
+	switch(event.keyCode) {
+		case 87:
+			w_key.value = false;
+			break;
+		case 65:
+			a_key.value = false;
+			break;
+		case 83:
+			s_key.value = false;
+			break;
+		case 68:
+			d_key.value = false;
+			break;
+		case 81:
+			q_key.value = false;
+			break;
+		case 69:
+			e_key.value = false;
+			break;
+		case 32:
+			space_key.value = false;
+			break;
+		//default:
+			//no default required for this
+	}
+}
+
+//controls handler
+document.addEventListener('keydown', keyDown);
+document.addEventListener('keyup', keyUp);
+document.addEventListener("wheel", wheel);
+
+let zoom = 0;
+
+function wheel(){
+    zoom = Math.max(20, Math.min( zoom+event.deltaY/25, 500 ));//not sure why this has to be negative
+    camera.position.setZ(zoom);
+}
+
 //setting up three.js
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 45, window.innerWidth/window.innerHeight, .1, 1000);			
@@ -19,10 +111,11 @@ universe.add(background);
 scene.add( universe );
 
 
-
+const kirby_map = new THREE.TextureLoader().load( '../KirbyBulletHell/assets/kirby.png' );
 const kirby_bullet_map = new THREE.TextureLoader().load( '../KirbyBulletHell/assets/bullets/kirby_bullet.png' );
 const kirby_bullet_orange_map = new THREE.TextureLoader().load( '../KirbyBulletHell/assets/bullets/kirby_bullet_orange.png' );
 const kirby_bullet_lightblue_map = new THREE.TextureLoader().load( '../KirbyBulletHell/assets/bullets/kirby_bullet_lightblue.png' );
+const kirby_material = new THREE.SpriteMaterial( { map: kirby_map } );
 const kirby_bullet_material = new THREE.SpriteMaterial( { map: kirby_bullet_map } );
 const kirby_bullet_orange_material = new THREE.SpriteMaterial( { map: kirby_bullet_orange_map } );
 const kirby_bullet_lightblue_material = new THREE.SpriteMaterial( { map: kirby_bullet_lightblue_map } );
@@ -43,7 +136,8 @@ let z_axis = new THREE.Vector3(0, 0, 1);
 //let logistic_k = 4;//add this to change slope of activation function to 1 at x = x_0
 
 function init() {
-    camera.position.z = (camera_height/2)/(Math.tan((Math.PI/4)/2));
+    camera.position.setZ( (camera_height/2)/(Math.tan((Math.PI/4)/2)) );
+    zoom = camera.position.z;
     camera.lookAt(0, 0, 0);
     //document.body.addEventListener("mousemove", updatePlayer, false);
     //document.body.addEventListener("mousedown", mousedown, false);
@@ -72,20 +166,12 @@ function gameloop(timestamp) {
         thing.update();
     }*/
 
-    //update entities
-    /*for (var creature of creatures){
-        creature.update();
-        creature.check_collision();
-    }*/
     for (let i = bonds.length-1; i > 0-1; i--) {
         let bond = bonds[i];
         //console.log(i);
         bond.update_tensions(i);
         bond.update_outputs();
     }
-    /*for (var bond in bonds) {
-        bond.update_tensions;
-    }*/
 
     for (let i = 0; i < cells.length; i++) {
         let cell_1 = cells[i];
@@ -93,7 +179,6 @@ function gameloop(timestamp) {
         cell_1.update_outputs();
         for (let j = i+1; j < cells.length; j++) {
             let cell_2 = cells[j];
-
             repel_dist_vector.subVectors(cell_2.position_vector, cell_1.position_vector);
             cell_1.repel_cell(cell_2, repel_dist_vector);
         }
@@ -107,21 +192,11 @@ function gameloop(timestamp) {
         let bond = bonds[i];
         bond.update_position();
     }
-    /*for (var cell in cells) {
-        cell.update_position();
-    }*/
-    //if (repel_dist_vector.subVectors(cells[0].position_vector, cells[1].position_vector).length() > 15) {
-    //    console.log("hey")
-    //}
 
     //time = timestamp;
     renderer.render(scene,camera);
     window.requestAnimationFrame(gameloop);
 }
-
-/*function update_dash(){
-    document.getElementById("health").innerHTML = "health: "+health+"%"
-}*/
 
 /*
 creature_cells structure:
@@ -131,7 +206,7 @@ creature_cells structure:
     [cell,cell,cell,cell],
     [cell,null,cell,cell]
 ]
-creature_cells[y][x]
+creature_cells[(-?)y][x]
 */
 
 class Schematic {//we are going to change this
@@ -189,7 +264,7 @@ class Schematic {//we are going to change this
 }
 
 class Cell {
-    constructor(mass, k, bond_length, max_length, charge, sprite_material, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0)) {
+    constructor(mass, k, bond_length, max_length, charge, sprite_material, sprite_diameter, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0)) {
         this.mass = mass;
         this.k = k;//currently, k changes both spring force and charge
         this.bond_length = bond_length;
@@ -199,6 +274,8 @@ class Cell {
         this.velocity_vector = velocity_vector;
         this.force_vector = new THREE.Vector3(0, 0, 0);
         this.sprite = new THREE.Sprite(sprite_material);
+        this.sprite_diameter = sprite_diameter;
+        this.sprite.scale.set(sprite_diameter, sprite_diameter, 1);
         this.sprite.position.copy(this.position_vector);
         //this.cell_bonds = [];
         this.input_total = 0;
@@ -267,6 +344,8 @@ class Bond {
         this.bond_material = bond_material;
         this.line = new THREE.Line( this.geometry, this.bond_material );
         this.line_vertices = this.geometry.getAttribute( 'position' );
+        this.line_vertices.setX(0, 0);
+        this.line_vertices.setY(0, 0);
         //this.cell_1.cell_bonds.push(this);
         //this.cell_2.cell_bonds.push(this);
         //this.cell_1_weight = cell_1_weight;
@@ -295,10 +374,14 @@ class Bond {
         this.y_index = y_index;
     }
     update_position() {
-        this.line_vertices.setX(0, this.cell_1.position_vector.x);
-        this.line_vertices.setY(0, this.cell_1.position_vector.y);
-        this.line_vertices.setX(1, this.cell_2.position_vector.x);
-        this.line_vertices.setY(1, this.cell_2.position_vector.y);
+        this.line.position.copy(this.cell_1.position_vector);
+
+        this.line_vertices.setX(1, this.dist_vector.x);
+        this.line_vertices.setY(1, this.dist_vector.y);
+        //this.line_vertices.setX(0, this.cell_1.position_vector.x);//this is the old version that would disappear (from culling) when the object traveled to far from initial position
+        //this.line_vertices.setY(0, this.cell_1.position_vector.y);
+        //this.line_vertices.setX(1, this.cell_2.position_vector.x);
+        //this.line_vertices.setY(1, this.cell_2.position_vector.y);
 
         this.line_vertices.needsUpdate = true;
     }
@@ -366,6 +449,31 @@ class Directed_Cell extends Cell {
     }
 }
 
+class Player_Cell extends Cell { //there should only ever be one player vector (unless I add split screen)
+    constructor(mass, k, bond_length, max_length, charge, sprite_material, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0)) {
+        super(mass, k, bond_length, max_length, charge, sprite_material, position_vector, velocity_vector);
+    }
+    update_cell() {
+        camera.position.setX(this.position_vector.x);
+        camera.position.setY(this.position_vector.y);
+    }
+}
+
+class Key_Cell extends Cell {
+    constructor(mass, k, bond_length, max_length, charge, sprite_material, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), key) {
+        super(mass, k, bond_length, max_length, charge, sprite_material, position_vector, velocity_vector);
+        this.key = key;
+    }
+    update_cell() {
+        if (this.key.value) {
+            this.output = 1;    
+        }
+        else {
+            this.output = 0;
+        }
+    }
+}
+
 class Propulsor extends Directed_Cell {
     constructor(mass, k, length, max_length, charge, position_vector, sprite_material, velocity_vector = new THREE.Vector3(0, 0, 0), propulsion) {
         super(mass, k, length, max_length, charge, position_vector, sprite_material, velocity_vector)
@@ -415,7 +523,7 @@ class Reproducer extends Cell {
     }
 }
 
-class Ejector extends Cell {
+/*class Ejector extends Cell {
     constructor(mass, k, length, max_length, charge, position_vector, sprite_material, velocity_vector = new THREE.Vector3(0, 0, 0), ejection_energy, bonds_to_eject) {
         super(mass, k, length, max_length, charge, position_vector, sprite_material, velocity_vector);
         this.ejection_energy = ejection_energy;
@@ -426,12 +534,12 @@ class Ejector extends Cell {
             parent_creature.change_energy(this.energy_generation);
         }
     }
-    /*eject() {//this doesn't work yet
+    eject() {//this doesn't work yet
         for (let bond of bonds_to_eject) {
             bond.break_bond();
         }
-    }*/
-}
+    }
+}*/
 
 /*class Sticky_Cell extends Cell {
     constructor(mass, k, length, max_length, charge, position_vector, sprite_material, velocity_vector = new THREE.Vector3(0, 0, 0), ejection_energy) {
@@ -447,25 +555,25 @@ class Ejector extends Cell {
 
 function set_up_level2() {
     let schematic_1_cells = [
-        [new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material), null],
-        [new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material), new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material)],
-        [null, new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material)]
+        [new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material, 1), null],
+        [new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material, 1), new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material, 1)],
+        [null, new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material, 1)]
     ]
     let schematic_1 = new Schematic(schematic_1_cells, bond_material_1)
     schematic_1.build_schematic(new THREE.Vector3(-50, -25, 0));
 
     let schematic_2_cells = [
-        [new Cell(1, k, radius, 2*radius, 1, kirby_bullet_material), null],
-        [new Cell(1, k, radius, 2*radius, 1, kirby_bullet_material), new Cell(1, k, radius, 2*radius, 1, kirby_bullet_material)],
-        [null, new Cell(1, k, radius, 2*radius, 1, kirby_bullet_material)]
+        [new Cell(1, k, radius, 2*radius, 1, kirby_bullet_material, 1), null],
+        [new Cell(1, k, radius, 2*radius, 1, kirby_bullet_material, 1), new Cell(1, k, radius, 2*radius, 1, kirby_bullet_material, 1)],
+        [null, new Cell(1, k, radius, 2*radius, 1, kirby_bullet_material, 1)]
     ]
     let schematic_2 = new Schematic(schematic_2_cells, bond_material_1)
     schematic_2.build_schematic(new THREE.Vector3(0, 0, 0));
 
     let schematic_3_cells = [
-        [new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material), null],
-        [new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material), new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material)],
-        [null, new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material)]
+        [new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material, 1), null],
+        [new Player_Cell(1, k, radius, 2*radius, 1, kirby_material, 2), new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material, 1)],
+        [null, new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material, 1)]
     ]
     let schematic_3 = new Schematic(schematic_3_cells, bond_material_1)
     schematic_3.build_schematic(new THREE.Vector3(50, 1, 0), new THREE.Vector3(-20, 0, 0));
