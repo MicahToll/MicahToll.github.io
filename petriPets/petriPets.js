@@ -223,7 +223,6 @@ class Schematic {//we are going to change this
                     current_cell.add_cell_to_simulation();
                     current_cell.position_vector.addScaledVector(x_basis, x).addScaledVector(y_basis, -y).add(creature_position);
                     current_cell.velocity_vector.add(creature_velocity)
-                    //current_cell.parent_creature = this;
                 }
             }
         }
@@ -252,6 +251,12 @@ class Schematic {//we are going to change this
             }
         }
     }
+    /*build_bond(current_cell, connecting_x, connecting_y) {
+        let connecting_cell = this.creature_cells[connecting_y][connecting_x];
+        let current_bond = new Bond(current_cell, this.creature_cells[y+1][x], this.bond_material);
+        current_bond.add_bond_to_simulation();
+        current_bond.update_index(2*x, (2*y+1));
+    }*/
     change_energy(energy_delta) {//returns true if energy change was successfull //this will be moved to the cell class
         if (energy_delta < -this.energy){
             this.energy = Math.min( this.energy+energy_delta, this.max_energy);
@@ -354,6 +359,15 @@ class Bond {
   //      this.cell_2_weighted_output = 0;
         this.dist_vector = new THREE.Vector3(0, 0, 0);//cell_2_pos - cell_1_pos
         //add an if statement here to add the bond to directed cells. (also could add to a break list...)
+        let break_list = [];
+        if (this.cell_1 instanceof Directed_Cell) {
+            this.cell_1.update_anchor(anchor_bond);
+            break_list.push(this.cell_1);
+        }
+        if (this.cell_2 instanceof Directed_Cell) {
+            this.cell_2.update_anchor(anchor_bond);
+            break_list.push(this.cell_2);
+        }
     }
     add_bond_to_simulation() {
         universe.add(this.line);
@@ -423,16 +437,21 @@ class Bond {
 ]*/
 
 class Directed_Cell extends Cell {
-    constructor(mass, k, bond_length, max_length, charge, sprite_material, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond, desired_angle = 0) {//angle measured from vertical
+    constructor(mass, k, bond_length, max_length, charge, sprite_material, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_index, desired_angle = 0) {//angle measured from vertical
         super(mass, k, bond_length, max_length, charge, sprite_material, position_vector, velocity_vector)
         this.direction = new THREE.Vector3(0, 1, 0);
+        this.anchor_bond_index = anchor_bond_index;
+        this.desired_angle = desired_angle;
+        this.anchor_bond = null;
+        this.anchor_cell = null;
+    }
+    update_anchor(anchor_bond) {
         this.anchor_bond = anchor_bond;
         if (this.anchor_bond.cell_1.x_index == this.x_index && this.anchor_bond.cell_1.y_index == this.y_index) {
             this.anchor_cell = this.anchor_bond.cell_2;
         } else {
             this.anchor_cell = this.anchor_bond.cell_1;
         }
-        this.desired_angle = desired_angle;
     }
     update_direction() {
         if (!this.anchor_bond.broken){
@@ -475,12 +494,14 @@ class Key_Cell extends Cell {
 }
 
 class Propulsor extends Directed_Cell {
-    constructor(mass, k, length, max_length, charge, position_vector, sprite_material, velocity_vector = new THREE.Vector3(0, 0, 0), propulsion) {
-        super(mass, k, length, max_length, charge, position_vector, sprite_material, velocity_vector)
+    constructor(mass, k, bond_length, max_length, charge, sprite_material, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond, desired_angle = 0, propulsion) {
+        super(mass, k, bond_length, max_length, charge, sprite_material, position_vector, velocity_vector, anchor_bond, desired_angle)
         this.propulsion = propulsion;//(does this mean that these points must have an orientation?)
     }
     update_cell(){
-        this.force_vector.addScaledVector(this.orientation_vector, this.propulsion);
+        if (this.anchor_bond != null){
+            this.force_vector.addScaledVector(this.direction, this.propulsion);
+        }
     }
 }
 
