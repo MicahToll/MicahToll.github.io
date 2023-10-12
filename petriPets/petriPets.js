@@ -115,15 +115,15 @@ const kirby_bullet_lightblue_material = new THREE.SpriteMaterial( { map: kirby_b
 
 //bond material
 const bond_material_1 = new THREE.LineBasicMaterial( { color: 0x0000ff } );
+const bond_material_2 = new THREE.LineBasicMaterial( { color: 0x00ff00 } );
 
 let background_things = [];
 let creatures = [];
 let cells = [];
 let bonds = [];
-let friction = 1;
-let charge = 1;
+let friction = .1;
 let radius = 5;
-let k = 5;
+
 let x_basis = new THREE.Vector3(radius, 0 ,0);
 let y_basis = new THREE.Vector3(radius/2, radius*Math.sqrt(3)/2 ,0);
 let z_axis = new THREE.Vector3(0, 0, 1);
@@ -195,71 +195,108 @@ creature_cells structure:
     [cell,null,cell,cell]
 ]
 creature_cells[(-?)y][x]
+
+bond_weights structure:
+[
+    [[[weight, x, y], [weight, x, y]],[],[],[] ],
+    [[],[],[],[]],
+    [[],[],[],[]],
+    [[],[],[],[]]
+]
+2D array of dimensions of creature. Each spot contains an array of weights and where they point to.
+this can add extra bonds potentially.
+
+
+
+each spot here is a cell; for each of these spots, there is a set of its connections [[connection 1],[connection 2],[connection 3]]
+each of these connections is formated like this: [weight, from_x, from_y]
+sometimes these links do not exist yet, in which case, create it; othertimes, such a connection already exists, so just update it//this isn't done yet. only adjacent bonds are finished now; :(
 */
 
 class Schematic {//we are going to change this
-    constructor(creature_cells, bond_material) {
-        this.creature_cells = creature_cells;
+    constructor(schematic_cells, bond_weights, bond_material) {
+        this.schematic_cells = schematic_cells;
+        this.bond_weights = bond_weights;
         this.bond_material = bond_material;
     }
     build_schematic(creature_position = new THREE.Vector3(0, 0, 0), creature_velocity = new THREE.Vector3(0, 0, 0)) {
-        for (let y = 0; y < this.creature_cells.length; y++) {
-            for (let x = 0; x < this.creature_cells[y].length; x++) {
-                let current_cell = this.creature_cells[y][x];
-                if (current_cell != null){
+        //instance of this the adsjlasdf;lk
+        let creature_cells = [];
+
+        for (let y = 0; y < this.schematic_cells.length; y++) {
+            creature_cells.push([]);
+            for (let x = 0; x < this.schematic_cells[y].length; x++) {
+                if (this.schematic_cells[y][x] != null){
+                    let current_cell = this.schematic_cells[y][x].clone_cell();//this now clones the cell and adds it to the creature cells array
+                    creature_cells[y].push(current_cell);
                     current_cell.update_schematics(this, x, y);
                     current_cell.add_cell_to_simulation();
                     current_cell.position_vector.addScaledVector(x_basis, x).addScaledVector(y_basis, -y).add(creature_position);
                     current_cell.velocity_vector.add(creature_velocity)
+                } else {
+                    creature_cells[y].push(null);
                 }
             }
         }
-        for (let y = 0; y < this.creature_cells.length; y++) {
-            for (let x = 0; x < this.creature_cells[y].length; x++) {
-                let current_cell = this.creature_cells[y][x];
+        for (let y = 0; y < creature_cells.length; y++) {
+            for (let x = 0; x < creature_cells[y].length; x++) {
+                let current_cell = creature_cells[y][x];
                 if (current_cell != null){
-                    if ( (x+1 <= this.creature_cells[y].length) && this.creature_cells[y][x+1] != null){
-                        let current_bond_1 = new Bond(current_cell, this.creature_cells[y][x+1], this.bond_material);
-                        current_bond_1.add_bond_to_simulation();
-                        current_bond_1.update_index(2*x+1, 2*y);
-                        current_bond_1.check_directed_connection();
+                    if ( (x+1 <= creature_cells[y].length) && creature_cells[y][x+1] != null){
+                        this.build_bond(creature_cells, x, y, x+1, y);
                     }
-                    if ( y+1 < this.creature_cells.length ){
-                        if ( ( x+1 < this.creature_cells[y].length ) && this.creature_cells[y+1][x+1] != null) {
-                            let current_bond_2 = new Bond(current_cell, this.creature_cells[y+1][x+1], this.bond_material);
-                            current_bond_2.add_bond_to_simulation();
-                            current_bond_2.update_index(2*x+1, (2*y+1));
-                            current_bond_2.check_directed_connection();
+                    if ( y+1 < creature_cells.length ){
+                        if ( ( x+1 < creature_cells[y].length ) && creature_cells[y+1][x+1] != null) {
+                            this.build_bond(creature_cells, x, y, x+1, y+1);
                         }
-                        if (this.creature_cells[y+1][x] != null) {
-                            let current_bond_3 = new Bond(current_cell, this.creature_cells[y+1][x], this.bond_material);
-                            current_bond_3.add_bond_to_simulation();
-                            current_bond_3.update_index(2*x, (2*y+1));
-                            current_bond_3.check_directed_connection();
+                        if (creature_cells[y+1][x] != null) {
+                            this.build_bond(creature_cells, x, y, x, y+1);
                         }
                     }
                 }
             }
         }
     }
-    /*build_bond(current_cell, connecting_x, connecting_y) {
-        let connecting_cell = this.creature_cells[connecting_y][connecting_x];
-        let current_bond = new Bond(current_cell, this.creature_cells[y+1][x], this.bond_material);
+    build_bond(creature_cells, current_x, current_y, connecting_x, connecting_y) {// returns the newly created bond
+        let current_cell = creature_cells[current_y][current_x];
+        let connecting_cell = creature_cells[connecting_y][connecting_x];
+        let current_bond = new Bond(current_cell, connecting_cell, this.bond_material);
         current_bond.add_bond_to_simulation();
-        current_bond.update_index(2*x, (2*y+1));
-    }*/
+        current_bond.update_index(current_x+connecting_x, current_y+connecting_y);
+        current_bond.check_directed_connection();
+        for (let bond of this.bond_weights[current_y][current_x]) {
+            let weight = bond[0];
+            let from_x = bond[1];
+            let from_y = bond[2];
+            if (from_x == connecting_x && from_y == connecting_y) {
+                current_bond.set_weights(weight, current_y, current_x);
+            }
+        }
+        for (let bond of this.bond_weights[connecting_y][connecting_x]) {
+            let weight = bond[0];
+            let from_x = bond[1];
+            let from_y = bond[2];
+            if (from_x == current_x && from_y == current_y) {
+                current_bond.set_weights(weight, connecting_x, connecting_y);
+            }
+        }
+
+        return current_bond;
+    }
 }
 
 class Cell {
-    constructor(mass, k, bond_length, max_length, charge, sprite_material, sprite_diameter, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0)) {
+    constructor(mass, k, dampening, bond_length, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0)) {
         this.mass = mass;
         this.k = k;//currently, k changes both spring force and charge
+        this.dampening = dampening;
         this.bond_length = bond_length;
         this.max_length = max_length;
         this.charge = charge;//currently unused
         this.position_vector = position_vector;
         this.velocity_vector = velocity_vector;
         this.force_vector = new THREE.Vector3(0, 0, 0);
+        this.sprite_material = sprite_material;
         this.sprite = new THREE.Sprite(sprite_material);
         this.sprite_diameter = sprite_diameter;
         this.sprite.scale.set(sprite_diameter, sprite_diameter, 1);
@@ -267,7 +304,7 @@ class Cell {
         //this.cell_bonds = [];
         this.input_total = 0;
         this.output = 0;
-        this.x_0 = 0;
+        this.x_0 = x_0;
 
         this.cell_schematics = null;
         this.x_index = 0;
@@ -308,7 +345,16 @@ class Cell {
         else {
             this.output = 0;
         }
+        this.update_output_display()
         this.input_total = 0;
+    }
+    update_output_display() {
+        if (this.output == 1) {
+            this.sprite.scale.set(2*this.sprite_diameter, 2*this.sprite_diameter, 1);
+        }
+        else {
+            this.sprite.scale.set(this.sprite_diameter, this.sprite_diameter, 1);
+        }
     }
     update_cell(){}
     //initialize_cell(){}
@@ -317,14 +363,14 @@ class Cell {
         universe.remove(this.sprite);
     }
     clone_cell() {
-        return new Cell(this.mass, this.k, this.bond_length, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.position_vector, this.velocity_vector);
+        return new Cell(this.mass, this.k, this.dampening, this.bond_length, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0));
     }
 }
 
 class Bond {
-    constructor(cell_1, cell_2, bond_material){ //, cell_1_weight = 0, cell_2_weight = 0) {
+    constructor(cell_1, cell_2, bond_material, cell_1_weight = 0, cell_2_weight = 0){ //, cell_1_weight = 0, cell_2_weight = 0) {
         this.k = ( cell_1.k + cell_2.k )/2;
-        //this.dampening = ( cell_1.dampening + cell_2.dampening )/2;
+        this.dampening = ( cell_1.dampening + cell_2.dampening )/2;
         this.bond_length = ( cell_1.bond_length + cell_2.bond_length )/2;
         this.max_length = ( cell_1.max_length + cell_2.max_length )/2;
         this.cell_1 = cell_1;
@@ -338,11 +384,31 @@ class Bond {
         this.line_vertices.setY(0, 0);
         //this.cell_1.cell_bonds.push(this);
         //this.cell_2.cell_bonds.push(this);
-        //this.cell_1_weight = cell_1_weight;
-        //this.cell_2_weight = cell_2_weight;
-  //      this.cell_1_weighted_output = 0;
-  //      this.cell_2_weighted_output = 0;
+
+        this.cell_1_weight = cell_1_weight;
+        this.cell_2_weight = cell_2_weight;
+        /*if (this.cell_1_weight != 0) {
+            if (this.cell_2_weight != 0) {
+                this.update_outputs = function() {
+                    this.cell_2.input_total += this.cell_1_weight * this.cell_1.output;
+                    this.cell_1.input_total += this.cell_2_weight * this.cell_2.output;
+                }
+            }
+            else {
+                this.update_outputs = function() {
+                    this.cell_2.input_total += this.cell_1_weight * this.cell_1.output;
+                }
+            }
+        }
+        else if (this.cell_2_weight != 0) {
+            this.update_outputs = function() {
+                this.cell_1.input_total += this.cell_2_weight * this.cell_2.output;
+            }
+        }*/
+
         this.dist_vector = new THREE.Vector3(0, 0, 0);//cell_2_pos - cell_1_pos
+        this.dist_vector_length = this.dist_vector.length();
+
         //add an if statement here to add the bond to directed cells. (also could add to a break list...)
         this.break_list = [];
     }
@@ -351,13 +417,17 @@ class Bond {
         bonds.push(this)
     }
     update_tensions(i) {
+        let last_dist_length = this.dist_vector_length;
         this.dist_vector.subVectors(this.cell_2.position_vector, this.cell_1.position_vector);
+        this.dist_vector_length = this.dist_vector.length();
+
+        let k_d_times_d_dist_over_dt = this.dampening*(1 - last_dist_length/this.dist_vector_length);
         if (this.dist_vector.length() > this.max_length) {
             this.break_bond(i);
         }
         else {
-            this.cell_2.force_vector.addScaledVector(this.dist_vector, -this.k/radius);
-            this.cell_1.force_vector.addScaledVector(this.dist_vector, this.k/radius);
+            this.cell_2.force_vector.addScaledVector(this.dist_vector, - (this.k/radius + k_d_times_d_dist_over_dt) );
+            this.cell_1.force_vector.addScaledVector(this.dist_vector, (this.k/radius + k_d_times_d_dist_over_dt) );
         }
     }
     update_index(x_index, y_index) {//the given indeces will be doubled to keep everything an int 
@@ -381,11 +451,6 @@ class Bond {
 
         this.line_vertices.setX(1, this.dist_vector.x);
         this.line_vertices.setY(1, this.dist_vector.y);
-        //this.line_vertices.setX(0, this.cell_1.position_vector.x);//this is the old version that would disappear (from culling) when the object traveled to far from initial position
-        //this.line_vertices.setY(0, this.cell_1.position_vector.y);
-        //this.line_vertices.setX(1, this.cell_2.position_vector.x);
-        //this.line_vertices.setY(1, this.cell_2.position_vector.y);
-
         this.line_vertices.needsUpdate = true;
     }
     break_bond(i) {
@@ -393,9 +458,19 @@ class Bond {
         universe.remove(this.line);
         bonds.splice(i, 1);
     }
+    set_weights(weight, from_x, from_y) {
+        this.line.material = bond_material_2;
+        if (from_x == this.cell_1.x_index && from_y == this.cell_1.y_index) {
+            this.cell_2_weight = weight;
+        } else if (from_x == this.cell_2.x_index && from_y == this.cell_2.y_index) {
+            this.cell_2_weight = weight;
+        } else {
+            console.log("this bond is not connected to this cell at " + to_x + ", " + to_y);
+        }
+    }
     update_outputs() {
-        this.cell_2.input_total += this.cell_1_weight * this.cell_1.output;
-        this.cell_1.input_total += this.cell_2_weight * this.cell_2.output;
+        this.cell_1.input_total += this.cell_1_weight * this.cell_2.output;//not sure how this works... But I think it's ok. 
+        this.cell_2.input_total += this.cell_2_weight * this.cell_1.output;
     }
 }
 
@@ -406,8 +481,8 @@ class Bond {
 ]*/
 
 class Directed_Cell extends Cell {
-    constructor(mass, k, bond_length, max_length, charge, sprite_material, sprite_diameter, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_index, desired_angle = 0) {//angle measured from vertical
-        super(mass, k, bond_length, max_length, charge, sprite_material, sprite_diameter, position_vector, velocity_vector)
+    constructor(mass, k, dampening, bond_length, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_index, desired_angle = 0) {//angle measured from vertical
+        super(mass, k, dampening, bond_length, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector)
         this.direction = new THREE.Vector3(0, 1, 0);
         this.anchor_bond_index = anchor_bond_index;
         this.desired_angle = desired_angle;
@@ -438,54 +513,58 @@ class Directed_Cell extends Cell {
         this.update_direction();
     }
     clone_cell() {
-        return new Directed_Cell(this.mass, this.k, this.bond_length, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.position_vector, this.velocity_vector, this.anchor_bond_index, this.desired_angle);
+        return new Directed_Cell(this.mass, this.k, this.dampening, this.bond_length, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_index, this.desired_angle);
     }
 }
 
 class Player_Cell extends Cell { //there should only ever be one player vector (unless I add split screen)
-    constructor(mass, k, bond_length, max_length, charge, sprite_material, sprite_diameter, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0)) {
-        super(mass, k, bond_length, max_length, charge, sprite_material, sprite_diameter, position_vector, velocity_vector);
+    constructor(mass, k, dampening, bond_length, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0)) {
+        super(mass, k, dampening, bond_length, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector);
     }
     update_cell() {
         camera.position.setX(this.position_vector.x);
         camera.position.setY(this.position_vector.y);
     }
     clone_cell() {//this function should probably only be called once tops. (unless I add split screen)
-        return new Player_Cell(this.mass, this.k, this.bond_length, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.position_vector, this.velocity_vector);
+        return new Player_Cell(this.mass, this.k, this.dampening, this.bond_length, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0));
     }
 }
 
 class Key_Cell extends Cell {
-    constructor(mass, k, bond_length, max_length, charge, sprite_material, sprite_diameter, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), key) {
-        super(mass, k, bond_length, max_length, charge, sprite_material, sprite_diameter, position_vector, velocity_vector);
+    constructor(mass, k, dampening, bond_length, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), key) {
+        super(mass, k, dampening, bond_length, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector);
         this.key = key;
     }
-    update_cell() {
+    update_outputs() {
         if (this.key.value) {
             this.output = 1;    
         }
         else {
             this.output = 0;
         }
+        this.update_output_display();
+        this.input_total = 0;//this cell shouldn't have inputs, since it is an input cell.
     }
     clone_cell(){
-        return new Key_Cell(this.mass, this.k, this.bond_length, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.position_vector, this.velocity_vector, this.key);
+        return new Key_Cell(this.mass, this.k, this.dampening, this.bond_length, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.key);
     }
 }
 
 class Propulsor extends Directed_Cell {
-    constructor(mass, k, bond_length, max_length, charge, sprite_material, sprite_diameter, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_index, desired_angle = 0, propulsion) {
-        super(mass, k, bond_length, max_length, charge, sprite_material, sprite_diameter, position_vector, velocity_vector, anchor_bond_index, desired_angle)
+    constructor(mass, k, dampening, bond_length, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_index, desired_angle = 0, propulsion) {
+        super(mass, k, dampening, bond_length, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector, anchor_bond_index, desired_angle)
         this.propulsion = propulsion;//(does this mean that these points must have an orientation?)
     }
     update_cell(){
         if (this.anchor_bond != null){
             super.update_cell();
-            this.force_vector.addScaledVector(this.direction, this.propulsion);
+            if (this.output == 1){
+                this.force_vector.addScaledVector(this.direction, this.propulsion);
+            }
         }
     }
     clone_cell() {
-        return new Propulsor(this.mass, this.k, this.bond_length, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.position_vector, this.velocity_vector, this.anchor_bond_index, this.desired_angle, this.propulsion);
+        return new Propulsor(this.mass, this.k, this.dampening, this.bond_length, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_index, this.desired_angle, this.propulsion);
     }
 }
 
@@ -518,8 +597,8 @@ class Propulsor extends Directed_Cell {
     [null, new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material)]
 ]*/
 class Reproducer extends Cell {
-    constructor(mass, k, length, max_length, charge, position_vector, sprite_material, sprite_diameter, velocity_vector = new THREE.Vector3(0, 0, 0), cell_schematics) {
-        super(mass, k, length, max_length, charge, position_vector, sprite_material, sprite_diameter, velocity_vector);
+    constructor(mass, k, dampening, bond_length, max_length, charge, position_vector, sprite_material, sprite_diameter, x_0 = 0, velocity_vector = new THREE.Vector3(0, 0, 0), cell_schematics) {
+        super(mass, k, dampening, bond_length, max_length, charge, position_vector, sprite_material, sprite_diameter, x_0, velocity_vector);
         this.cell_schematics = cell_schematics;
         this.cell_schematics_index = cell_schematics_index;
     }
@@ -557,33 +636,82 @@ class Reproducer extends Cell {
         }
     }
 }*/
+function make_empty_list(schematic_cells) {
+    let empty_list = [];
+    for (let y = 0; y < schematic_cells.length; y++){
+        empty_list.push([]);
+        for (let x = 0; x < schematic_cells[y].length; x++){
+            empty_list[y].push([]);
+        }
+    }
+    return empty_list
+}
 
-function set_up_level2() {/*
+
+function set_up_level2() {
+    let mass = 1;
+    let spring_dampening = 100;
+    let charge = 1;//doesn't do anything currently
+    let k = 5;
+    let engine_power = 10;
+
+    let basic_cell = new Cell(1, k, spring_dampening, radius, 2*radius, charge, kirby_bullet_material, 1, 0)
+    let basic_player_cell = new Player_Cell(1, k, spring_dampening, radius, 2*radius, charge, kirby_material, 2, 0)
+    function basic_key_cell(key) {
+        return new Key_Cell(1, k, spring_dampening, radius, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), key);
+    }
+    function basic_propulsion_cell(anchor_bond_index) {
+        return new Propulsor(1, k, spring_dampening, radius, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_index, 0, engine_power)
+    }
+
     let schematic_1_cells = [
-        [new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material, 1), null],
-        [new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material, 1), new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material, 1)],
-        [null, new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material, 1)]
+        [basic_cell.clone_cell(), null],
+        [basic_cell.clone_cell(), basic_cell.clone_cell()],
+        [null, basic_cell.clone_cell()]
     ]
-    let schematic_1 = new Schematic(schematic_1_cells, bond_material_1)
+    let schematic_1 = new Schematic(schematic_1_cells, make_empty_list(schematic_1_cells), bond_material_1);
     schematic_1.build_schematic(new THREE.Vector3(-50, -25, 0));
-*/
+
     let schematic_2_cells = [
-        [new Cell(1, k, radius, 2*radius, 1, kirby_bullet_material, 1), null],
-        [new Cell(1, k, radius, 2*radius, 1, kirby_bullet_material, 1), new Cell(1, k, radius, 2*radius, 1, kirby_bullet_material, 1)],
-        [null, new Cell(1, k, radius, 2*radius, 1, kirby_bullet_material, 1)]
+        [basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), null],
+        [basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell()],
+        [null, basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell()]
     ]
-    let schematic_2 = new Schematic(schematic_2_cells, bond_material_1)
-    schematic_2.build_schematic(new THREE.Vector3(0, 0, 0));
+    let schematic_2 = new Schematic(schematic_2_cells, make_empty_list(schematic_2_cells), bond_material_1);
+    schematic_2.build_schematic(new THREE.Vector3(0, 50, 0));
+
+
+
+    let schematic_3_cells = [
+        [basic_cell.clone_cell(), null],
+        [basic_cell.clone_cell(), basic_cell.clone_cell()],
+        [null, basic_cell.clone_cell()]
+    ]
+    let schematic_3 = new Schematic(schematic_3_cells, make_empty_list(schematic_3_cells), bond_material_1);
+    schematic_3.build_schematic(new THREE.Vector3(0, -50, 0));
+
+
+
+
 
     anchor_bond_index_3 = [2, 3];
-    let schematic_3_cells = [
-        [new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material, 1), null],
-        [new Player_Cell(1, k, radius, 2*radius, 1, kirby_material, 2), new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material, 1)],
-        //[null, new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material, 1), null]
-        [null, new Propulsor(1, k, radius, 2*radius, 1, kirby_bullet_orange_material, 1, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_index_3, 0, 10)]
+    let space_ship_cells = [
+        [new Key_Cell(1, k, spring_dampening, radius, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), w_key), new Cell(1, k, spring_dampening, radius, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0)), null, null],
+        [new Key_Cell(1, k, spring_dampening, radius, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), d_key), new Player_Cell(1, k, spring_dampening, radius, 2*radius, charge, kirby_material, 2, 0), new Key_Cell(1, k, spring_dampening, radius, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), a_key), null],
+        [
+            new Propulsor(1, k, spring_dampening, radius, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [0, 3], 0, engine_power),
+            new Propulsor(2, k, spring_dampening, radius, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [2, 3], 0, engine_power),
+            new Propulsor(3, k, spring_dampening, radius, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [3, 3], 0, engine_power),
+            new Propulsor(4, k, spring_dampening, radius, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [5, 3], 0, engine_power)
+        ]
     ]
-    let schematic_3 = new Schematic(schematic_3_cells, bond_material_1)
-    schematic_3.build_schematic(new THREE.Vector3(50, 1, 0), new THREE.Vector3(0, 0, 0));
+    let bond_weights_1 = [
+        [[], [], [], []],
+        [[], [[2, 0, 0]], [], []],
+        [[[2, 0, 1]], [[2, 1, 1]], [[2, 1, 1]], [[2, 2, 1]]]
+    ]
+    let space_ship = new Schematic(space_ship_cells, bond_weights_1, bond_material_1)
+    space_ship.build_schematic(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0));
 }
 
 /*class Neuron {
