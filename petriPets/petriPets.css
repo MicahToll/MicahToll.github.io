@@ -3,3 +3,12 @@ th {
     padding-top: .3em;
     padding-bottom: .3em;
 }
+#select {/*this make the menu bigger (cause it really needs it)*/
+    left:10vw;
+	width:80vw;
+}
+.unselectable {
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
+}

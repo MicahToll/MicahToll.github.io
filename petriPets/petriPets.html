@@ -26,13 +26,27 @@
 			<div id="select" class="popup" hidden="true">
 				<div class="x button" onclick="closeAllWindows()">x</div>
 				<h1>Garage</h1>
-				<table id="garage_table" style="width:100%">
+				<table style="width:100%">
 					<tr>
-						<th>Part Name</th>
-						<th>Icon</th>
-						<th>Remaining / Total</th>
+						<td style="width:25%">
+							<table id="garage_table" style="width:100%" class="unselectable">
+								<tr>
+									<td>Part Name</td>
+									<td>Icon</td>
+									<td>Remaining / Total</td>
+								</tr>
+								<tr id="part_row_-1" onclick="change_selection(-1)">
+									<td>add bond</td>
+									<td></td>
+									<td>inf / inf</td>
+								</tr>
+							</table>
+						</td>
+						<td style="width:100%">
+							<svg id="garage_svg" width="100%" height="100"></svg>
+						</td>
 					</tr>
-				</table>
+				</table>				
 				<div class="button settings_button" onclick="save_schematics()">Save Schematics</div>
 			</div>
 			<div id="shop" class="popup" hidden="true">

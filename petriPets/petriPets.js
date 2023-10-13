@@ -117,6 +117,8 @@ const kirby_bullet_lightblue_material = new THREE.SpriteMaterial( { map: kirby_b
 const bond_material_1 = new THREE.LineBasicMaterial( { color: 0x0000ff } );
 const bond_material_2 = new THREE.LineBasicMaterial( { color: 0x00ff00 } );
 
+let window_width;
+let window_height;
 let background_things = [];
 let creatures = [];
 let cells = [];
