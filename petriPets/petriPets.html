@@ -5,6 +5,7 @@
 		<title>petri pets</title>
 		<style> body {margin: 0;}</style>
 		<link rel="stylesheet" type="text/css" href="petriPets.css">
+		<link rel="stylesheet" type="text/css" href="../css/space.css">
 		<script src="../js/three.js"></script>
 		<audio id="myAudio">
 			<!--<source src="assets\audio\music\lor_starcutter_battle.mp3" type="audio/mpeg">-->
@@ -12,10 +13,55 @@
 		</audio>
 	</head>
 	<body id="body" onload="init()">
+		<div id="over_canvas">
+			<div id="visor">
+				<!--menues and buttons-->
+				<div id="selectButton" class="visor button" onclick="select();">Garage</div>
+				<div id="shopButton" class="visor button" onclick="shop();">Shop</div>
+				<div id="settingsButton" class="visor button" onclick="settings();">Settings</div>
+				<!--status displays-->
+				<div id="credits" class="visor">Credits: </div>
+				<!--<div id="fuel" class="visor">Fuel: </div>-->
+			</div>
+			<div id="select" class="popup" hidden="true">
+				<div class="x button" onclick="closeAllWindows()">x</div>
+				<h1>Garage</h1>
+				<table id="garage_table" style="width:100%">
+					<tr>
+						<th>Part Name</th>
+						<th>Icon</th>
+						<th>Remaining / Total</th>
+					</tr>
+				</table>
+				<div class="button settings_button" onclick="save_schematics()">Save Schematics</div>
+			</div>
+			<div id="shop" class="popup" hidden="true">
+				<div class="x button" onclick="closeAllWindows()">x</div>
+				<h1>Shop</h1>
+				<table id="shop_table" style="width:100%">
+					<tr>
+						<th>Part Name</th>
+						<th>Icon</th>
+						<th>Cost</th>
+						<th>Number owned</th>
+						<th>Purchase?</th>
+					</tr>
+				</table>
+			</div>
+			<div id="settings" class="popup" hidden="true">
+				<div class="x button" onclick="closeAllWindows()">x</div>
+				<h1>Settings</h1>
+				<div class="button settings_button" onclick="save()">save</div>
+				<div class="button settings_button" onclick="loadSave()">load save</div>
+				<!--<div onclick="update_settings()">Anti aliasing<input id="anti_aliasing" type="checkbox" checked=true/></div>-->
+				<!--<div onclick="connect_controller()">connect controller</div>-->
+			</div>
+		</div>
         <!--<div id="visor" class="unselectable">
             <div id="health">health: 100%</div>
         </div>-->
 	</body>
 	<script src="petriPets.js"></script>
+	<script src="menu.js"></script>
 	<!--<script src="petriPets.js"></script>-->
 </html>

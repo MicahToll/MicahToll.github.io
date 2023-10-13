@@ -141,6 +141,8 @@ function init() {
     window_height = window.innerHeight;
     camera_width = camera_height*window_width/window_height
 
+    menu_onload();
+
     set_up_level1()
     set_up_level2();
     gameloop(0);
@@ -211,13 +213,24 @@ this can add extra bonds potentially.
 each spot here is a cell; for each of these spots, there is a set of its connections [[connection 1],[connection 2],[connection 3]]
 each of these connections is formated like this: [weight, from_x, from_y]
 sometimes these links do not exist yet, in which case, create it; othertimes, such a connection already exists, so just update it//this isn't done yet. only adjacent bonds are finished now; :(
+
+additional_bonds structure:
+[
+    [from_x, from_y, from_weight, to_x, to_y, to_weight],
+    [from_x, from_y, from_weight, to_x, to_y, to_weight],
+    [from_x, from_y, from_weight, to_x, to_y, to_weight],
+    [from_x, from_y, from_weight, to_x, to_y, to_weight],
+    [from_x, from_y, from_weight, to_x, to_y, to_weight],
+]
 */
 
 class Schematic {//we are going to change this
-    constructor(schematic_cells, bond_weights, bond_material) {
+    constructor(schematic_cells, bond_weights, bond_material, additional_bonds = [], schematic_name = "") {
         this.schematic_cells = schematic_cells;
         this.bond_weights = bond_weights;
         this.bond_material = bond_material;
+        this.additional_bonds = additional_bonds;
+        this.schematic_name = schematic_name;
     }
     build_schematic(creature_position = new THREE.Vector3(0, 0, 0), creature_velocity = new THREE.Vector3(0, 0, 0)) {
         //instance of this the adsjlasdf;lk
@@ -256,11 +269,29 @@ class Schematic {//we are going to change this
                 }
             }
         }
+        for (let bond of this.additional_bonds) {
+            let from_x = bond[0];
+            let from_y = bond[1];
+            let from_weight = bond[2];
+            let to_x = bond[3];
+            let to_y = bond[4];
+            let to_weight = bond[5];
+
+            let current_cell = creature_cells[from_y][from_x];
+            let connecting_cell = creature_cells[to_y][to_x];
+            let difference = current_cell.position_vector.distanceTo(connecting_cell.position_vector);
+            let current_bond = new Bond(current_cell, connecting_cell, difference, this.bond_material);
+            current_bond.add_bond_to_simulation();
+            current_bond.update_index(to_x+from_x, to_y+from_y);//this doesn't work here. :( I will need to change this index convention.
+            current_bond.check_directed_connection();
+            current_bond.set_weights(from_weight, from_x, from_y);
+            current_bond.set_weights(to_weight, to_x, to_y);
+        }
     }
     build_bond(creature_cells, current_x, current_y, connecting_x, connecting_y) {// returns the newly created bond
         let current_cell = creature_cells[current_y][current_x];
         let connecting_cell = creature_cells[connecting_y][connecting_x];
-        let current_bond = new Bond(current_cell, connecting_cell, this.bond_material);
+        let current_bond = new Bond(current_cell, connecting_cell, radius, this.bond_material);
         current_bond.add_bond_to_simulation();
         current_bond.update_index(current_x+connecting_x, current_y+connecting_y);
         current_bond.check_directed_connection();
@@ -269,7 +300,7 @@ class Schematic {//we are going to change this
             let from_x = bond[1];
             let from_y = bond[2];
             if (from_x == connecting_x && from_y == connecting_y) {
-                current_bond.set_weights(weight, current_y, current_x);
+                current_bond.set_weights(weight, current_x, current_y);
             }
         }
         for (let bond of this.bond_weights[connecting_y][connecting_x]) {
@@ -286,11 +317,10 @@ class Schematic {//we are going to change this
 }
 
 class Cell {
-    constructor(mass, k, dampening, bond_length, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0)) {
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0)) {
         this.mass = mass;
         this.k = k;//currently, k changes both spring force and charge
         this.dampening = dampening;
-        this.bond_length = bond_length;
         this.max_length = max_length;
         this.charge = charge;//currently unused
         this.position_vector = position_vector;
@@ -363,15 +393,15 @@ class Cell {
         universe.remove(this.sprite);
     }
     clone_cell() {
-        return new Cell(this.mass, this.k, this.dampening, this.bond_length, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0));
+        return new Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0));
     }
 }
 
 class Bond {
-    constructor(cell_1, cell_2, bond_material, cell_1_weight = 0, cell_2_weight = 0){ //, cell_1_weight = 0, cell_2_weight = 0) {
+    constructor(cell_1, cell_2, bond_length, bond_material, cell_1_weight = 0, cell_2_weight = 0){ //, cell_1_weight = 0, cell_2_weight = 0) {
         this.k = ( cell_1.k + cell_2.k )/2;
         this.dampening = ( cell_1.dampening + cell_2.dampening )/2;
-        this.bond_length = ( cell_1.bond_length + cell_2.bond_length )/2;
+        this.bond_length = bond_length;//( cell_1.bond_length + cell_2.bond_length )/2;
         this.max_length = ( cell_1.max_length + cell_2.max_length )/2;
         this.cell_1 = cell_1;
         this.cell_2 = cell_2;
@@ -481,8 +511,8 @@ class Bond {
 ]*/
 
 class Directed_Cell extends Cell {
-    constructor(mass, k, dampening, bond_length, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_index, desired_angle = 0) {//angle measured from vertical
-        super(mass, k, dampening, bond_length, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector)
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_index, desired_angle = 0) {//angle measured from vertical
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector)
         this.direction = new THREE.Vector3(0, 1, 0);
         this.anchor_bond_index = anchor_bond_index;
         this.desired_angle = desired_angle;
@@ -513,26 +543,26 @@ class Directed_Cell extends Cell {
         this.update_direction();
     }
     clone_cell() {
-        return new Directed_Cell(this.mass, this.k, this.dampening, this.bond_length, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_index, this.desired_angle);
+        return new Directed_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_index, this.desired_angle);
     }
 }
 
 class Player_Cell extends Cell { //there should only ever be one player vector (unless I add split screen)
-    constructor(mass, k, dampening, bond_length, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0)) {
-        super(mass, k, dampening, bond_length, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector);
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0)) {
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector);
     }
     update_cell() {
         camera.position.setX(this.position_vector.x);
         camera.position.setY(this.position_vector.y);
     }
     clone_cell() {//this function should probably only be called once tops. (unless I add split screen)
-        return new Player_Cell(this.mass, this.k, this.dampening, this.bond_length, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0));
+        return new Player_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0));
     }
 }
 
 class Key_Cell extends Cell {
-    constructor(mass, k, dampening, bond_length, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), key) {
-        super(mass, k, dampening, bond_length, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector);
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), key) {
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector);
         this.key = key;
     }
     update_outputs() {
@@ -546,13 +576,63 @@ class Key_Cell extends Cell {
         this.input_total = 0;//this cell shouldn't have inputs, since it is an input cell.
     }
     clone_cell(){
-        return new Key_Cell(this.mass, this.k, this.dampening, this.bond_length, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.key);
+        return new Key_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.key);
+    }
+}
+
+class Toggle_Cell extends Cell {
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), key) {
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector);
+        this.last_input = 0;
+    }
+    update_outputs() {
+        if (this.input_total > this.x_0) {
+            if (this.last_input == 0) {
+                if (this.output == 0) {
+                    this.output = 1;
+                } else {
+                    this.output = 0;
+                }
+            } 
+            this.last_input = 1;
+            this.update_output_display()
+        } else {
+            this.last_input = 0;
+        }
+        this.input_total = 0;
+    }
+    clone_cell(){
+        return new Toggle_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0));
+    }
+}
+
+class Pulse_Cell extends Cell {
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), key) {
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector);
+        this.last_input = 0;
+    }
+    update_outputs() {
+        if (this.input_total > this.x_0) {
+            if (this.last_input == 0) {
+                this.output = 1;
+            } else {
+                this.output = 0;
+            }
+            this.last_input = 1;
+            this.update_output_display()
+        } else {
+            this.last_input = 0;
+        }
+        this.input_total = 0;
+    }
+    clone_cell(){
+        return new Toggle_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0));
     }
 }
 
 class Propulsor extends Directed_Cell {
-    constructor(mass, k, dampening, bond_length, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_index, desired_angle = 0, propulsion) {
-        super(mass, k, dampening, bond_length, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector, anchor_bond_index, desired_angle)
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_index, desired_angle = 0, propulsion) {
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector, anchor_bond_index, desired_angle)
         this.propulsion = propulsion;//(does this mean that these points must have an orientation?)
     }
     update_cell(){
@@ -564,7 +644,7 @@ class Propulsor extends Directed_Cell {
         }
     }
     clone_cell() {
-        return new Propulsor(this.mass, this.k, this.dampening, this.bond_length, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_index, this.desired_angle, this.propulsion);
+        return new Propulsor(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_index, this.desired_angle, this.propulsion);
     }
 }
 
@@ -597,8 +677,8 @@ class Propulsor extends Directed_Cell {
     [null, new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material)]
 ]*/
 class Reproducer extends Cell {
-    constructor(mass, k, dampening, bond_length, max_length, charge, position_vector, sprite_material, sprite_diameter, x_0 = 0, velocity_vector = new THREE.Vector3(0, 0, 0), cell_schematics) {
-        super(mass, k, dampening, bond_length, max_length, charge, position_vector, sprite_material, sprite_diameter, x_0, velocity_vector);
+    constructor(mass, k, dampening, max_length, charge, position_vector, sprite_material, sprite_diameter, x_0 = 0, velocity_vector = new THREE.Vector3(0, 0, 0), cell_schematics) {
+        super(mass, k, dampening, max_length, charge, position_vector, sprite_material, sprite_diameter, x_0, velocity_vector);
         this.cell_schematics = cell_schematics;
         this.cell_schematics_index = cell_schematics_index;
     }
@@ -636,6 +716,34 @@ class Reproducer extends Cell {
         }
     }
 }*/
+
+class Part {
+    constructor(template_cell, part_name, cost, number_owned = 0){
+        this.template_cell = template_cell;
+        this.icon = template_cell.sprite_material;
+        this.part_name = part_name;
+        this.cost = cost;
+        this.number_owned = number_owned;
+    }
+}
+
+let available_parts = [
+    new Part(0, "basic part", 5),
+    new Part(0, "propulsor", 25),
+    new Part(0, "key board input", 15),
+    new Part(0, "sensor", 20),
+    new Part(0, "builder", 25),
+    new Part(0, "sicky", 20),
+    new Part(0, "explosive", 25),
+    new Part(0, "heavy basic part", 20),
+    new Part(0, "pulse", 30),
+    new Part(0, "toggle", 15),
+    new Part(0, "generator", 30),
+    new Part(0, "energy_cell", 15),
+    new Part(0, "shield", 30),
+    new Part(0, "absorber", 25)
+];
+
 function make_empty_list(schematic_cells) {
     let empty_list = [];
     for (let y = 0; y < schematic_cells.length; y++){
@@ -655,13 +763,13 @@ function set_up_level2() {
     let k = 5;
     let engine_power = 10;
 
-    let basic_cell = new Cell(1, k, spring_dampening, radius, 2*radius, charge, kirby_bullet_material, 1, 0)
-    let basic_player_cell = new Player_Cell(1, k, spring_dampening, radius, 2*radius, charge, kirby_material, 2, 0)
+    let basic_cell = new Cell(mass, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0)
+    let basic_player_cell = new Player_Cell(mass, k, spring_dampening, 2*radius, charge, kirby_material, 2, 0)
     function basic_key_cell(key) {
-        return new Key_Cell(1, k, spring_dampening, radius, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), key);
+        return new Key_Cell(mass, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), key);
     }
     function basic_propulsion_cell(anchor_bond_index) {
-        return new Propulsor(1, k, spring_dampening, radius, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_index, 0, engine_power)
+        return new Propulsor(mass, k, spring_dampening, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_index, 0, engine_power)
     }
 
     let schematic_1_cells = [
@@ -696,21 +804,25 @@ function set_up_level2() {
 
     anchor_bond_index_3 = [2, 3];
     let space_ship_cells = [
-        [new Key_Cell(1, k, spring_dampening, radius, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), w_key), new Cell(1, k, spring_dampening, radius, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0)), null, null],
-        [new Key_Cell(1, k, spring_dampening, radius, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), d_key), new Player_Cell(1, k, spring_dampening, radius, 2*radius, charge, kirby_material, 2, 0), new Key_Cell(1, k, spring_dampening, radius, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), a_key), null],
+        [new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), w_key), new Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0)), null, null],
+        [new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), d_key), new Player_Cell(1, k, spring_dampening, 2*radius, charge, kirby_material, 2, 0), new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), a_key), null],
         [
-            new Propulsor(1, k, spring_dampening, radius, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [0, 3], 0, engine_power),
-            new Propulsor(2, k, spring_dampening, radius, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [2, 3], 0, engine_power),
-            new Propulsor(3, k, spring_dampening, radius, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [3, 3], 0, engine_power),
-            new Propulsor(4, k, spring_dampening, radius, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [5, 3], 0, engine_power)
+            new Propulsor(1, k, spring_dampening, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [0, 3], 0, engine_power),
+            new Propulsor(2, k, spring_dampening, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [2, 3], 0, engine_power),
+            new Propulsor(3, k, spring_dampening, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [3, 3], 0, engine_power),
+            new Propulsor(4, k, spring_dampening, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [5, 3], 0, engine_power)
         ]
     ]
     let bond_weights_1 = [
         [[], [], [], []],
         [[], [[2, 0, 0]], [], []],
+        //[[[2, 0, 1]], [], [], [[2, 2, 1]]]
         [[[2, 0, 1]], [[2, 1, 1]], [[2, 1, 1]], [[2, 2, 1]]]
     ]
-    let space_ship = new Schematic(space_ship_cells, bond_weights_1, bond_material_1)
+    let additional_bonds_1 = [
+        [0, 0, 0, 1, 2, 2]
+    ]
+    let space_ship = new Schematic(space_ship_cells, bond_weights_1, bond_material_1, additional_bonds_1);
     space_ship.build_schematic(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0));
 }
 
