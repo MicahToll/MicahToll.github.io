@@ -103,15 +103,14 @@ universe.add(background);
 //add atuff to the scene
 scene.add( universe );
 
-
-const kirby_map = new THREE.TextureLoader().load( '../KirbyBulletHell/assets/kirby.png' );
-const kirby_bullet_map = new THREE.TextureLoader().load( '../KirbyBulletHell/assets/bullets/kirby_bullet.png' );
-const kirby_bullet_orange_map = new THREE.TextureLoader().load( '../KirbyBulletHell/assets/bullets/kirby_bullet_orange.png' );
-const kirby_bullet_lightblue_map = new THREE.TextureLoader().load( '../KirbyBulletHell/assets/bullets/kirby_bullet_lightblue.png' );
-const kirby_material = new THREE.SpriteMaterial( { map: kirby_map } );
-const kirby_bullet_material = new THREE.SpriteMaterial( { map: kirby_bullet_map } );
-const kirby_bullet_orange_material = new THREE.SpriteMaterial( { map: kirby_bullet_orange_map } );
-const kirby_bullet_lightblue_material = new THREE.SpriteMaterial( { map: kirby_bullet_lightblue_map } );
+let kirby_path = '../KirbyBulletHell/assets/kirby.png';
+let kirby_bullet_path = '../KirbyBulletHell/assets/bullets/kirby_bullet.png';
+let kirby_bullet_orange_path = '../KirbyBulletHell/assets/bullets/kirby_bullet_orange.png';
+let kirby_bullet_lightblue_path = '../KirbyBulletHell/assets/bullets/kirby_bullet_lightblue.png';
+const kirby_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( kirby_path ) } );
+const kirby_bullet_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( kirby_bullet_path ) } );
+const kirby_bullet_orange_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( kirby_bullet_orange_path ) } );
+const kirby_bullet_lightblue_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( kirby_bullet_lightblue_path ) } );
 
 //bond material
 const bond_material_1 = new THREE.LineBasicMaterial( { color: 0x0000ff } );
@@ -227,15 +226,16 @@ additional_bonds structure:
 */
 
 class Schematic {//we are going to change this
-    constructor(schematic_cells, bond_weights, bond_material, additional_bonds = [], schematic_name = "") {
+    constructor(schematic_cells, bond_weights, bond_material, origin_point = [0, 0], additional_bonds = [], schematic_name = "") {
         this.schematic_cells = schematic_cells;
         this.bond_weights = bond_weights;
         this.bond_material = bond_material;
+        this.origin_point = origin_point,// in the form [x, y], indicates the coordinates of the builder cell is.
         this.additional_bonds = additional_bonds;
         this.schematic_name = schematic_name;
     }
     build_schematic(creature_position = new THREE.Vector3(0, 0, 0), creature_velocity = new THREE.Vector3(0, 0, 0)) {
-        //instance of this the adsjlasdf;lk
+        //instance of this
         let creature_cells = [];
 
         for (let y = 0; y < this.schematic_cells.length; y++) {
@@ -246,7 +246,8 @@ class Schematic {//we are going to change this
                     creature_cells[y].push(current_cell);
                     current_cell.update_schematics(this, x, y);
                     current_cell.add_cell_to_simulation();
-                    current_cell.position_vector.addScaledVector(x_basis, x).addScaledVector(y_basis, -y).add(creature_position);
+                    current_cell.position_vector.addScaledVector(x_basis, (x-this.origin_point[0])).addScaledVector(y_basis, -(y-this.origin_point[1])).add(creature_position);
+                    //current_cell.position_vector.addScaledVector(x_basis, x-this.origin_point[0]).addScaledVector(y_basis, -(y-this.origin_point[1])).add(creature_position);
                     current_cell.velocity_vector.add(creature_velocity)
                 } else {
                     creature_cells[y].push(null);
@@ -541,6 +542,13 @@ class Directed_Cell extends Cell {
             }
         }
     }
+    /*update_schematics(cell_schematics, x_index = 0, y_index = 0) {//and index
+        super.update_schematics(cell_schematics, x_index, y_index);
+        this.something ;
+        this.x_index
+        this.y_index;
+
+    }*/
     update_cell() {
         this.update_direction();
     }
@@ -678,14 +686,29 @@ class Propulsor extends Directed_Cell {
     [new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material), new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material)],
     [null, new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material)]
 ]*/
-class Reproducer extends Cell {
-    constructor(mass, k, dampening, max_length, charge, position_vector, sprite_material, sprite_diameter, x_0 = 0, velocity_vector = new THREE.Vector3(0, 0, 0), cell_schematics) {
-        super(mass, k, dampening, max_length, charge, position_vector, sprite_material, sprite_diameter, x_0, velocity_vector);
-        this.cell_schematics = cell_schematics;
-        this.cell_schematics_index = cell_schematics_index;
+class Reproducer extends Directed_Cell {
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_index, schematics_to_produce, schematics_to_produce_index) {
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector, anchor_bond_index, 0);
+        this.schematics_to_produce = schematics_to_produce;
+        this.schematics_to_produce_index = schematics_to_produce_index;
+        this.energy = 1;
     }
-    reproduce() {
-        
+    update_cell(){
+        if (this.anchor_bond != null){
+            super.update_cell();
+            if (this.output == 1){
+                if (this.energy >= 1) {
+                    let creature_position = this.position_vector.clone();
+                    //creature_position.addScaledVector(this.direction, -radius);
+                    let creature_velocity = this.velocity_vector.clone();
+                    this.schematics_to_produce.build_schematic(creature_position, creature_velocity);
+                    this.energy = 0;
+                }
+            }
+        }
+    }
+    clone_cell() {
+        return new Reproducer(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_index, this.schematics_to_produce, this.schematics_to_produce_index);
     }
 }
 
@@ -718,32 +741,99 @@ class Reproducer extends Cell {
         }
     }
 }*/
+/*notes for me:
+every schematic needs a build from point (could be considered 0,0?). this is the point of the edge of the schematic that the builder/reproducer particle would be located.
+every schematic will be considered to have the same orentation as one another. 
+therefore: these are the inputs that I require from the user:
+Bonds:
+    bonds off the edge,
+    long bonds,
+    short bonds,
+    bond weights,
+Cells:
+    cells
+    origin point
 
+cell parameters:
+    anchor bond,
+    numicial parameters
+    keys, (maybe just a char? radio button?)
+    schematic
+function get_parameters() {
+
+}
+*/
+//function that given a few parameters returns the cell... seems good. how do I get icon
 class Part {
-    constructor(template_cell, part_name, cost, number_owned = 0){
-        this.template_cell = template_cell;
-        this.icon = template_cell.sprite_material;
+    constructor(template_cell_function, part_name, cost, icon_path = kirby_bullet_path, number_owned = 0) {
+        this.template_cell_function = template_cell_function;
         this.part_name = part_name;
         this.cost = cost;
+        this.icon_path = icon_path;
         this.number_owned = number_owned;
     }
 }
 
+let mass = 1;
+let spring_dampening = 100;
+let charge = 1;//doesn't do anything currently
+let k = 15;
+let engine_power = 10;
+
 let available_parts = [
-    new Part(0, "basic part", 5),
-    new Part(0, "propulsor", 25),
-    new Part(0, "key board input", 15),
-    new Part(0, "sensor", 20),
-    new Part(0, "builder", 25),
-    new Part(0, "sicky", 20),
-    new Part(0, "explosive", 25),
-    new Part(0, "heavy basic part", 20),
-    new Part(0, "pulse", 30),
-    new Part(0, "toggle", 15),
-    new Part(0, "generator", 30),
-    new Part(0, "energy_cell", 15),
-    new Part(0, "shield", 30),
-    new Part(0, "absorber", 25)
+    new Part(
+        function() {
+            return new Cell(mass, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0)
+        }, 
+    "basic part", 5, kirby_bullet_path),
+    new Part(
+        function() {
+            return new Player_Cell(mass, k, spring_dampening, 2*radius, charge, kirby_material, 2, 0)
+        }, 
+    "basic player part", 25, kirby_path),
+    new Part(
+        function(anchor_bond_index) {
+            return new Propulsor(mass, k, spring_dampening, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_index, 0, engine_power)
+        }, 
+    "propulsor", 25, kirby_bullet_orange_path),
+    new Part(
+        function(key) {
+            return new Key_Cell(mass, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), key);
+        }, 
+    "key board input", 15, kirby_bullet_lightblue_path),
+    new Part(function() {
+        
+    }, "sensor", 20),
+    new Part(function() {
+        
+    }, "builder", 25),
+    new Part(function() {
+        
+    }, "sicky", 20),
+    new Part(function() {
+        
+    }, "explosive", 25),
+    new Part(function() {
+        
+    }, "heavy basic part", 20),
+    new Part(function() {
+        
+    }, "pulse", 30),
+    new Part(function() {
+        
+    }, "toggle", 15),
+    new Part(function() {
+        
+    }, "generator", 30),
+    new Part(function() {
+        
+    }, "energy_cell", 15),
+    new Part(function() {
+        
+    }, "shield", 30),
+    new Part(function() {
+        
+    }, "absorber", 25)
 ];
 
 function make_empty_list(schematic_cells) {
@@ -797,7 +887,7 @@ function set_up_level2() {
         [basic_cell.clone_cell(), basic_cell.clone_cell()],
         [null, basic_cell.clone_cell()]
     ]
-    let schematic_3 = new Schematic(schematic_3_cells, make_empty_list(schematic_3_cells), bond_material_1);
+    let schematic_3 = new Schematic(schematic_3_cells, make_empty_list(schematic_3_cells), bond_material_1, [1, 3], []);
     schematic_3.build_schematic(new THREE.Vector3(0, -50, 0));
 
 
@@ -806,13 +896,14 @@ function set_up_level2() {
 
     anchor_bond_index_3 = [2, 3];
     let space_ship_cells = [
-        [new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), w_key), new Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0)), null, null],
+        [new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), w_key), new Reproducer(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [2, 1], schematic_3, 0), null, null],//
         [new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), d_key), new Player_Cell(1, k, spring_dampening, 2*radius, charge, kirby_material, 2, 0), new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), a_key), null],
         [
             new Propulsor(1, k, spring_dampening, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [0, 3], 0, engine_power),
             new Propulsor(2, k, spring_dampening, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [2, 3], 0, engine_power),
             new Propulsor(3, k, spring_dampening, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [3, 3], 0, engine_power),
             new Propulsor(4, k, spring_dampening, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [5, 3], 0, engine_power)
+            //new Reproducer(4, k, spring_dampening, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [5, 3], schematic_3, 0)
         ]
     ]
     let bond_weights_1 = [
@@ -822,9 +913,10 @@ function set_up_level2() {
         [[[2, 0, 1]], [[2, 1, 1]], [[2, 1, 1]], [[2, 2, 1]]]
     ]
     let additional_bonds_1 = [
-        [0, 0, 0, 1, 2, 2]
+        [0, 0, 0, 1, 2, 2],
+        [0, 0, 0, 1, 0, 2]
     ]
-    let space_ship = new Schematic(space_ship_cells, bond_weights_1, bond_material_1, additional_bonds_1);
+    let space_ship = new Schematic(space_ship_cells, bond_weights_1, bond_material_1, [0,0], additional_bonds_1);
     space_ship.build_schematic(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0));
 }
 

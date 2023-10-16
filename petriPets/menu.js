@@ -2,10 +2,10 @@ function menu_onload() {
     let shop_table = document.getElementById("shop_table");
     for (let part_index = 0; part_index < available_parts.length; part_index++) {
         let part = available_parts[part_index];
-        shop_table.innerHTML += 
+        shop_table.innerHTML += //height="200" width="200" 
         `<tr>
             <td>` + part.part_name + `</td>
-            <td></td>
+            <td><img src="`+ part.icon_path +`" class="part_icon"/></td>
             <td>`+ part.cost +`</td>
             <td id="number_owned_`+ part_index +`">`+ part.number_owned +`</td>
             <td><button onclick="purchase(`+ part_index +`)">+1</button></td>
@@ -18,8 +18,8 @@ function menu_onload() {
         garage_table.innerHTML += 
         `<tr id="part_row_`+ part_index +`" onclick="change_selection(`+ part_index +`)">
             <td>` + part.part_name + `</td>
-            <td></td>
-            <td id="number_owned_`+ part_index +`">`+ part.number_owned +" / "+ part.number_owned +`</td>
+            <td><img src="`+ part.icon_path +`" class="part_icon"/></td>
+            <td id="number_owned_out_of_`+ part_index +`">`+ part.number_owned +" / "+ part.number_owned +`</td>
         </tr>`;
     }
     /*for (let schematic_index = 0; schematic_index < saved_schematics.length; saved_schematics++) {
@@ -40,13 +40,14 @@ function menu_onload() {
     let svg_radius = (svg_height)/dimensions/(y_basis.y/radius);
     for (let x = 0; x < dimensions; x++) {
         for (let y = 0; y < dimensions; y++) {
-            garage_svg.innerHTML += `<circle cx="`+(svg_radius*(x - y_basis.x/radius*y + y_basis.x/radius*dimensions))+`" cy="`+(svg_radius*y_basis.y/radius*y+svg_height/24)+`" r="10" fill="#404040" onclick="add_particle_to_design(`+x+`, `+y+`)"/>`
+            garage_svg.innerHTML += `<g transform="translate(`+(svg_radius*(x - y_basis.x/radius*y + y_basis.x/radius*dimensions))+`,`+(svg_radius*y_basis.y/radius*y+svg_height/24)+`)" onclick="add_particle_to_design(`+x+`, `+y+`)") oncontextmenu="edit_particle_attributes(`+x+`, `+y+`)"><circle cx="`+0+`" cy="`+0+`" r="10" fill="#404040" /><g id="cord_`+x+`_`+y+`"></g></g>`
         }
     }
+    garage_svg.addEventListener("contextmenu", (e) => {e.preventDefault()});
 
     update_dashboard()
 }
-let selection = {"type": "none", "data": 0, "index": -1}
+let selection = {"type": "none", "part": available_parts[0], "index": -1}
 
 function make_null_list(x_max, y_max) {
     let empty_list = [];
@@ -59,17 +60,26 @@ function make_null_list(x_max, y_max) {
     return empty_list
 }
 
-garage_design = make_null_list(12, 12);
+let garage_design = make_null_list(12, 12);
+let garage_design_additional_bonds = [];
 
 function add_particle_to_design(x, y) {
     console.log("x: "+x+", y: "+y);
     if (selection["type"] == "cell") {
-        garage_design[y][x] = selection["data"];
-    } else if (selection["type"] = "bond") {
+        garage_design[y][x] = selection["part"];
+        document.getElementById("cord_"+x+"_"+y).innerHTML = `<image href="`+selection["part"].icon_path+`" height="16" width="16" transform="translate(-8,-8)"/>`
+    } else if (selection["type"] == "bond") {
         //yeet;
+    } else if (selection["type"] == "delete") {
+        garage_design[y][x] = null;
+        document.getElementById("cord_"+x+"_"+y).innerHTML = ``;
     } else {
         //yeet;
     }
+}
+
+function edit_particle_attributes(x, y) {
+    document.getElementById("text_parameter").hidden = false;
 }
 
 function save_schematics(design) {
@@ -83,10 +93,12 @@ function change_selection(part_index) {
     document.getElementById("part_row_"+selection["index"]).style.backgroundColor = "";
     document.getElementById("part_row_"+part_index).style.backgroundColor = "#000000";
     if (part_index == -1) {
-        selection = {"type": "bond", "data": 0, "index": part_index};
+        selection = {"type": "bond", "part": 0, "index": part_index};
     } else if (part_index >= 0) {
-        selection = {"type": "cell", "data": 1, "index": part_index};
-    }
+        selection = {"type": "cell", "part": available_parts[part_index], "index": part_index};
+    } else if (part_index == -2) {
+        selection = {"type": "delete", "part": 0, "index": part_index};
+    } 
 }
 
 function purchase(part_index) {
@@ -95,6 +107,7 @@ function purchase(part_index) {
         credits -= part.cost;
         let number_owned = ++part.number_owned;
         document.getElementById("number_owned_" + part_index).innerHTML = number_owned;
+        document.getElementById("number_owned_out_of_" + part_index).innerHTML = number_owned + " / " + number_owned;
         update_dashboard();
     } else {
         window.alert("Not enough funds");

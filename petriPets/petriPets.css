@@ -12,3 +12,18 @@ th {
     -ms-user-select: none; /* IE 10 and IE 11 */
     user-select: none; /* Standard syntax */
 }
+.part_icon {
+    width: 16px;
+    height: 16px;
+}
+.cell_parameter {/*not doing anything*/
+    left:10vw;
+	width:10vw;
+}
+#text_parameter {
+	z-index:4;
+	text-align: center;
+    left:8vw;
+	width:25vw;
+    height:25vw;
+}

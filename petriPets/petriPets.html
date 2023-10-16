@@ -35,6 +35,11 @@
 									<td>Icon</td>
 									<td>Remaining / Total</td>
 								</tr>
+								<tr id="part_row_-2" onclick="change_selection(-2)">
+									<td>delete</td>
+									<td></td>
+									<td>inf / inf</td>
+								</tr>
 								<tr id="part_row_-1" onclick="change_selection(-1)">
 									<td>add bond</td>
 									<td></td>
@@ -69,6 +74,11 @@
 				<div class="button settings_button" onclick="loadSave()">load save</div>
 				<!--<div onclick="update_settings()">Anti aliasing<input id="anti_aliasing" type="checkbox" checked=true/></div>-->
 				<!--<div onclick="connect_controller()">connect controller</div>-->
+			</div>
+			<div id="text_parameter" class="popup cell_parameter" hidden="true">
+				<h1>Edit parameters</h1>
+				<div><input id="text_parameter_input" type="text"/></div>
+				<button class="button settings_button" onclick="edit_particle_attributes()">save change</button>
 			</div>
 		</div>
         <!--<div id="visor" class="unselectable">
