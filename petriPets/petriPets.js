@@ -124,6 +124,7 @@ let cells = [];
 let bonds = [];
 let friction = .1;
 let radius = 5;
+let universe_radius = 150;
 
 let x_basis = new THREE.Vector3(radius, 0 ,0);
 let y_basis = new THREE.Vector3(radius/2, radius*Math.sqrt(3)/2 ,0);
@@ -166,6 +167,7 @@ function gameloop(timestamp) {
 
     for (let i = 0; i < cells.length; i++) {
         let cell_1 = cells[i];
+        cell_1.check_boundary_force();
         cell_1.update_cell();
         cell_1.update_outputs();
         for (let j = i+1; j < cells.length; j++) {
@@ -314,7 +316,6 @@ class Schematic {//we are going to change this
                 current_bond.set_weights(weight, connecting_x, connecting_y);
             }
         }
-
         return current_bond;
     }
 }
@@ -363,12 +364,17 @@ class Cell {
     }
     repel_cell(cell_2, repel_dist_vector) {
         let dist = repel_dist_vector.length();
-        if (dist != 0) {
+        if (dist != 0 && dist < radius) {
             //let force = this.k*this.charge*cell_2.charge/(dist/radius)**2/dist;//this adds charge, a currently unused stat
-            let force = this.k/(dist/radius)**2/dist;// this is actually force times dist (so that dist gets divided out)
-
+            let force = this.charge*cell_2.charge/(dist)**3;// this is actually force times dist (so that dist gets divided out)
             this.force_vector.addScaledVector(repel_dist_vector, -force);
             cell_2.force_vector.addScaledVector(repel_dist_vector, force);
+        }
+    }
+    check_boundary_force() {
+        let position_vector_length = this.position_vector.length()
+        if (position_vector_length > universe_radius) {
+            this.force_vector.addScaledVector(this.position_vector, -1*(universe_radius - position_vector_length)**2/position_vector_length);
         }
     }
     update_outputs() {
@@ -405,7 +411,7 @@ class Bond {
         this.k = ( cell_1.k + cell_2.k )/2;
         this.dampening = ( cell_1.dampening + cell_2.dampening )/2;
         this.bond_length = bond_length;//( cell_1.bond_length + cell_2.bond_length )/2;
-        this.max_length = ( cell_1.max_length + cell_2.max_length )/2;
+        this.max_length = this.bond_length*( cell_1.max_length + cell_2.max_length )/2;//max length is based on target length * coef
         this.cell_1 = cell_1;
         this.cell_2 = cell_2;
         this.broken = false;
@@ -455,12 +461,13 @@ class Bond {
         this.dist_vector_length = this.dist_vector.length();
 
         let k_d_times_d_dist_over_dt = this.dampening*(1 - last_dist_length/this.dist_vector_length);
+        let spring_force = this.k*(this.dist_vector_length - this.bond_length);
         if (this.dist_vector.length() > this.max_length) {
             this.break_bond(i);
-        }
+        }//this.bond_length
         else {
-            this.cell_2.force_vector.addScaledVector(this.dist_vector, - (this.k/radius + k_d_times_d_dist_over_dt) );
-            this.cell_1.force_vector.addScaledVector(this.dist_vector, (this.k/radius + k_d_times_d_dist_over_dt) );
+            this.cell_2.force_vector.addScaledVector(this.dist_vector, - (spring_force/this.dist_vector_length + k_d_times_d_dist_over_dt) );
+            this.cell_1.force_vector.addScaledVector(this.dist_vector, (spring_force/this.dist_vector_length + k_d_times_d_dist_over_dt) );
         }
     }
     update_index(x_index, y_index) {//the given indeces will be doubled to keep everything an int 
@@ -741,240 +748,3 @@ class Reproducer extends Directed_Cell {
         }
     }
 }*/
-/*notes for me:
-every schematic needs a build from point (could be considered 0,0?). this is the point of the edge of the schematic that the builder/reproducer particle would be located.
-every schematic will be considered to have the same orentation as one another. 
-therefore: these are the inputs that I require from the user:
-Bonds:
-    bonds off the edge,
-    long bonds,
-    short bonds,
-    bond weights,
-Cells:
-    cells
-    origin point
-
-cell parameters:
-    anchor bond,
-    numicial parameters
-    keys, (maybe just a char? radio button?)
-    schematic
-function get_parameters() {
-
-}
-*/
-//function that given a few parameters returns the cell... seems good. how do I get icon
-class Part {
-    constructor(template_cell_function, part_name, cost, icon_path = kirby_bullet_path, number_owned = 0) {
-        this.template_cell_function = template_cell_function;
-        this.part_name = part_name;
-        this.cost = cost;
-        this.icon_path = icon_path;
-        this.number_owned = number_owned;
-    }
-}
-
-let mass = 1;
-let spring_dampening = 100;
-let charge = 1;//doesn't do anything currently
-let k = 15;
-let engine_power = 10;
-
-let available_parts = [
-    new Part(
-        function() {
-            return new Cell(mass, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0)
-        }, 
-    "basic part", 5, kirby_bullet_path),
-    new Part(
-        function() {
-            return new Player_Cell(mass, k, spring_dampening, 2*radius, charge, kirby_material, 2, 0)
-        }, 
-    "basic player part", 25, kirby_path),
-    new Part(
-        function(anchor_bond_index) {
-            return new Propulsor(mass, k, spring_dampening, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_index, 0, engine_power)
-        }, 
-    "propulsor", 25, kirby_bullet_orange_path),
-    new Part(
-        function(key) {
-            return new Key_Cell(mass, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), key);
-        }, 
-    "key board input", 15, kirby_bullet_lightblue_path),
-    new Part(function() {
-        
-    }, "sensor", 20),
-    new Part(function() {
-        
-    }, "builder", 25),
-    new Part(function() {
-        
-    }, "sicky", 20),
-    new Part(function() {
-        
-    }, "explosive", 25),
-    new Part(function() {
-        
-    }, "heavy basic part", 20),
-    new Part(function() {
-        
-    }, "pulse", 30),
-    new Part(function() {
-        
-    }, "toggle", 15),
-    new Part(function() {
-        
-    }, "generator", 30),
-    new Part(function() {
-        
-    }, "energy_cell", 15),
-    new Part(function() {
-        
-    }, "shield", 30),
-    new Part(function() {
-        
-    }, "absorber", 25)
-];
-
-function make_empty_list(schematic_cells) {
-    let empty_list = [];
-    for (let y = 0; y < schematic_cells.length; y++){
-        empty_list.push([]);
-        for (let x = 0; x < schematic_cells[y].length; x++){
-            empty_list[y].push([]);
-        }
-    }
-    return empty_list
-}
-
-
-function set_up_level2() {
-    let mass = 1;
-    let spring_dampening = 100;
-    let charge = 1;//doesn't do anything currently
-    let k = 5;
-    let engine_power = 10;
-
-    let basic_cell = new Cell(mass, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0)
-    let basic_player_cell = new Player_Cell(mass, k, spring_dampening, 2*radius, charge, kirby_material, 2, 0)
-    function basic_key_cell(key) {
-        return new Key_Cell(mass, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), key);
-    }
-    function basic_propulsion_cell(anchor_bond_index) {
-        return new Propulsor(mass, k, spring_dampening, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_index, 0, engine_power)
-    }
-
-    let schematic_1_cells = [
-        [basic_cell.clone_cell(), null],
-        [basic_cell.clone_cell(), basic_cell.clone_cell()],
-        [null, basic_cell.clone_cell()]
-    ]
-    let schematic_1 = new Schematic(schematic_1_cells, make_empty_list(schematic_1_cells), bond_material_1);
-    schematic_1.build_schematic(new THREE.Vector3(-50, -25, 0));
-
-    let schematic_2_cells = [
-        [basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), null],
-        [basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell()],
-        [null, basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell()]
-    ]
-    let schematic_2 = new Schematic(schematic_2_cells, make_empty_list(schematic_2_cells), bond_material_1);
-    schematic_2.build_schematic(new THREE.Vector3(0, 50, 0));
-
-
-
-    let schematic_3_cells = [
-        [basic_cell.clone_cell(), null],
-        [basic_cell.clone_cell(), basic_cell.clone_cell()],
-        [null, basic_cell.clone_cell()]
-    ]
-    let schematic_3 = new Schematic(schematic_3_cells, make_empty_list(schematic_3_cells), bond_material_1, [1, 3], []);
-    schematic_3.build_schematic(new THREE.Vector3(0, -50, 0));
-
-
-
-
-
-    anchor_bond_index_3 = [2, 3];
-    let space_ship_cells = [
-        [new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), w_key), new Reproducer(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [2, 1], schematic_3, 0), null, null],//
-        [new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), d_key), new Player_Cell(1, k, spring_dampening, 2*radius, charge, kirby_material, 2, 0), new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), a_key), null],
-        [
-            new Propulsor(1, k, spring_dampening, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [0, 3], 0, engine_power),
-            new Propulsor(2, k, spring_dampening, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [2, 3], 0, engine_power),
-            new Propulsor(3, k, spring_dampening, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [3, 3], 0, engine_power),
-            new Propulsor(4, k, spring_dampening, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [5, 3], 0, engine_power)
-            //new Reproducer(4, k, spring_dampening, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [5, 3], schematic_3, 0)
-        ]
-    ]
-    let bond_weights_1 = [
-        [[], [], [], []],
-        [[], [[2, 0, 0]], [], []],
-        //[[[2, 0, 1]], [], [], [[2, 2, 1]]]
-        [[[2, 0, 1]], [[2, 1, 1]], [[2, 1, 1]], [[2, 2, 1]]]
-    ]
-    let additional_bonds_1 = [
-        [0, 0, 0, 1, 2, 2],
-        [0, 0, 0, 1, 0, 2]
-    ]
-    let space_ship = new Schematic(space_ship_cells, bond_weights_1, bond_material_1, [0,0], additional_bonds_1);
-    space_ship.build_schematic(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0));
-}
-
-/*class Neuron {
-    constructor(inputs, outputs) {
-        this.inputs = [];
-        this.outputs = [];
-        this.x_0 = 0;//this is the center of the activation logistic curve
-        this.current_activation_level = 0;
-    }
-    avtivation_function(x) {
-        return 1/( 1 + Math.E**( -(x-this.x_0) ) )//return 1/( 1 + Math.E**( -logistic_k*(x-this.x_0) ) )
-    }
-}*/
-
-class Background {
-    constructor(update,mesh){
-        this.update = update;
-        this.mesh = mesh;
-        background.add(this.mesh);
-    }
-    update(){}
-    /*delete_sprite(){
-        background.remove(this.sprite);
-    }*/
-}
-
-
-/*
-//level 1
-*/
-function set_up_level1() {
-    const vertices = [];
-    for ( let i = 0; i < 1000; i ++ ) {
-        const x = THREE.MathUtils.randFloatSpread( 500 );
-        const y = THREE.MathUtils.randFloatSpread( 500 );
-        const z = THREE.MathUtils.randFloatSpread( 500 );
-
-        vertices.push( x, y, z );
-    }
-    var starGeometry = new THREE.BufferGeometry();
-	starGeometry.setAttribute('position', new THREE.Float32BufferAttribute( vertices, 3 ));
-	var starMaterial = new THREE.PointsMaterial({color:0x888888})
-	var stars = new THREE.Points( starGeometry, starMaterial );
-	background.add(stars);
-    /*
-    let planel1_geometry = new THREE.IcosahedronGeometry(75);
-    let planel1_edges = new THREE.EdgesGeometry( planel1_geometry );
-    let planel1_material = new THREE.LineBasicMaterial( { color: 0x00ff00 } );
-    const planet1_line = new THREE.LineSegments( planel1_edges, planel1_material);
-    background_things.push(new Background(function(){
-        this.mesh.rotation.z -= .0005;
-        this.mesh.rotation.y += .001;
-    }, planet1_line));
-
-    background.position.z = -200;//offset*/
-    //move_background = function() { background.position.y -= .1 }//translate
-    //move_background = function() { background.rotation.x += .001 }//rotate
-
-    //music.play();
-}

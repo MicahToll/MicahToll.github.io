@@ -20,10 +20,17 @@ th {
     left:10vw;
 	width:10vw;
 }
-#text_parameter {
-	z-index:4;
+#attribute_inputs_popup {
+	z-index:6;
 	text-align: center;
     left:8vw;
 	width:25vw;
     height:25vw;
+}
+/*.part_svg {
+}
+.circle_node_svg {
+}*/
+.bond_svg {
+    opacity: .5;
 }
