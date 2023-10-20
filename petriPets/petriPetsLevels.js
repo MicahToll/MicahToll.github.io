@@ -21,13 +21,12 @@ function get_parameters() {
 }
 
 
-part_attributes are in the form [{"name":"", "type":"text, number, bond, schematics, key", "value": default_value}, ...]
+part_attributes are in the form [{"name":"", "type":"text, number, bond, schematics, key", "default_value": default_value}, ...]
 */
 //function that given a few parameters returns the cell... seems good. how do I get icon
 
 class Part {
-    constructor(template_cell_function, part_name, cost, icon_path = kirby_bullet_path, part_attributes = [], number_owned = 0) {
-        this.template_cell_function = template_cell_function;
+    constructor(part_name, cost, icon_path = kirby_bullet_path, part_attributes = [], number_owned = 0) {
         this.part_name = part_name;
         this.cost = cost;
         this.icon_path = icon_path;
@@ -54,62 +53,73 @@ let key_decoder = {
 };
 
 let available_parts = [
-    new Part(
-        function(part_attributes) {
-            return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0)
-        }, 
-    "basic part", 5, kirby_bullet_path, [], 5),
-    new Part(
-        function(part_attributes) {
-            return new Player_Cell(mass, k, spring_dampening, max_length, charge, kirby_material, 2, 0)
-        }, 
-    "basic player part", 25, kirby_path, [], 1),
-    new Part(
-        function(part_attributes) {
-            let anchor_bond_index = part_attributes[0];
-            return new Propulsor(mass, k, spring_dampening, max_length, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_index, 0, engine_power)
-        }, 
-    "propulsor", 25, kirby_bullet_orange_path, [{"name":"anchor_bond_index", "type":"bond", "value": [0,0]}], 5),
-    new Part(
-        function(part_attributes) {
-            let key = key_decoder[part_attributes[0]["value"]];
-            return new Key_Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_lightblue_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), key);
-        }, 
-    "key board input", 15, kirby_bullet_lightblue_path, [{"name":"key", "type":"key", "value":'w'}], 5),
-    new Part(function() {
-        
-    }, "sensor", 20),
-    new Part(function() {
-        
-    }, "builder", 25),
-    new Part(function() {
-        
-    }, "sicky", 20),
-    new Part(function() {
-        
-    }, "explosive", 25),
-    new Part(function() {
-        
-    }, "heavy basic part", 20),
-    new Part(function() {
-        
-    }, "pulse", 30),
-    new Part(function() {
-        
-    }, "toggle", 15),
-    new Part(function() {
-        
-    }, "generator", 30),
-    new Part(function() {
-        
-    }, "energy_cell", 15),
-    new Part(function() {
-        
-    }, "shield", 30),
-    new Part(function() {
-        
-    }, "absorber", 25)
+    new Part("basic part", 5, kirby_bullet_path, [], 5),
+    new Part("basic player part", 25, kirby_path, [], 1),
+    new Part("propulsor", 25, kirby_bullet_orange_path, [{"name":"anchor_bond_index", "type":"bond", "default_value": [0,0]}], 5),
+    new Part("key board input", 15, kirby_bullet_lightblue_path, [{"name":"key", "type":"key", "default_value":'w'}], 5),
+    new Part("sensor", 20),
+    new Part("builder", 25),
+    new Part("sticky", 20),
+    new Part("explosive", 25),
+    new Part("heavy basic part", 20),
+    new Part("pulse", 30),
+    new Part("toggle", 15),
+    new Part("generator", 30),
+    new Part("energy_cell", 15),
+    new Part("shield", 30),
+    new Part("absorber", 25)
 ];
+
+let available_parts_functions = {
+    "basic part": function(part_attributes) {
+        return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0)
+    },
+    "basic player part": function(part_attributes) {
+        let anchor_bond_index = part_attributes[0];
+        return new Propulsor(mass, k, spring_dampening, max_length, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_index, 0, engine_power)
+    },
+    "propulsor": function(part_attributes) {
+        let anchor_bond_index = part_attributes[0];
+        return new Propulsor(mass, k, spring_dampening, max_length, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_index, 0, engine_power)
+    },
+    "key board input": function(part_attributes) {
+        let key = key_decoder[part_attributes[0]];
+        return new Key_Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_lightblue_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), key);
+    },
+    "sensor": function(part_attributes) {
+        return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0)
+    },
+    "builder": function(part_attributes) {
+        return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0)
+    },
+    "sticky": function(part_attributes) {
+        return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0)
+    },
+    "explosive": function(part_attributes) {
+        return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0)
+    },
+    "heavy basic part": function(part_attributes) {
+        return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0)
+    },
+    "pulse": function(part_attributes) {
+        return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0)
+    },
+    "toggle": function(part_attributes) {
+        return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0)
+    },
+    "generator": function(part_attributes) {
+        return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0)
+    },
+    "energy_cell": function(part_attributes) {
+        return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0)
+    },
+    "shield": function(part_attributes) {
+        return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0)
+    },
+    "absorber": function(part_attributes) {
+        return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0)
+    }
+}
 
 function make_empty_list(schematic_cells) {
     let empty_list = [];
@@ -198,7 +208,7 @@ function set_up_level2() {
     ]
     //let space_ship = new Schematic(space_ship_cells, make_empty_list(space_ship_cells), bond_material_1, [0,0], additional_bonds_1);
     let space_ship = new Schematic(space_ship_cells, bond_weights_1, bond_material_1, [0,0], additional_bonds_1);
-    space_ship.build_schematic(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0));
+    //space_ship.build_schematic(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0));
 }
 
 /*class Neuron {

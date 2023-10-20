@@ -52,6 +52,9 @@
 						</td>
 					</tr>
 				</table>
+				<div>
+					<div class="button settings_button" onclick="open_schematics_menu()">Open Schematics Menu</div>
+				</div>
 				<table style="width:50%; margin-left:25%;">
 					<tr>
 						<td>
@@ -89,6 +92,22 @@
 				<div id="attribute_inputs"></div>
 				<!--<div><input id="text_parameter_input" type="text"/></div>-->
 				<button class="button settings_button" onclick="save_change_to_particle_attributes()">save change</button>
+			</div>
+			<div id="schematics_popup" class="popup" hidden="true">
+				<div id="schematics_popup_x_button" class="x button" onclick="close_schematic_window()">x</div>
+				<h1>saved schematics</h1>
+				<div id="schematics_inputs"></div>
+				<!--<div class="button settings_button" onclick="save_schematics()">Save Schematics</div>-->
+				<table id="schematics_table" style="width:100%" class="unselectable">
+					<tr>
+						<td>Schematics Name</td>
+						<td>Save</td>
+						<td>Load</td>
+						<td>Build</td>
+					</tr>
+				</table>
+				<!--<div><input id="text_parameter_input" type="text"/></div>-->
+				<div class="button settings_button" onclick="add_row()">add row</div>
 			</div>
 		</div>
         <!--<div id="visor" class="unselectable">

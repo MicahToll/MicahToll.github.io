@@ -45,7 +45,6 @@ let garage_svg = document.getElementById("garage_svg");
 let svg_width = .6*window.innerWidth;
 let svg_height = svg_width * ((y_basis.y)/(x_basis.x+y_basis.x))
 garage_svg.style.width = svg_width;
-console.log(svg_width)
 garage_svg.style.height = svg_height;
 
 let dimensions = 12;
@@ -69,6 +68,7 @@ function make_null_list(x_max, y_max) {
 }
 
 let garage_design = make_null_list(12, 12);
+let garage_design_attributes = make_null_list(12, 12);
 let garage_design_additional_bonds = [];
 let bond_cell_1 = {"x":-1, "y":-1}
 
@@ -78,6 +78,10 @@ function add_particle_to_design(x, y) {
         if (selection["part"].number_available > 0){
             refresh_garage_table_parts_remaining(x, y);
             garage_design[y][x] = selection["part"];
+            garage_design_attributes[y][x] = [];
+            for (let attribute of selection["part"]["part_attributes"]) {
+                garage_design_attributes[y][x].push(attribute["default_value"]);
+            }
             document.getElementById("cord_"+x+"_"+y).innerHTML = `<image href="`+selection["part"].icon_path+`" class="part_svg" height="16" width="16" transform="translate(-8,-8)"/>`
             selection["part"].number_available--;
             document.getElementById("number_owned_out_of_" + selection["index"]).innerHTML = selection["part"].number_available +" / "+ selection["part"].number_owned;
@@ -136,50 +140,101 @@ function edit_particle_attributes(x, y) {
         document.getElementById("attribute_inputs_popup").hidden = false;
     }
 }
+function edit_bond_weights() {
+    let attribute_inputs = document.getElementById("attribute_inputs");
+    attribute_inputs.innerHTML = ``;
+    attribute_inputs.part_x = -1;
+    attribute_inputs.part_y = -1;
+    let attributes = [{"name":"hi", "type":"number"}, {"name":"there", "type":"number"}]
+    for (let attribute_index = 0; attribute_index < attributes.length; attribute_index++) {
+        let attribute = attributes[attribute_index];
+        attribute_inputs.innerHTML += `<div>`+attribute["name"]+`</div>`;
+        attribute_inputs.innerHTML += `<input id="attribute_input_`+attribute_index+`" type="number"/>`;
+    }
+    document.getElementById("attribute_inputs_popup").hidden = false;
+}
 
 function save_change_to_particle_attributes() {
     let x = attribute_inputs.part_x;
     let y = attribute_inputs.part_y;
-    let part = garage_design[y][x];
-    if (part != null) {
-        for (let attribute_index = 0; attribute_index < part.part_attributes.length; attribute_index++) {
-            let attribute = part.part_attributes[attribute_index];
-            console.log(document.getElementById("attribute_input_"+attribute_index));
-            console.log(attribute["value"]);
-            attribute["value"] = document.getElementById("attribute_input_"+attribute_index).value;
-            console.log(attribute["value"]);
-            /*if (attribute["type"] == "text") {
-                attribute_inputs.innerHTML += `<input id="attribute_input_`+attribute_index+`" type="text"/>`;
-            } else if (attribute["type"] == "key") {
-                attribute_inputs.innerHTML += `<input id="attribute_input_`+attribute_index+`" type="text"/>`;
-            } else if (attribute["type"] == "bond") {
-                attribute_inputs.innerHTML += `<input id="attribute_input_`+attribute_index+`" type="button"/>`;
-            } else if (attribute["type"] == "schematic") {
-                attribute_inputs.innerHTML += `<input id="attribute_input_`+attribute_index+`" type="button"/>`;
-            } else if (attribute["type"] == "number") {
-                attribute_inputs.innerHTML += `<input id="attribute_input_`+attribute_index+`" type="number"/>`;
-            }*/
+    if (x != -1) {//-1 indecates that this attribute is for a bond
+        let part = garage_design[y][x];
+        let part_attributes = garage_design_attributes[y][x];
+        if (part != null && part_attributes != null) {
+            for (let attribute_index = 0; attribute_index < part.part_attributes.length; attribute_index++) {
+                part_attributes[attribute_index] = document.getElementById("attribute_input_"+attribute_index).value;
+                console.log(document.getElementById("attribute_input_"+attribute_index));
+                /*if (attribute["type"] == "text") {
+                    attribute_inputs.innerHTML += `<input id="attribute_input_`+attribute_index+`" type="text"/>`;
+                } else if (attribute["type"] == "key") {
+                    attribute_inputs.innerHTML += `<input id="attribute_input_`+attribute_index+`" type="text"/>`;
+                } else if (attribute["type"] == "bond") {
+                    attribute_inputs.innerHTML += `<input id="attribute_input_`+attribute_index+`" type="button"/>`;
+                } else if (attribute["type"] == "schematic") {
+                    attribute_inputs.innerHTML += `<input id="attribute_input_`+attribute_index+`" type="button"/>`;
+                } else if (attribute["type"] == "number") {
+                    attribute_inputs.innerHTML += `<input id="attribute_input_`+attribute_index+`" type="number"/>`;
+                }*/
+            }
         }
+    } else {
+        console.log("this will save the weights");
     }
     document.getElementById("attribute_inputs_popup").hidden = true;
 }
 
-function save_schematics() {
+//structure: [{"garage_design":garage_design, "garage_design_attributes":garage_design_attributes, "garage_design_additional_bonds":garage_design_additional_bonds}]
+let saved_designs = [];
+
+/*function save_design() {
+    let new_design = {"garage_design":garage_design, "garage_design_attributes":garage_design_attributes, "garage_design_additional_bonds":garage_design_additional_bonds}
+    saved_designs.push(new_design);
+    save_schematics()
+}*/
+
+function open_schematics_menu() {
+    document.getElementById("schematics_popup").hidden = false;
+}
+
+function add_row(){
+    let new_schematics = null;
+    saved_schematics.push(new_schematics);
+
+    let new_design = {"garage_design":null, "garage_design_attributes":null, "garage_design_additional_bonds":null}
+    saved_designs.push(new_design);
+
+    let new_index = saved_designs.length -1;
+    document.getElementById("schematics_table").innerHTML += `
+        <td>New Name</td>
+        <td><div class="button schematics_table_button" onclick="save_schematics(`+new_index+`)">save</div></td>
+        <td><div class="button schematics_table_button" onclick="save_schematics(`+new_index+`)">save</div></td>
+        <td><div class="button schematics_table_button" onclick="build_schematic_at_index(`+new_index+`)">build</div></td>`;
+}
+
+function build_schematic_at_index(schematic_index) {
+    saved_schematics[schematic_index].build_schematic();
+    closeAllWindows();
+}
+
+function save_schematics(schematic_index) {
     // loops through the data created from the garage, then creates a schematic based on that and finally adds it to the schematics list.
     let garage_schematic_cells = make_null_list(garage_design.length, garage_design[0].length);
     for (let y = 0; y < garage_design.length; y++) {
         for (let x = 0; x < garage_design[y].length; x++) {
             let part = garage_design[y][x];
+            let part_attributes = garage_design_attributes[y][x];
             if (part != null) {
-                garage_schematic_cells[y][x] = part.template_cell_function(part.part_attributes);
+                garage_schematic_cells[y][x] = available_parts_functions[part.part_name](part_attributes);
             } else {
                 garage_schematic_cells[y][x] = null;
             }
         }
     }
     let new_schematics = new Schematic(garage_schematic_cells, make_empty_list(garage_schematic_cells), bond_material_1, [0, 0], garage_design_additional_bonds, "new_schematic");
-    saved_schematics.push(new_schematics);
-    //schematic_1.build_schematic(new THREE.Vector3(-50, -25, 0));
+    saved_schematics[schematic_index] = new_schematics//does this create a memory leak? it won't be a bad one anyway.
+
+    let new_design = {"garage_design":garage_design, "garage_design_attributes":garage_design_attributes, "garage_design_additional_bonds":garage_design_additional_bonds}
+    saved_designs[schematic_index] = new_design;
 }
 
 function change_selection(part_index) {
@@ -208,15 +263,19 @@ function purchase(part_index) {
     }
 }
 
+function close_schematic_window() {
+    document.getElementById("schematics_popup").hidden = true;
+}
+
 function update_dashboard() {
     document.getElementById("credits").innerHTML = "Credits: " + credits;
 }
-
 function closeAllWindows(){
     document.getElementById("settings").hidden = true;
     document.getElementById("shop").hidden = true;
     document.getElementById("select").hidden = true;
     document.getElementById("attribute_inputs_popup").hidden = true;
+    document.getElementById("schematics_popup").hidden = true;
 }
 function select(){
     closeAllWindows();
@@ -246,7 +305,7 @@ let saved_schematics = [];
 function save(){
     let save_data = {
         //"settings":{"volume":volume, "invertY":invertY, "thirdPerson": thirdPerson, "antialias":antialias}, 
-        "progress":{"credits": credits, "available_parts": available_parts, "saved_schematics":saved_schematics}
+        "progress":{"credits": credits, "available_parts": available_parts, "saved_schematics":saved_designs}
     }
     localStorage.setItem("petripets_save_data", JSON.stringify(save_data));
 }
@@ -265,7 +324,7 @@ function loadSave(){
         let progress = save_data["progress"];
         credits = progress["credits"];
         available_parts = progress["available_parts"];
-        saved_schematics = progress[saved_schematics];
+        saved_designs = progress["saved_designs"];
 
         //change_settings();
         update_dashboard();

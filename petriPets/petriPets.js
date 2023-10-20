@@ -125,6 +125,7 @@ let bonds = [];
 let friction = .1;
 let radius = 5;
 let universe_radius = 150;
+let c_squared = 1;
 
 let x_basis = new THREE.Vector3(radius, 0 ,0);
 let y_basis = new THREE.Vector3(radius/2, radius*Math.sqrt(3)/2 ,0);
@@ -232,7 +233,7 @@ class Schematic {//we are going to change this
         this.schematic_cells = schematic_cells;
         this.bond_weights = bond_weights;
         this.bond_material = bond_material;
-        this.origin_point = origin_point,// in the form [x, y], indicates the coordinates of the builder cell is.
+        this.origin_point = origin_point;// in the form [x, y], indicates the coordinates of the builder cell is.
         this.additional_bonds = additional_bonds;
         this.schematic_name = schematic_name;
     }
@@ -561,6 +562,45 @@ class Directed_Cell extends Cell {
     }
     clone_cell() {
         return new Directed_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_index, this.desired_angle);
+    }
+}
+
+let planks_constant = 60;
+class Photon_Cell extends Cell {
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), energy) {
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector)
+        this.energy = energy;
+        this.last_position_vector = this.position_vector.copy;
+        this.last_force_vector = this.force_vector.copy;
+        this.period = 1;//in 1/60th of a sec
+        this.time_since_flip = 0;//in 1/60th of a sec
+        //this.last_speed = this.velocity_vector.length();
+        this.update_period();
+    }
+    update_period() {
+        this.period = Math.ceil(planks_constant/this.energy);
+    }
+    update_energy() {//might switch tactic. currently doing one big update every few ticks, might change to a small update every single tick
+        let potential_energy = 0;
+        for (let cell_2 in cells){
+            let dist = repel_dist_vector.length();
+            if (dist != 0 && dist < radius) {
+                potential_energy += this.charge*cell_2.charge/(dist);
+            }
+        }
+        this.energy -= potential_energy;//detla E = delta KE + delta PE + delta internal energy + delta external energy
+        this.energy = 0
+    }
+    update_cell() {
+        if (this.time_since_flip >= this.period) {
+            console.log(this.charge);
+            this.charge = -this.charge;
+            this.update_energy();
+            this.update_period();
+            this.time_since_flip = 1;
+        } else {
+            this.time_since_flip++;
+        }
     }
 }
 
