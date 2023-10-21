@@ -519,14 +519,14 @@ class Directed_Cell extends Cell_With_Bond {
         this.direction = new THREE.Vector3(0, 1, 0);
         this.desired_angle = desired_angle;
     }
-    update_anchor(anchor_bond) {
+    /*update_anchor(anchor_bond) {
         this.anchor_bond = anchor_bond;
         if (this.anchor_bond.cell_1.x_index == this.x_index && this.anchor_bond.cell_1.y_index == this.y_index) {
             this.anchor_cell = this.anchor_bond.cell_2;
         } else {
             this.anchor_cell = this.anchor_bond.cell_1;
         }
-    }
+    }*/
     update_direction() {
         if (this.anchor_bond != null) {//this check might be redundant
             if (!this.anchor_bond.broken){
@@ -537,6 +537,8 @@ class Directed_Cell extends Cell_With_Bond {
                 this.anchor_bond = null;
                 this.anchor_cell = null;
             }
+        } else {
+            //console.log("yeet");
         }
     }
     /*update_schematics(cell_schematics, x_index = 0, y_index = 0) {//and index
@@ -593,11 +595,13 @@ class Photon_Cell extends Cell {
     }
 }
 
+let player_cell_position_vector = new THREE.Vector3(0, 0, 0);
 class Player_Cell extends Cell { //there should only ever be one player vector (unless I add split screen)
     constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0)) {
         super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector);
     }
     update_cell() {
+        player_cell_position_vector.copy(this.position_vector);
         camera.position.setX(this.position_vector.x);
         camera.position.setY(this.position_vector.y);
     }
@@ -676,6 +680,31 @@ class Pulse_Cell extends Cell {
     }
 }
 
+class Sticky_Cell extends Cell { //there should only ever be one player vector (unless I add split screen)
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), sticky_radius, sticky_k) {
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector);
+        this.sticky_radius = sticky_radius;
+        this.sticky_k = sticky_k;
+    }
+    repel_cell(cell_2, repel_dist_vector) {
+        super.repel_cell(cell_2, repel_dist_vector)
+        let dist = repel_dist_vector.length();
+        if (dist != 0 && dist < sticky_radius) {
+            //let force = this.k*this.charge*cell_2.charge/(dist/radius)**2/dist;//this adds charge, a currently unused stat
+            let force = this.charge*cell_2.charge*(1-(dist/radius)**3)/(dist)**3;// this is actually force times dist (so that dist gets divided out)
+            this.force_vector.addScaledVector(repel_dist_vector, -force);
+            cell_2.force_vector.addScaledVector(repel_dist_vector, force);
+        }
+    }
+    update_cell() {
+        camera.position.setX(this.position_vector.x);
+        camera.position.setY(this.position_vector.y);
+    }
+    clone_cell() {//this function should probably only be called once tops. (unless I add split screen)
+        return Sticky_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.sticky_radius, this.sticky_k);
+    }
+}
+
 class Propulsor extends Directed_Cell {
     constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id, desired_angle = 0, propulsion) {
         super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector, anchor_bond_id, desired_angle)
@@ -691,6 +720,22 @@ class Propulsor extends Directed_Cell {
     }
     clone_cell() {
         return new Propulsor(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_id, this.desired_angle, this.propulsion);
+    }
+}
+
+class Player_Sensor extends Directed_Cell {//outputs 1 if facing toward player. outputs -1? 0? if facing away from player
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id, desired_angle = 0) {
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector, anchor_bond_id, desired_angle)
+        this.vector_to_player = new THREE.Vector3(0, 0, 0);
+    }
+    update_outputs() {
+        if (this.anchor_bond != null){
+            this.vector_to_player.subVectors(player_cell_position_vector, this.position_vector);
+            this.output = this.direction.dot(this.vector_to_player)/this.vector_to_player.length();
+        }
+    }
+    clone_cell() {
+        return new Player_Sensor(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_id, this.desired_angle);
     }
 }
 
@@ -762,18 +807,6 @@ class Reproducer extends Directed_Cell {
     eject() {//this doesn't work yet
         for (let bond of bonds_to_eject) {
             bond.break_bond();
-        }
-    }
-}*/
-
-/*class Sticky_Cell extends Cell {
-    constructor(mass, k, length, max_length, charge, position_vector, sprite_material, velocity_vector = new THREE.Vector3(0, 0, 0), ejection_energy) {
-        super(mass, k, length, max_length, charge, position_vector, sprite_material, velocity_vector);
-        this.ejection_energy = ejection_energy;
-    }
-    update_cell() {
-        if (parent_creature != null){
-            parent_creature.change_energy(this.energy_generation);
         }
     }
 }*/

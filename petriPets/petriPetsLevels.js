@@ -67,7 +67,8 @@ let available_parts = [
     new Part("generator", 30),
     new Part("energy_cell", 15),
     new Part("shield", 30),
-    new Part("absorber", 25)
+    new Part("absorber", 25),
+    new Part("player sensor", 30, kirby_bullet_lightblue_path, [{"name":"anchor_bond_index", "type":"bond", "default_value": [0,0]}], 1)
 ];
 
 let available_parts_functions = {
@@ -117,6 +118,10 @@ let available_parts_functions = {
     },
     "absorber": function(part_attributes) {
         return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0)
+    },
+    "player sensor": function(part_attributes) {
+        let anchor_bond_id = part_attributes[0];
+        return new Player_Sensor(mass, k, spring_dampening, max_length, charge, kirby_bullet_lightblue_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_id, 0);
     }
 }
 
