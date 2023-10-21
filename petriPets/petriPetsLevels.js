@@ -75,8 +75,7 @@ let available_parts_functions = {
         return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0)
     },
     "basic player part": function(part_attributes) {
-        let anchor_bond_index = part_attributes[0];
-        return new Propulsor(mass, k, spring_dampening, max_length, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_index, 0, engine_power)
+        return new Player_Cell(mass, k, spring_dampening, max_length, charge, kirby_material, 2, 0)
     },
     "propulsor": function(part_attributes) {
         let anchor_bond_index = part_attributes[0];

@@ -148,6 +148,7 @@ function init() {
 
     set_up_level1()
     set_up_level2();
+    set_up_level3()
     gameloop(0);
 }
 
@@ -226,15 +227,23 @@ additional_bonds structure:
     [from_x, from_y, from_weight, to_x, to_y, to_weight],
     [from_x, from_y, from_weight, to_x, to_y, to_weight],
 ]
+//thoughts for bond weights: each bond weight has a unique to and from:
+so something like [y1][x1][y2][x2] = weight or 0 or null. this is by far the most straight forward.
+however, it has us going through many many iterations.
+additional bonds is formatted as desribed above. it is nice for placing but hard to edit later. (no way to search for specific bond)
+bond_weights structure is a comprimise between the two. 
+how bout a dictionary:
+bond_weights[y][x]["tox_toy"] = [x, y, weight]
+
+
 */
 
 class Schematic {//we are going to change this
-    constructor(schematic_cells, bond_weights, bond_material, origin_point = [0, 0], additional_bonds = [], schematic_name = "") {
+    constructor(schematic_cells, bond_weights, bond_material, origin_point = [0, 0], schematic_name = "") {
         this.schematic_cells = schematic_cells;
         this.bond_weights = bond_weights;
         this.bond_material = bond_material;
         this.origin_point = origin_point;// in the form [x, y], indicates the coordinates of the builder cell is.
-        this.additional_bonds = additional_bonds;
         this.schematic_name = schematic_name;
     }
     build_schematic(creature_position = new THREE.Vector3(0, 0, 0), creature_velocity = new THREE.Vector3(0, 0, 0)) {
@@ -244,7 +253,7 @@ class Schematic {//we are going to change this
         for (let y = 0; y < this.schematic_cells.length; y++) {
             creature_cells.push([]);
             for (let x = 0; x < this.schematic_cells[y].length; x++) {
-                if (this.schematic_cells[y][x] != null){
+                if (this.schematic_cells[y][x] != null) {
                     let current_cell = this.schematic_cells[y][x].clone_cell();//this now clones the cell and adds it to the creature cells array
                     creature_cells[y].push(current_cell);
                     current_cell.update_schematics(this, x, y);
@@ -260,63 +269,27 @@ class Schematic {//we are going to change this
         for (let y = 0; y < creature_cells.length; y++) {
             for (let x = 0; x < creature_cells[y].length; x++) {
                 let current_cell = creature_cells[y][x];
-                if (current_cell != null){
-                    if ( (x+1 <= creature_cells[y].length) && creature_cells[y][x+1] != null){
-                        this.build_bond(creature_cells, x, y, x+1, y);
-                    }
-                    if ( y+1 < creature_cells.length ){
-                        if ( ( x+1 < creature_cells[y].length ) && creature_cells[y+1][x+1] != null) {
-                            this.build_bond(creature_cells, x, y, x+1, y+1);
-                        }
-                        if (creature_cells[y+1][x] != null) {
-                            this.build_bond(creature_cells, x, y, x, y+1);
+                if (current_cell != null) {
+                    for (let bond_key in this.bond_weights[y][x]) {
+                        let bond = this.bond_weights[y][x][bond_key]
+                        let x2 = bond[0];
+                        let y2 = bond[1];
+                        let weight_1 = bond[2];
+                        let weight_2 = bond[3];
+                        if (creature_cells[y2][x2] != null) {
+                            this.build_bond(creature_cells, x, y, x2, y2, weight_1, weight_2);
                         }
                     }
                 }
             }
         }
-        for (let bond of this.additional_bonds) {
-            let from_x = bond[0];
-            let from_y = bond[1];
-            let from_weight = bond[2];
-            let to_x = bond[3];
-            let to_y = bond[4];
-            let to_weight = bond[5];
-
-            let current_cell = creature_cells[from_y][from_x];
-            let connecting_cell = creature_cells[to_y][to_x];
-            let difference = current_cell.position_vector.distanceTo(connecting_cell.position_vector);
-            let current_bond = new Bond(current_cell, connecting_cell, difference, this.bond_material);
-            current_bond.add_bond_to_simulation();
-            current_bond.update_index(to_x+from_x, to_y+from_y);//this doesn't work here. :( I will need to change this index convention.
-            current_bond.check_directed_connection();
-            current_bond.set_weights(from_weight, from_x, from_y);
-            current_bond.set_weights(to_weight, to_x, to_y);
-        }
     }
-    build_bond(creature_cells, current_x, current_y, connecting_x, connecting_y) {// returns the newly created bond
+    build_bond(creature_cells, current_x, current_y, connecting_x, connecting_y, weight_1, weight_2) {// returns the newly created bond
         let current_cell = creature_cells[current_y][current_x];
         let connecting_cell = creature_cells[connecting_y][connecting_x];
-        let current_bond = new Bond(current_cell, connecting_cell, radius, this.bond_material);
+        let current_bond = new Bond(current_cell, connecting_cell, radius, this.bond_material, weight_1, weight_2);
         current_bond.add_bond_to_simulation();
-        current_bond.update_index(current_x+connecting_x, current_y+connecting_y);
         current_bond.check_directed_connection();
-        for (let bond of this.bond_weights[current_y][current_x]) {
-            let weight = bond[0];
-            let from_x = bond[1];
-            let from_y = bond[2];
-            if (from_x == connecting_x && from_y == connecting_y) {
-                current_bond.set_weights(weight, current_x, current_y);
-            }
-        }
-        for (let bond of this.bond_weights[connecting_y][connecting_x]) {
-            let weight = bond[0];
-            let from_x = bond[1];
-            let from_y = bond[2];
-            if (from_x == current_x && from_y == current_y) {
-                current_bond.set_weights(weight, connecting_x, connecting_y);
-            }
-        }
         return current_bond;
     }
 }
@@ -422,6 +395,7 @@ class Bond {
         this.line_vertices = this.geometry.getAttribute( 'position' );
         this.line_vertices.setX(0, 0);
         this.line_vertices.setY(0, 0);
+        this.bond_id = this.cell_1.x_index + ", " + this.cell_1.y_index + "_" + this.cell_2.x_index + ", " + this.cell_2.y_index
         //this.cell_1.cell_bonds.push(this);
         //this.cell_2.cell_bonds.push(this);
 
@@ -471,18 +445,14 @@ class Bond {
             this.cell_1.force_vector.addScaledVector(this.dist_vector, (spring_force/this.dist_vector_length + k_d_times_d_dist_over_dt) );
         }
     }
-    update_index(x_index, y_index) {//the given indeces will be doubled to keep everything an int 
-        this.x_index = x_index;
-        this.y_index = y_index;
-    }
     check_directed_connection() {
         //console.log((this.cell_1 instanceof Directed_Cell) + " x: " + this.x_index + " y: " + this.y_index)
         //console.log((this.cell_2 instanceof Directed_Cell) + " x: " + this.x_index + " y: " + this.y_index)
-        if (this.cell_1 instanceof Directed_Cell && this.cell_1.anchor_bond_index[0] == this.x_index && this.cell_1.anchor_bond_index[1] == this.y_index) {
+        if (this.cell_1 instanceof Cell_With_Bond && this.cell_1.anchor_bond_id == this.bond_id) {
             this.cell_1.update_anchor(this);
             this.break_list.push(this.cell_1);
         }
-        if (this.cell_2 instanceof Directed_Cell && this.cell_2.anchor_bond_index[0] == this.x_index && this.cell_2.anchor_bond_index[1] == this.y_index) {
+        if (this.cell_2 instanceof Cell_With_Bond && this.cell_2.anchor_bond_id == this.bond_id) {
             this.cell_2.update_anchor(this);
             this.break_list.push(this.cell_2);
         }
@@ -499,7 +469,7 @@ class Bond {
         universe.remove(this.line);
         bonds.splice(i, 1);
     }
-    set_weights(weight, from_x, from_y) {
+    /*set_weights(weight, from_x, from_y) {
         this.line.material = bond_material_2;
         if (from_x == this.cell_1.x_index && from_y == this.cell_1.y_index) {
             this.cell_2_weight = weight;
@@ -508,7 +478,7 @@ class Bond {
         } else {
             console.log("this bond is not connected to this cell at " + to_x + ", " + to_y);
         }
-    }
+    }*/
     update_outputs() {
         this.cell_1.input_total += this.cell_1_weight * this.cell_2.output;//not sure how this works... But I think it's ok. 
         this.cell_2.input_total += this.cell_2_weight * this.cell_1.output;
@@ -521,14 +491,31 @@ class Bond {
     [-30, 30, 0]
 ]*/
 
-class Directed_Cell extends Cell {
-    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_index, desired_angle = 0) {//angle measured from vertical
-        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector)
-        this.direction = new THREE.Vector3(0, 1, 0);
-        this.anchor_bond_index = anchor_bond_index;
-        this.desired_angle = desired_angle;
+class Cell_With_Bond extends Cell {
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id) {
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector);
+        this.anchor_bond_id = anchor_bond_id;
         this.anchor_bond = null;
         this.anchor_cell = null;
+    }
+    update_anchor(anchor_bond) {
+        this.anchor_bond = anchor_bond;
+        if (this.anchor_bond.cell_1.x_index == this.x_index && this.anchor_bond.cell_1.y_index == this.y_index) {
+            this.anchor_cell = this.anchor_bond.cell_2;
+        } else {
+            this.anchor_cell = this.anchor_bond.cell_1;
+        }
+    }
+    clone_cell() {
+        return new Cell_With_Bond(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_id);
+    }
+}
+
+class Directed_Cell extends Cell_With_Bond {
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id, desired_angle = 0) {//angle measured from vertical
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector, anchor_bond_id);
+        this.direction = new THREE.Vector3(0, 1, 0);
+        this.desired_angle = desired_angle;
     }
     update_anchor(anchor_bond) {
         this.anchor_bond = anchor_bond;
@@ -561,7 +548,7 @@ class Directed_Cell extends Cell {
         this.update_direction();
     }
     clone_cell() {
-        return new Directed_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_index, this.desired_angle);
+        return new Directed_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_id, this.desired_angle);
     }
 }
 
@@ -688,8 +675,8 @@ class Pulse_Cell extends Cell {
 }
 
 class Propulsor extends Directed_Cell {
-    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_index, desired_angle = 0, propulsion) {
-        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector, anchor_bond_index, desired_angle)
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id, desired_angle = 0, propulsion) {
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector, anchor_bond_id, desired_angle)
         this.propulsion = propulsion;//(does this mean that these points must have an orientation?)
     }
     update_cell(){
@@ -701,7 +688,7 @@ class Propulsor extends Directed_Cell {
         }
     }
     clone_cell() {
-        return new Propulsor(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_index, this.desired_angle, this.propulsion);
+        return new Propulsor(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_id, this.desired_angle, this.propulsion);
     }
 }
 
@@ -734,8 +721,8 @@ class Propulsor extends Directed_Cell {
     [null, new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material)]
 ]*/
 class Reproducer extends Directed_Cell {
-    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_index, schematics_to_produce, schematics_to_produce_index) {
-        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector, anchor_bond_index, 0);
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id, schematics_to_produce, schematics_to_produce_index) {
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector, anchor_bond_id, 0);
         this.schematics_to_produce = schematics_to_produce;
         this.schematics_to_produce_index = schematics_to_produce_index;
         this.energy = 1;
@@ -755,7 +742,7 @@ class Reproducer extends Directed_Cell {
         }
     }
     clone_cell() {
-        return new Reproducer(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_index, this.schematics_to_produce, this.schematics_to_produce_index);
+        return new Reproducer(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_id, this.schematics_to_produce, this.schematics_to_produce_index);
     }
 }
 
