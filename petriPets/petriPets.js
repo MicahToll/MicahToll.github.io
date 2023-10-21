@@ -107,10 +107,12 @@ let kirby_path = '../KirbyBulletHell/assets/kirby.png';
 let kirby_bullet_path = '../KirbyBulletHell/assets/bullets/kirby_bullet.png';
 let kirby_bullet_orange_path = '../KirbyBulletHell/assets/bullets/kirby_bullet_orange.png';
 let kirby_bullet_lightblue_path = '../KirbyBulletHell/assets/bullets/kirby_bullet_lightblue.png';
+let gordo_path = '../KirbyBulletHell/assets/enemies/gordo.png';
 const kirby_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( kirby_path ) } );
 const kirby_bullet_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( kirby_bullet_path ) } );
 const kirby_bullet_orange_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( kirby_bullet_orange_path ) } );
 const kirby_bullet_lightblue_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( kirby_bullet_lightblue_path ) } );
+let gordo_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( gordo_path ) } );
 
 //bond material
 const bond_material_1 = new THREE.LineBasicMaterial( { color: 0x0000ff } );
@@ -340,7 +342,7 @@ class Cell {
         let dist = repel_dist_vector.length();
         if (dist != 0 && dist < radius) {
             //let force = this.k*this.charge*cell_2.charge/(dist/radius)**2/dist;//this adds charge, a currently unused stat
-            let force = this.charge*cell_2.charge/(dist)**3;// this is actually force times dist (so that dist gets divided out)
+            let force = this.charge*cell_2.charge*(1-(dist/radius)**3)/(dist)**3;// this is actually force times dist (so that dist gets divided out)
             this.force_vector.addScaledVector(repel_dist_vector, -force);
             cell_2.force_vector.addScaledVector(repel_dist_vector, force);
         }

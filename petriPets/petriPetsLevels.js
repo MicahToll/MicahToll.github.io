@@ -37,11 +37,11 @@ class Part {
 }
 
 let mass = 1;
-let spring_dampening = 50;
-let charge = Math.sqrt(250);//doesn't do anything currently
-let k = 30;
+let spring_dampening = 75;
+let charge = Math.sqrt(2500/2);//doesn't do anything currently
+let k = 50;
 let max_length = 1.5;//proportion of target length -- should I change how k works to be dependent on length? probably...
-let engine_power = 20;
+let engine_power = 25;
 
 let key_decoder = {
     "w": w_key,
@@ -61,7 +61,7 @@ let available_parts = [
     new Part("builder", 25),
     new Part("sticky", 20),
     new Part("explosive", 25),
-    new Part("heavy basic part", 20),
+    new Part("heavy basic part", 20, gordo_path, [], 3),
     new Part("pulse", 30),
     new Part("toggle", 15),
     new Part("generator", 30),
@@ -98,7 +98,7 @@ let available_parts_functions = {
         return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0)
     },
     "heavy basic part": function(part_attributes) {
-        return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0)
+        return new Cell(4*mass, 2*k, 2*spring_dampening, .9*max_length, 1.1*charge, gordo_material, 2, 0)
     },
     "pulse": function(part_attributes) {
         return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0)
@@ -133,81 +133,7 @@ function make_empty_list(schematic_cells) {
 
 
 function set_up_level2() {
-
-    let basic_cell = new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0)
-    let basic_player_cell = new Player_Cell(mass, k, spring_dampening, max_length, charge, kirby_material, 2, 0)
-    function basic_key_cell(key) {
-        return new Key_Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), key);
-    }
-    function basic_propulsion_cell(anchor_bond_index) {
-        return new Propulsor(mass, k, spring_dampening, max_length, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_index, 0, engine_power)
-    }
-
-    let schematic_1_cells = [
-        [basic_cell.clone_cell(), null],
-        [basic_cell.clone_cell(), basic_cell.clone_cell()],
-        [null, basic_cell.clone_cell()]
-    ]
-    let schematic_1 = new Schematic(schematic_1_cells, make_empty_list(schematic_1_cells), bond_material_1);
-    schematic_1.build_schematic(new THREE.Vector3(-50, -25, 0));
-
-    let schematic_2_cells = [
-        [basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), null],
-        [basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell()],
-        [null, basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell(), basic_cell.clone_cell()]
-    ]
-    let schematic_2 = new Schematic(schematic_2_cells, make_empty_list(schematic_2_cells), bond_material_1);
-    schematic_2.build_schematic(new THREE.Vector3(0, 50, 0));
-
-
-
-    let schematic_3_cells = [
-        [basic_cell.clone_cell(), null],
-        [basic_cell.clone_cell(), basic_cell.clone_cell()],
-        [null, basic_cell.clone_cell()]
-    ]
-    let schematic_3 = new Schematic(schematic_3_cells, make_empty_list(schematic_3_cells), bond_material_1, [1, 3], []);
-    schematic_3.build_schematic(new THREE.Vector3(0, -50, 0));
-
-
-
-
-
-    anchor_bond_index_3 = [2, 3];
-    let space_ship_cells = [
-        [new Key_Cell(1, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), w_key), new Reproducer(1, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [2, 1], schematic_3, 0), null, null],//
-        [new Key_Cell(1, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), d_key), new Player_Cell(1, k, spring_dampening, max_length, charge, kirby_material, 2, 0), new Key_Cell(1, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), a_key), null],
-        [
-            new Propulsor(1, k, spring_dampening, max_length, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [0, 3], 0, engine_power),
-            new Propulsor(2, k, spring_dampening, max_length, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [2, 3], 0, engine_power),
-            new Propulsor(3, k, spring_dampening, max_length, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [3, 3], 0, engine_power),
-            new Propulsor(4, k, spring_dampening, max_length, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [5, 3], 0, engine_power)
-            //new Reproducer(4, k, spring_dampening, 2*radius, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), [5, 3], schematic_3, 0)
-        ],
-        /*[new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), d_key), new Cell(1, k, spring_dampening, 2*radius, charge, kirby_material, 2, 0), new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), a_key), null],
-        [new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), d_key), new Cell(1, k, spring_dampening, 2*radius, charge, kirby_material, 2, 0), new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), a_key), null],
-        [new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), d_key), new Cell(1, k, spring_dampening, 2*radius, charge, kirby_material, 2, 0), new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), a_key), null],
-        [new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), d_key), new Cell(1, k, spring_dampening, 2*radius, charge, kirby_material, 2, 0), new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), a_key), null],
-        [new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), d_key), new Cell(1, k, spring_dampening, 2*radius, charge, kirby_material, 2, 0), new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), a_key), null],
-        [new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), d_key), new Cell(1, k, spring_dampening, 2*radius, charge, kirby_material, 2, 0), new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), a_key), null],
-        [new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), d_key), new Cell(1, k, spring_dampening, 2*radius, charge, kirby_material, 2, 0), new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), a_key), null],
-        [new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), d_key), new Cell(1, k, spring_dampening, 2*radius, charge, kirby_material, 2, 0), new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), a_key), null],
-        [new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), d_key), new Cell(1, k, spring_dampening, 2*radius, charge, kirby_material, 2, 0), new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), a_key), null],
-        [new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), d_key), new Cell(1, k, spring_dampening, 2*radius, charge, kirby_material, 2, 0), new Key_Cell(1, k, spring_dampening, 2*radius, charge, kirby_bullet_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), a_key), null]*/
-    ]
-    let bond_weights_1 = [
-        [[], [], [], []],
-        [[], [[2, 0, 0]], [], []],
-        //[[[2, 0, 1]], [], [], [[2, 2, 1]]]
-        [[[2, 0, 1]], [[2, 1, 1]], [[2, 1, 1]], [[2, 2, 1]]]
-    ]
-    let additional_bonds_1 = [
-        [0, 0, 0, 1, 2, 2],
-        [0, 0, 0, 1, 0, 2]
-    ]
-    //let space_ship = new Schematic(space_ship_cells, make_empty_list(space_ship_cells), bond_material_1, [0,0], additional_bonds_1);
-    let space_ship = new Schematic(space_ship_cells, bond_weights_1, bond_material_1, [0,0], additional_bonds_1);
-    //space_ship.build_schematic(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0));
+    //level 2 goes here i guess
 }
 
 /*class Neuron {

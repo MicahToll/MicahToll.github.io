@@ -293,7 +293,10 @@ function save_schematics(schematic_index) {
     }
     let new_schematics = new Schematic(garage_schematic_cells, garage_design_bond_weights, bond_material_1, [0, 0], "new_schematic");
     saved_schematics[schematic_index] = new_schematics//does this create a memory leak? it won't be a bad one anyway.
-    let new_name = document.getElementById("schematic_name_input_"+schematic_index).value;//there is an error here that I am ignoring for now
+    let new_name = saved_designs[schematic_index]["design_name"];
+    if (document.getElementById("schematic_name_input_"+schematic_index) != null) {
+        new_name = document.getElementById("schematic_name_input_"+schematic_index).value;
+    }
     let new_design = {"garage_design":garage_design, "garage_design_attributes":garage_design_attributes, "garage_design_bond_weights":garage_design_bond_weights, "design_name": new_name}
     saved_designs[schematic_index] = new_design;
     refresh_schematics_table();
