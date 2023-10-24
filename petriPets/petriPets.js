@@ -103,16 +103,34 @@ universe.add(background);
 //add atuff to the scene
 scene.add( universe );
 
+let energy_storage_cell_path = 'images/energy_storage_cell.png'
+let eye_cell_path = 'images/eye_cell.png'
+let generator_cell_path = 'images/generator_cell.png'
+let pulse_cell_path = 'images/pulse_cell.png'
+let toggle_cell_path = 'images/toggle_cell.png'
+let bomb_cell_path = 'images/bomb_cell.png'
+let shield_cell_path = 'images/shield_cell.png'
+let sticky_cell_path = 'images/sticky_cell.png'
+let absorber_cell_path = 'images/absorber_cell.png'
 let kirby_path = '../KirbyBulletHell/assets/kirby.png';
 let kirby_bullet_path = '../KirbyBulletHell/assets/bullets/kirby_bullet.png';
 let kirby_bullet_orange_path = '../KirbyBulletHell/assets/bullets/kirby_bullet_orange.png';
 let kirby_bullet_lightblue_path = '../KirbyBulletHell/assets/bullets/kirby_bullet_lightblue.png';
 let gordo_path = '../KirbyBulletHell/assets/enemies/gordo.png';
+const bomb_cell_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( bomb_cell_path ) } );
+const shield_cell_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( shield_cell_path ) } );
+const sticky_cell_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( sticky_cell_path ) } );
+const energy_storage_cell_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( energy_storage_cell_path ) } );
+const eye_cell_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( eye_cell_path ) } );
+const generator_cell_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( generator_cell_path ) } );
+const pulse_cell_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( pulse_cell_path ) } );
+const toggle_cell_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( toggle_cell_path ) } );
+const absorber_cell_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( absorber_cell_path ) } );
 const kirby_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( kirby_path ) } );
 const kirby_bullet_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( kirby_bullet_path ) } );
 const kirby_bullet_orange_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( kirby_bullet_orange_path ) } );
 const kirby_bullet_lightblue_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( kirby_bullet_lightblue_path ) } );
-let gordo_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( gordo_path ) } );
+const gordo_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( gordo_path ) } );
 
 //bond material
 const bond_material_1 = new THREE.LineBasicMaterial( { color: 0x0000ff } );
@@ -289,7 +307,8 @@ class Schematic {//we are going to change this
     build_bond(creature_cells, current_x, current_y, connecting_x, connecting_y, weight_1, weight_2) {// returns the newly created bond
         let current_cell = creature_cells[current_y][current_x];
         let connecting_cell = creature_cells[connecting_y][connecting_x];
-        let current_bond = new Bond(current_cell, connecting_cell, radius, this.bond_material, weight_1, weight_2);
+        let difference = current_cell.position_vector.distanceTo(connecting_cell.position_vector);
+        let current_bond = new Bond(current_cell, connecting_cell, difference, this.bond_material, weight_1, weight_2);
         current_bond.add_bond_to_simulation();
         current_bond.check_directed_connection();
         return current_bond;
@@ -311,7 +330,7 @@ class Cell {
         this.sprite_diameter = sprite_diameter;
         this.sprite.scale.set(sprite_diameter, sprite_diameter, 1);
         this.sprite.position.copy(this.position_vector);
-        //this.cell_bonds = [];
+        this.cell_bonds = [];
         this.input_total = 0;
         this.output = 0;
         this.x_0 = x_0;
@@ -342,7 +361,7 @@ class Cell {
         let dist = repel_dist_vector.length();
         if (dist != 0 && dist < radius) {
             //let force = this.k*this.charge*cell_2.charge/(dist/radius)**2/dist;//this adds charge, a currently unused stat
-            let force = this.charge*cell_2.charge*(1-(dist/radius)**3)/(dist)**3;// this is actually force times dist (so that dist gets divided out)
+            let force = this.charge*cell_2.charge*(1-(dist/radius)**3)/(dist)**3;// this is actually force over dist (so that dist gets divided out)
             this.force_vector.addScaledVector(repel_dist_vector, -force);
             cell_2.force_vector.addScaledVector(repel_dist_vector, force);
         }
@@ -398,8 +417,8 @@ class Bond {
         this.line_vertices.setX(0, 0);
         this.line_vertices.setY(0, 0);
         this.bond_id = this.cell_1.x_index + ", " + this.cell_1.y_index + "_" + this.cell_2.x_index + ", " + this.cell_2.y_index
-        //this.cell_1.cell_bonds.push(this);
-        //this.cell_2.cell_bonds.push(this);
+        this.cell_1.cell_bonds.push(this);
+        this.cell_2.cell_bonds.push(this);
 
         this.cell_1_weight = cell_1_weight;
         this.cell_2_weight = cell_2_weight;
@@ -426,7 +445,6 @@ class Bond {
         this.dist_vector_length = this.dist_vector.length();
 
         //add an if statement here to add the bond to directed cells. (also could add to a break list...)
-        this.break_list = [];
     }
     add_bond_to_simulation() {
         universe.add(this.line);
@@ -452,11 +470,9 @@ class Bond {
         //console.log((this.cell_2 instanceof Directed_Cell) + " x: " + this.x_index + " y: " + this.y_index)
         if (this.cell_1 instanceof Cell_With_Bond && this.cell_1.anchor_bond_id == this.bond_id) {
             this.cell_1.update_anchor(this);
-            this.break_list.push(this.cell_1);
         }
         if (this.cell_2 instanceof Cell_With_Bond && this.cell_2.anchor_bond_id == this.bond_id) {
             this.cell_2.update_anchor(this);
-            this.break_list.push(this.cell_2);
         }
     }
     update_position() {
@@ -631,7 +647,7 @@ class Key_Cell extends Cell {
 }
 
 class Toggle_Cell extends Cell {
-    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), key) {
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0)) {
         super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector);
         this.last_input = 0;
     }
@@ -657,7 +673,7 @@ class Toggle_Cell extends Cell {
 }
 
 class Pulse_Cell extends Cell {
-    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), key) {
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0)) {
         super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector);
         this.last_input = 0;
     }
@@ -676,32 +692,63 @@ class Pulse_Cell extends Cell {
         this.input_total = 0;
     }
     clone_cell(){
-        return new Toggle_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0));
+        return new Pulse_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0));
     }
 }
 
+let sticky_bond_material = new THREE.LineBasicMaterial( { color: 0x009900 } );
 class Sticky_Cell extends Cell { //there should only ever be one player vector (unless I add split screen)
     constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), sticky_radius, sticky_k) {
         super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector);
         this.sticky_radius = sticky_radius;
         this.sticky_k = sticky_k;
+        this.cell_bonds = [];
     }
     repel_cell(cell_2, repel_dist_vector) {
         super.repel_cell(cell_2, repel_dist_vector)
         let dist = repel_dist_vector.length();
         if (dist != 0 && dist < sticky_radius) {
-            //let force = this.k*this.charge*cell_2.charge/(dist/radius)**2/dist;//this adds charge, a currently unused stat
-            let force = this.charge*cell_2.charge*(1-(dist/radius)**3)/(dist)**3;// this is actually force times dist (so that dist gets divided out)
+            let already_bonded = false;
+            for (let bond in this.cell_bonds) {
+                if (bond.cell_1 === this || bond.cell_2 === this) {
+                    already_bonded = true;
+                    break;
+                }
+            }
+            if (!already_bonded) {
+                let current_bond = new Bond(this, cell_2, this.sticky_radius, sticky_bond_material, 0, 0);
+                current_bond.add_bond_to_simulation();
+                current_bond.check_directed_connection();
+            }
+        }
+    }
+    clone_cell() {//this function should probably only be called once tops. (unless I add split screen)
+        return new Sticky_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.sticky_radius, this.sticky_k);
+    }
+}
+
+class Shield_Cell extends Cell { //there should only ever be one player vector (unless I add split screen)
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), shield_inner_radius, shield_outer_radius, shield_strength) {
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector);
+        this.shield_inner_radius = shield_inner_radius;
+        this.shield_outer_radius = shield_outer_radius;
+        this.shield_strength = shield_strength;
+        this.relative_velocity = new THREE.Vector3(0, 0, 0);
+    }
+    repel_cell(cell_2, repel_dist_vector) {
+        super.repel_cell(cell_2, repel_dist_vector)
+        let dist = repel_dist_vector.length();
+        if (dist < this.shield_outer_radius && dist > this.shield_inner_radius && dist != 0) {
+            this.relative_velocity.subVectors(cell_2.velocity_vector, this.velocity_vector);
+            let relative_speed = this.relative_velocity.length();
+            let dist = repel_dist_vector.length();
+            let force = relative_speed * this.shield_strength / dist; // this is actually force over dist (so that dist gets divided out)
             this.force_vector.addScaledVector(repel_dist_vector, -force);
             cell_2.force_vector.addScaledVector(repel_dist_vector, force);
         }
     }
-    update_cell() {
-        camera.position.setX(this.position_vector.x);
-        camera.position.setY(this.position_vector.y);
-    }
     clone_cell() {//this function should probably only be called once tops. (unless I add split screen)
-        return Sticky_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.sticky_radius, this.sticky_k);
+        return new Shield_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.shield_inner_radius, this.shield_outer_radius, this.shield_strength);
     }
 }
 
