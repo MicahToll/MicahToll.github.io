@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="400"
+   height="400"
+   viewBox="0 0 105.83333 105.83333"
+   version="1.1"
+   id="svg781"
+   inkscape:version="1.2 (dc2aedaf03, 2022-05-15)"
+   sodipodi:docname="shrapnel_cell.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview783"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="true"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="false"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     showgrid="false"
+     borderlayer="true"
+     inkscape:zoom="2.7860007"
+     inkscape:cx="205.67116"
+     inkscape:cy="192.92888"
+     inkscape:window-width="2880"
+     inkscape:window-height="1526"
+     inkscape:window-x="2869"
+     inkscape:window-y="-11"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs778" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       sodipodi:type="star"
+       style="fill:#1a1a1a;stroke:#e6e6e6;stroke-width:1.5875;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+       id="path347"
+       inkscape:flatsided="false"
+       sodipodi:sides="6"
+       sodipodi:cx="33.713947"
+       sodipodi:cy="62.489513"
+       sodipodi:r1="47.552479"
+       sodipodi:r2="27.625024"
+       sodipodi:arg1="0.66507183"
+       sodipodi:arg2="0.6475415"
+       inkscape:rounded="0"
+       inkscape:randomized="0"
+       d="M 71.131683,91.834893 55.746817,79.153685 27.008971,109.56691 30.298786,89.902625 -10.408764,80.221534 8.2659159,73.238453 -3.7037887,33.144134 11.681077,45.825341 40.418923,15.412114 l -3.289814,19.664288 40.70755,9.681091 -18.67468,6.983081 z"
+       inkscape:transform-center-y="1.1809042e-06"
+       transform="translate(20.228368,-10.161669)"
+       inkscape:export-filename="shrapnel_cell.png"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96" />
+  </g>
+</svg>

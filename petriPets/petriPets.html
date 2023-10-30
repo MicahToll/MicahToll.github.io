@@ -13,15 +13,31 @@
 		</audio>
 	</head>
 	<body id="body" onload="init()">
+		<audio id="Artemis"><source src="audio/Artemis.mp3" type="audio/mpeg"></audio>
+		<audio id="Cirrus"><source src="audio/Cirrus.mp3" type="audio/mpeg"></audio>
+		<audio id="Decoherence"><source src="audio/Decoherence.mp3" type="audio/mpeg"></audio>
+		<audio id="Effervescence"><source src="audio/Effervescence.mp3" type="audio/mpeg"></audio>
+		<audio id="Golden Hour"><source src="audio/GoldenHour.mp3" type="audio/mpeg"></audio>
+		<audio id="Hymn To The Dawn"><source src="audio/HymnToTheDawn.mp3" type="audio/mpeg"></audio>
+		<audio id="Moonlight"><source src="audio/Moonlight.mp3" type="audio/mpeg"></audio>
+		<audio id="Permafrost"><source src="audio/Permafrost.mp3" type="audio/mpeg"></audio>
+		<audio id="Phase Shift"><source src="audio/PhaseShift.mp3" type="audio/mpeg"></audio>
+		<audio id="Aurora"><source src="audio/sb_aurora.mp3" type="audio/mpeg"></audio>
+		<audio id="In Search Of Solitude"><source src="audio/sb_insearchofsolitude.mp3" type="audio/mpeg"></audio>
 		<div id="over_canvas">
 			<div id="visor">
+				<div id="now_playing" class="visor" style="text-align: center; visibility: hidden;">now playing ... by Scott Buckley</div><!-- - released under CC-BY 4.0. www.scottbuckley.com.au-->
 				<!--menues and buttons-->
-				<div id="selectButton" class="visor button" onclick="select();">Garage</div>
-				<div id="shopButton" class="visor button" onclick="shop();">Shop</div>
-				<div id="settingsButton" class="visor button" onclick="settings();">Settings</div>
-				<!--status displays-->
-				<div id="credits" class="visor">Credits: </div>
-				<!--<div id="fuel" class="visor">Fuel: </div>-->
+				<div style="width: 10vw">
+					<div id="selectButton" class="visor button" onclick="select();">Garage</div>
+					<div id="shopButton" class="visor button" onclick="shop();">Shop</div>
+					<div id="settingsButton" class="visor button" onclick="settings();">Settings</div>
+					<div id="start_game" class="visor button" onclick="start_game();">start game</div>
+					<!--status displays-->
+					<div id="credits" class="visor">Credits: </div>
+					<div id="fps_display" class="visor">fps: </div>
+					<!--<div id="fuel" class="visor">Fuel: </div>-->
+				</div>
 			</div>
 			<div id="select" class="popup" hidden="true">
 				<div class="x button" onclick="closeAllWindows()">x</div>
@@ -74,6 +90,22 @@
 				<h1>Settings</h1>
 				<div class="button settings_button" onclick="save()">save</div>
 				<div class="button settings_button" onclick="loadSave()">load save</div>
+				<div onclick="set_volume()" style="margin-top:10px;">Volume <input id="sound" type="range" min="0" max="1" value=".2" step=".1"/></div>
+				<div>
+					<h2>Credit:</h2>
+					<table id="shop_table" style="width:100%">
+						<tr>
+							<td></td>
+							<td style="text-align: left;">Game play and design by Micah Toll</td>
+							<td></td>
+						</tr>
+						<tr>
+							<td></td>
+							<td style="text-align: left;">Music by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au</th>
+							<td></td>
+						</tr>
+					</table>
+				</div>
 				<!--<div onclick="update_settings()">Anti aliasing<input id="anti_aliasing" type="checkbox" checked=true/></div>-->
 				<!--<div onclick="connect_controller()">connect controller</div>-->
 			</div>

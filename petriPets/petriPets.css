@@ -56,3 +56,12 @@ th {
     left: 90%;
     width: 10%;
 }
+#now_playing {
+    width: 100vw;
+}
+/*#visor {
+    width: 100vw;
+}*/
+/*.visor {
+    margin-left: 15px;
+}*/

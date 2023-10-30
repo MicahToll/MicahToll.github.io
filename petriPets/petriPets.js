@@ -1,5 +1,16 @@
 //define ambiant sound
-//var music = document.getElementById("myAudio");
+let music_names = ["Artemis", "Cirrus", "Decoherence", "Effervescence", "Golden Hour", "Hymn To The Dawn", "Moonlight", "Permafrost", "Phase Shift", "Aurora", "In Search Of Solitude"];
+let audio = [];
+
+/* Randomize array in-place using Durstenfeld shuffle algorithm */
+function shuffle_array(array) {
+    for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+}
 
 //keyboard variables, 
 class Key {
@@ -80,9 +91,10 @@ document.addEventListener('keyup', keyUp);
 document.addEventListener("wheel", wheel);
 
 let zoom = 0;
+let max_camera_height = 500;
 
 function wheel(){
-    zoom = Math.max(20, Math.min( zoom+event.deltaY/25, 500 ));//not sure why this has to be negative
+    zoom = Math.max(20, Math.min( zoom+event.deltaY/25, max_camera_height ));//not sure why this has to be negative
     camera.position.setZ(zoom);
 }
 
@@ -109,6 +121,7 @@ let generator_cell_path = 'images/generator_cell.png'
 let pulse_cell_path = 'images/pulse_cell.png'
 let toggle_cell_path = 'images/toggle_cell.png'
 let bomb_cell_path = 'images/bomb_cell.png'
+let shrapnel_cell_path = 'images/shrapnel_cell.png'
 let shield_cell_path = 'images/shield_cell.png'
 let sticky_cell_path = 'images/sticky_cell.png'
 let absorber_cell_path = 'images/absorber_cell.png'
@@ -117,7 +130,9 @@ let kirby_bullet_path = '../KirbyBulletHell/assets/bullets/kirby_bullet.png';
 let kirby_bullet_orange_path = '../KirbyBulletHell/assets/bullets/kirby_bullet_orange.png';
 let kirby_bullet_lightblue_path = '../KirbyBulletHell/assets/bullets/kirby_bullet_lightblue.png';
 let gordo_path = '../KirbyBulletHell/assets/enemies/gordo.png';
+let fixed_cell_path = 'images/fixed_cell.png'
 const bomb_cell_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( bomb_cell_path ) } );
+const shrapnel_cell_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( shrapnel_cell_path ) } );
 const shield_cell_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( shield_cell_path ) } );
 const sticky_cell_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( sticky_cell_path ) } );
 const energy_storage_cell_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( energy_storage_cell_path ) } );
@@ -131,10 +146,18 @@ const kirby_bullet_material = new THREE.SpriteMaterial( { map: new THREE.Texture
 const kirby_bullet_orange_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( kirby_bullet_orange_path ) } );
 const kirby_bullet_lightblue_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( kirby_bullet_lightblue_path ) } );
 const gordo_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( gordo_path ) } );
+const fixed_cell_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( fixed_cell_path ) } );
 
 //bond material
 const bond_material_1 = new THREE.LineBasicMaterial( { color: 0x0000ff } );
 const bond_material_2 = new THREE.LineBasicMaterial( { color: 0x00ff00 } );
+
+let universe_grid_width = 15;
+let universe_grid_height = 15;
+let universe_grid = new Array(universe_grid_width);
+for (let col of universe_grid) {
+    col = new Array(universe_grid_height);
+}
 
 let window_width;
 let window_height;
@@ -144,7 +167,8 @@ let cells = [];
 let bonds = [];
 let friction = .1;
 let radius = 5;
-let universe_radius = 150;
+let universe_grid_space_diameter = 2*radius;
+let universe_radius = universe_grid_space_diameter * Math.max(universe_grid_height, universe_grid_width)/2;
 let c_squared = 1;
 
 let x_basis = new THREE.Vector3(radius, 0 ,0);
@@ -163,6 +187,11 @@ function init() {
     window_width = window.innerWidth;
     window_height = window.innerHeight;
     camera_width = camera_height*window_width/window_height
+    
+    shuffle_array(music_names);//randomizes array for random playback order
+    for (let name of music_names) {
+        audio.push(document.getElementById(name));
+    }
 
     menu_onload();
 
@@ -174,11 +203,39 @@ function init() {
 
 let repel_dist_vector = new THREE.Vector3(0, 0, 0);
 
+function start_game() {
+    document.getElementById("start_game").hidden = true;
+    set_volume();
+    start_music(0);
+}
+
+function set_volume() {
+    let volume = document.getElementById("sound").value;
+    for (let song of audio) {
+        song.volume = volume;
+    }
+}
+
+function start_music(audio_index) {
+    audio[audio_index].play()
+    document.getElementById("now_playing").innerHTML = "now playing '" + music_names[audio_index] + "' by Scott Buckley"
+    document.getElementById("now_playing").style.visibility = "visible";
+    setTimeout( start_music, Math.ceil(audio[audio_index].duration*1000), (audio_index+1)%audio.length);
+}
+
+let last_timestamp = 0;
+let frame_number = 0;
 function gameloop(timestamp) {
     //update background
     for (thing of background_things){
         thing.update();
     }
+
+    /*for (let grid_space_col of universe_grid) {
+        for (let grid_space of grid_space_col) {
+            grid_space.update_water_voltage();
+        }
+    }*/
 
     for (let i = bonds.length-1; i > 0-1; i--) {
         let bond = bonds[i];
@@ -207,7 +264,11 @@ function gameloop(timestamp) {
         let bond = bonds[i];
         bond.update_position();
     }
-
+    frame_number++;
+    if (frame_number%60 == 0) {
+        document.getElementById("fps_display").innerHTML = "fps: " + Math.trunc(60/(timestamp-last_timestamp)*1000);
+        last_timestamp = timestamp;
+    }
     //time = timestamp;
     renderer.render(scene,camera);
     window.requestAnimationFrame(gameloop);
@@ -257,6 +318,71 @@ bond_weights[y][x]["tox_toy"] = [x, y, weight]
 
 
 */
+/*let little_sigma = 1;
+stefan_boltzmann_law(temp) {//returns power per unit area
+    return little_sigma*temp**4;
+}*/
+
+class Grid_Space {//before impelenting this, I can simulate about 630 before frame rate dropped below 60 (though the computer fans turned on)
+    constructor(x_index, y_index, water_voltage, temperature) {
+        this.cells = [];
+        this.x_coord = x_index;
+        this.y_coord = y_index;
+        this.x_min = universe_grid_space_diameter*x_index;
+        this.x_max = universe_grid_space_diameter*(x_index+1);
+        this.y_min = universe_grid_space_diameter*y_index;
+        this.y_max = universe_grid_space_diameter*(y_index+1);
+        this.water_voltage = water_voltage;
+        this.temperature = 0;
+        this.force_vector = new THREE.Vector3(0, 0, 0);
+        this.velocity_vector = new THREE.Vector3(0, 0, 0);
+        this.mass = 1;
+        this.friction_force = new THREE.Vector3(0, 0, 0);
+        this.friction = .1;
+    }
+    get_grid_spaces_in_neighborhood() {
+        return [
+            universe_grid[this.x_coord-1][this.y_coord-1],
+            universe_grid[this.x_coord][this.y_coord-1],
+            universe_grid[this.x_coord+1][this.y_coord-1],
+            universe_grid[this.x_coord-1][this.y_coord],
+            universe_grid[this.x_coord][this.y_coord],
+            universe_grid[this.x_coord+1][this.y_coord],
+            universe_grid[this.x_coord-1][this.y_coord+1],
+            universe_grid[this.x_coord][this.y_coord+1],
+            universe_grid[this.x_coord+1][this.y_coord+1]
+        ]
+    }
+    check_move_grid_space(cell, index) {//iterate backwards
+        let cell_x = cell.position.x;
+        let cell_y = cell.position.y;
+        if (cell_x < this.x_min || cell_x > this.x_max) {
+            //cell_x
+            console.log("hey");
+        } else if (cell_y < this.y_min || cell_y > this.y_max) {
+            console.log("hey");
+        }
+    }
+    apply_friction_with_cell(cell) {
+        this.friction_force.subVectors(cell.velocity_vector, this.velocity_vector).multiplyScaler(this.friction);
+        this.force_vector.add(this.friction_force);
+        cell.force_vector.add(this.friction_force.negate());
+    }
+    update_velocity() {//and and add friction and reset force
+        this.force_vector.addScaledVector(this.velocity_vector, -friction/60);
+
+        this.velocity_vector.addScaledVector(this.force_vector, 1/60/this.mass);
+        //this.position_vector.addScaledVector(this.velocity_vector, 1/60);
+        
+        this.force_vector.set(0, 0, 0);
+    }
+    /*update_water_voltage() {
+        delta_v_row = universe_grid[this.x_coord+1][this.y_coord].water_voltage - this.water_voltage;
+        delta_v_col = universe_grid[this.x_coord][this.y_coord+1].water_voltage - this.water_voltage;
+        this.force_vector.setX(delta_v_row/resist);
+        this.force_vector.setY(delta_v_col/);
+    }*/
+}
 
 class Schematic {//we are going to change this
     constructor(schematic_cells, bond_weights, bond_material, origin_point = [0, 0], schematic_name = "") {
@@ -325,7 +451,7 @@ class Cell {
         this.position_vector = position_vector;
         this.velocity_vector = velocity_vector;
         this.force_vector = new THREE.Vector3(0, 0, 0);
-        this.sprite_material = sprite_material;
+        this.sprite_material = sprite_material.clone();//the clone is only needed for the directional cell, so this could be moved there... not sure if it is worth it though.
         this.sprite = new THREE.Sprite(sprite_material);
         this.sprite_diameter = sprite_diameter;
         this.sprite.scale.set(sprite_diameter, sprite_diameter, 1);
@@ -338,6 +464,8 @@ class Cell {
         this.cell_schematics = null;
         this.x_index = 0;
         this.y_index = 0;
+
+        this.energy = 0;
     }
     add_cell_to_simulation() {
         universe.add(this.sprite);
@@ -349,6 +477,7 @@ class Cell {
         this.y_index = y_index;
     }
     update_position() {//and and add friction and reset force
+        //apply_friction_with_cell(cell)
         this.force_vector.addScaledVector(this.velocity_vector, -friction/60);
 
         this.velocity_vector.addScaledVector(this.force_vector, 1/60/this.mass);
@@ -529,11 +658,57 @@ class Cell_With_Bond extends Cell {
     }
 }
 
+class Muscle_Cell extends Cell_With_Bond {
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id, extension_factor) {
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector, anchor_bond_id);
+        this.extension_factor = extension_factor;
+        this.extended = false;
+    }
+    update_anchor(anchor_bond) {
+        super.update_anchor(anchor_bond);
+        this.anchor_bond_original_length = this.anchor_bond.bond_length;
+        this.anchor_bond_original_max_length = this.anchor_bond.max_length;
+    }
+    update_cell(){
+        if (this.anchor_bond != null){
+            if (this.output == 1 && !this.extended){
+                let new_length = this.extension_factor*this.anchor_bond_original_length
+                let energy_cost = 
+                    1/2*this.anchor_bond.k*(Math.abs(this.anchor_bond.dist_vector_length-new_length))**2
+                    - 1/2*this.anchor_bond.k*(Math.abs(this.anchor_bond.dist_vector_length-this.anchor_bond.bond_length))**2;
+                if (energy_cost <= this.energy) {
+                    this.energy -= energy_cost;
+                    this.extended = true;
+                    this.anchor_bond.bond_length = new_length;
+                    this.anchor_bond.max_length = this.extension_factor*this.anchor_bond_original_max_length;
+                }
+            } else if (this.output == 0 && this.extended) {
+                let new_length = this.anchor_bond_original_length
+                let energy_cost = 
+                    1/2*this.anchor_bond.k*(Math.abs(this.anchor_bond.dist_vector_length-new_length))**2
+                    - 1/2*this.anchor_bond.k*(Math.abs(this.anchor_bond.dist_vector_length-this.anchor_bond.bond_length))**2;
+                if (energy_cost <= this.energy) {
+                    this.energy -= energy_cost;
+                    this.extended = false;
+                    this.anchor_bond.bond_length = new_length;
+                    this.anchor_bond.max_length = this.anchor_bond_original_max_length;
+                }
+            }
+        }
+    }
+    clone_cell() {
+        return new Muscle_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_id, this.extension_factor);
+    }
+}
+
+
+let vertical_vector = new THREE.Vector3(1, 0, 0);
 class Directed_Cell extends Cell_With_Bond {
     constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id, desired_angle = 0) {//angle measured from vertical
         super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector, anchor_bond_id);
         this.direction = new THREE.Vector3(0, 1, 0);
         this.desired_angle = desired_angle;
+        this.sprite_angle = 0;
     }
     /*update_anchor(anchor_bond) {
         this.anchor_bond = anchor_bond;
@@ -548,6 +723,11 @@ class Directed_Cell extends Cell_With_Bond {
             if (!this.anchor_bond.broken){
                 this.direction.subVectors(this.position_vector, this.anchor_cell.position_vector);
                 this.direction.normalize().negate();
+                //this.sprite_angle = this.direction.angleTo(vertical_vector);
+                this.sprite_angle = this.get_angle_from_vertical();//-this.direction.angleTo(vertical_vector);
+                //console.log(this.sprite_angle);
+                this.sprite.material.rotation = this.sprite_angle;
+                //this.sprite.setRotationFromAxisAngle(z_axis, this.sprite_angle);
                 //this.direction.applyAxsiAngle(z_axis, desired_angle);
             } else {
                 this.anchor_bond = null;
@@ -555,6 +735,13 @@ class Directed_Cell extends Cell_With_Bond {
             }
         } else {
             //console.log("yeet");
+        }
+    }
+    get_angle_from_vertical() {
+        if (this.direction.y > 0) {
+            return Math.asin(-this.direction.x);
+        } else {
+            return -Math.asin(-this.direction.x)+Math.PI;
         }
     }
     /*update_schematics(cell_schematics, x_index = 0, y_index = 0) {//and index
@@ -727,7 +914,7 @@ class Sticky_Cell extends Cell { //there should only ever be one player vector (
     }
 }
 
-class Shield_Cell extends Cell { //there should only ever be one player vector (unless I add split screen)
+/*class Shield_Cell extends Cell { //there should only ever be one player vector (unless I add split screen)
     constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), shield_inner_radius, shield_outer_radius, shield_strength) {
         super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector);
         this.shield_inner_radius = shield_inner_radius;
@@ -749,6 +936,50 @@ class Shield_Cell extends Cell { //there should only ever be one player vector (
     }
     clone_cell() {//this function should probably only be called once tops. (unless I add split screen)
         return new Shield_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.shield_inner_radius, this.shield_outer_radius, this.shield_strength);
+    }
+}*/
+
+class Explosive_Cell extends Cell { //there should only ever be one player vector (unless I add split screen)
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), explosive_radius, fragments, shapnel_cell) {
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector);
+        this.explosive_radius = explosive_radius;//in units of energy?
+        this.fragments = fragments;
+        this.shapnel_cell = shapnel_cell;
+        this.exploded = false;
+        this.radius_vector = new THREE.Vector3(this.explosive_radius, 0, 0)
+    }
+    update_cell(){
+        if (!this.exploded && this.output == 1){
+            let delta_theta = 2*Math.PI/this.fragments;
+            for (let i = 0; i < this.fragments; i++) {
+                this.radius_vector.set(this.explosive_radius*Math.cos(i*delta_theta), this.explosive_radius*Math.sin(i*delta_theta), 0)
+                let new_shrapnel_cell = this.shapnel_cell.clone_cell();
+                new_shrapnel_cell.position_vector.add(this.radius_vector).add(this.position_vector);
+                new_shrapnel_cell.add_cell_to_simulation();
+            }
+            this.exploded = true;
+        }
+    }
+    clone_cell() {//this function should probably only be called once tops. (unless I add split screen)
+        return new Explosive_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.explosive_radius, this.fragments, this.shapnel_cell);
+    }
+}
+
+class Fixed_Cell extends Cell { //there should only ever be one player vector (unless I add split screen)
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0)) {
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector);
+    }
+    update_position() {//and and add friction and reset force
+        this.force_vector.addScaledVector(this.velocity_vector, -friction/60);
+
+        //this.velocity_vector.addScaledVector(this.force_vector, 1/60/this.mass);
+        //this.position_vector.addScaledVector(this.velocity_vector, 1/60);
+        
+        //this.sprite.position.copy(this.position_vector);
+        this.force_vector.set(0, 0, 0);
+    }
+    clone_cell() {//this function should probably only be called once tops. (unless I add split screen)
+        return new Fixed_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0));
     }
 }
 
