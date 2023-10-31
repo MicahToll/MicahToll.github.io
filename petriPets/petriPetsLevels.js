@@ -64,7 +64,7 @@ let available_parts = [
     new Part("heavy basic part", 20, gordo_path, [], 3),
     new Part("pulse", 30, pulse_cell_path, [], 3),
     new Part("toggle", 15, toggle_cell_path, [], 3),
-    //new Part("generator", 30, generator_cell_path, [], 3),
+    new Part("generator", 30, generator_cell_path, [], 3),
     new Part("energy_cell", 15, energy_storage_cell_path, [], 3),
     //new Part("shield", 30, shield_cell_path, [], 1),
     new Part("absorber", 25, absorber_cell_path, [], 5),
@@ -75,65 +75,65 @@ let available_parts = [
 
 let available_parts_functions = {
     "basic part": function(part_attributes) {
-        return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0)
+        return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0, 10, 0)
     },
     "basic player part": function(part_attributes) {
-        return new Player_Cell(mass, k, spring_dampening, max_length, charge, kirby_material, 2, 0)
+        return new Player_Cell(mass, k, spring_dampening, max_length, charge, kirby_material, 2, 0, 10, 0)
     },
     "propulsor": function(part_attributes) {
         let anchor_bond_index = part_attributes[0];//kirby_bullet_orange_material
-        return new Propulsor(mass, k, spring_dampening, max_length, charge, kirby_bullet_orange_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_index, 0, engine_power)
+        return new Propulsor(mass, k, spring_dampening, max_length, charge, kirby_bullet_orange_material, 1, 0, 10, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_index, 0, engine_power)
     },
     "key board input": function(part_attributes) {
         let key = key_decoder[part_attributes[0]];
-        return new Key_Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_lightblue_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), key);
+        return new Key_Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_lightblue_material, 1, 0, 10, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), key);
     },
     "sensor": function(part_attributes) {
-        return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0)
+        return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0, 10, 0)
     },
     "builder": function(part_attributes) {
-        return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0)
+        return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0, 0, 10)
     },
     "sticky": function(part_attributes) {
-        return new Sticky_Cell(mass, k, spring_dampening, max_length, charge, sticky_cell_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), radius, k)
+        return new Sticky_Cell(mass, k, spring_dampening, max_length, charge, sticky_cell_material, 1, 0, 10, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), radius, k)
     },
     "explosive": function(part_attributes) {
         let explosive_radius = Math.abs(part_attributes[0])*radius;
         let fragments = Math.abs(Math.round(part_attributes[1]));
-        let shrapnel_cell = new Cell(mass/fragments, k, spring_dampening, max_length, charge, shrapnel_cell_material, 1, 0)
-        return new Explosive_Cell(4*mass, k, spring_dampening, max_length, charge, bomb_cell_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), explosive_radius, fragments, shrapnel_cell);
+        let shrapnel_cell = new Cell(mass/fragments, k, spring_dampening, max_length, charge, shrapnel_cell_material, 1, 0, 10, 0);
+        return new Explosive_Cell(4*mass, k, spring_dampening, max_length, charge, bomb_cell_material, 1, 0, 10, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), explosive_radius, fragments, shrapnel_cell);
     },
     "heavy basic part": function(part_attributes) {
-        return new Cell(4*mass, 2*k, 2*spring_dampening, .9*max_length, 1.1*charge, gordo_material, 2, 0)
+        return new Cell(4*mass, 2*k, 2*spring_dampening, .9*max_length, 1.1*charge, gordo_material, 2, 0, 10, 0)
     },
     "pulse": function(part_attributes) {
-        return new Pulse_Cell(mass, k, spring_dampening, max_length, charge, pulse_cell_material, 1, 0)
+        return new Pulse_Cell(mass, k, spring_dampening, max_length, charge, pulse_cell_material, 1, 0, 10, 0)
     },
     "toggle": function(part_attributes) {
-        return new Toggle_Cell(mass, k, spring_dampening, max_length, charge, toggle_cell_material, 1, 0)
+        return new Toggle_Cell(mass, k, spring_dampening, max_length, charge, toggle_cell_material, 1, 0, 10, 0)
     },
-    /*"generator": function(part_attributes) {
-        return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0)
-    },*/
+    "generator": function(part_attributes) {
+        return new Energy_Generator(mass, k, spring_dampening, max_length, charge, generator_cell_material, 1, 0, 10, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), 1)
+    },
     "energy_cell": function(part_attributes) {
-        return new Cell(mass, k, spring_dampening, max_length, charge, energy_storage_cell_material, 1, 0)
+        return new Cell(5*mass, k, spring_dampening, max_length, charge, energy_storage_cell_material, 1, 0, 50, 0)
     },
     /*"shield": function(part_attributes) {
         return new Shield_Cell(mass, k, spring_dampening, max_length, charge, shield_cell_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), radius, radius*7, 1);
     },*/
     "absorber": function(part_attributes) {
-        return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0)
+        return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0, 10, 0)
     },
     "player sensor": function(part_attributes) {
         let anchor_bond_id = part_attributes[0];
-        return new Player_Sensor(mass, k, spring_dampening, max_length, charge, kirby_bullet_lightblue_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_id, 0);
+        return new Player_Sensor(mass, k, spring_dampening, max_length, charge, kirby_bullet_lightblue_material, 1, 0, 10, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_id, 0);
     },
     "fixed cell": function(part_attributes) {
-        return new Fixed_Cell(mass, k, spring_dampening, max_length, charge, fixed_cell_material, 1, 0);
+        return new Fixed_Cell(mass, k, spring_dampening, max_length, charge, fixed_cell_material, 1, 0, 10, 0);
     },
     "muscle cell": function(part_attributes) {
         let anchor_bond_id = part_attributes[0];
-        return new Muscle_Cell(mass, k, spring_dampening, max_length, charge, shield_cell_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_id, 1.25);
+        return new Muscle_Cell(mass, k, spring_dampening, max_length, charge, shield_cell_material, 1, 0, 10, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_id, 1.25);
     }
 }
 
