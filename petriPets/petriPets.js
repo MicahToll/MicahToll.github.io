@@ -154,10 +154,8 @@ const bond_material_2 = new THREE.LineBasicMaterial( { color: 0x00ff00 } );
 
 let universe_grid_width = 15;
 let universe_grid_height = 15;
-let universe_grid = new Array(universe_grid_width);
-for (let col of universe_grid) {
-    col = new Array(universe_grid_height);
-}
+let universe_grid = [];
+let cells_to_be_moved = [];
 
 let window_width;
 let window_height;
@@ -190,6 +188,13 @@ function init() {
     window_width = window.innerWidth;
     window_height = window.innerHeight;
     camera_width = camera_height*window_width/window_height
+
+    for (let x = 0; x < universe_grid_width; x++) {
+        universe_grid.push([])
+        for (let y = 0; y < universe_grid_height; y++) {
+            universe_grid[x].push( new Grid_Space( x, y ) );
+        }
+    }
     
     shuffle_array(music_names);//randomizes array for random playback order
     for (let name of music_names) {
@@ -248,7 +253,31 @@ function gameloop(timestamp) {
         bond.update_energy();
     }
 
-    for (let i = 0; i < cells.length; i++) {
+    for (let x = 1; x < universe_grid.length-1; x++) {
+        for (let y = 1; y < universe_grid[x].length-1; y++) {//not checking grid spaces on top/bot/sides for simplicity. best to keep these ones empty or nigh empty.
+            let focused_grid = universe_grid[x][y];
+            let neightbor_grid_spaces = focused_grid.get_half_grid_spaces_in_neighborhood();
+            for (let i = 0; i < focused_grid.cells.length; i++) {//for each cell in each gridspace
+                let cell_1 = focused_grid.cells[i];
+                //cell_1.check_boundary_force();//moved to later so that edges aren't skipped
+                cell_1.update_cell();
+                cell_1.update_outputs();
+                cell_1.update_energy_voltage();
+                for (let j = i+1; j < focused_grid.cells.length; j++) {//the unchecked remaining cells in focused gridspace
+                    let cell_2 = focused_grid.cells[j];
+                    repel_dist_vector.subVectors(cell_2.position_vector, cell_1.position_vector);
+                    cell_1.repel_cell(cell_2, repel_dist_vector);
+                }
+                for (let grid_space of neightbor_grid_spaces) {//for half of the surrounding spaces
+                    for (let cell_2 of grid_space.cells) {//for each cell in those spaces
+                        repel_dist_vector.subVectors(cell_2.position_vector, cell_1.position_vector);
+                        cell_1.repel_cell(cell_2, repel_dist_vector);
+                    }
+                }
+            }
+        }
+    }
+    /*for (let i = 0; i < cells.length; i++) {
         let cell_1 = cells[i];
         cell_1.check_boundary_force();
         cell_1.update_cell();
@@ -259,16 +288,35 @@ function gameloop(timestamp) {
             repel_dist_vector.subVectors(cell_2.position_vector, cell_1.position_vector);
             cell_1.repel_cell(cell_2, repel_dist_vector);
         }
-    }
+    }*/
 
     for (let i = 0; i < cells.length; i++) {
         let cell = cells[i];
+        cell.check_boundary_force();//this is here so that it isn't skipped. I probably should change some things...
         cell.update_position();
     }
     for (let i = 0; i < bonds.length; i++) {
         let bond = bonds[i];
         bond.update_position();
     }
+    for (let x = 0; x < universe_grid.length; x++) {
+        for (let y = 0; y < universe_grid[x].length; y++) {
+            let focused_grid = universe_grid[x][y];
+            for (let i = focused_grid.cells.length-1; i > 0-1; i--) {//for each cell in each gridspace (in reverse order)
+                let cell = focused_grid.cells[i];
+                focused_grid.check_move_grid_space(cell, i);
+            }
+        }
+    }
+    for (let cell of cells_to_be_moved) {
+        if (cell.grid_space == undefined) {
+            test_cell = cell;
+            console.log(cell);
+        }
+        cell.grid_space.cells.push(cell);
+    }
+    cells_to_be_moved = [];
+
     frame_number++;
     if (frame_number%60 == 0) {
         document.getElementById("fps_display").innerHTML = "fps: " + Math.trunc(60/(timestamp-last_timestamp)*1000);
@@ -328,15 +376,47 @@ stefan_boltzmann_law(temp) {//returns power per unit area
     return little_sigma*temp**4;
 }*/
 
+/*function get_grid_space(x, y) {
+    if (x >= 0 && y >= 0 && x < universe_grid_width && y < universe_grid_height) {
+        return universe_grid[x][y];
+    } else {
+        return universe
+    }
+}
+*/
+let test_cell;
+let sanity_offset = universe_radius;
 class Grid_Space {//before impelenting this, I can simulate about 630 before frame rate dropped below 60 (though the computer fans turned on)
-    constructor(x_index, y_index, water_voltage, temperature) {
+    //after, fan turned on at 400, still going pretty strong at 2000. good sign.
+    constructor(x_index, y_index, water_voltage = 0) {
         this.cells = [];
         this.x_coord = x_index;
         this.y_coord = y_index;
-        this.x_min = universe_grid_space_diameter*x_index;
-        this.x_max = universe_grid_space_diameter*(x_index+1);
-        this.y_min = universe_grid_space_diameter*y_index;
-        this.y_max = universe_grid_space_diameter*(y_index+1);
+        if (x_index != 0) {
+            this.x_min = universe_grid_space_diameter*x_index;
+        } else {
+            this.x_min = -2*universe_radius;//the edge cells extend to double radius
+        }
+        if (x_index != universe_grid_width-1) {
+            this.x_max = universe_grid_space_diameter*(x_index+1);
+        } else {
+            this.x_max = 2*universe_radius;
+        }
+        if (y_index != 0) {
+            this.y_min = universe_grid_space_diameter*y_index;
+        } else {
+            this.y_min = -2*universe_radius;
+        }
+        if (y_index != universe_grid_height-1) {
+            this.y_max = universe_grid_space_diameter*(y_index+1);
+        } else {
+            this.y_max = 2*universe_radius;
+        }
+        //this.x_min = universe_grid_space_diameter*x_index;
+        //this.x_max = universe_grid_space_diameter*(x_index+1);
+        //this.y_min = universe_grid_space_diameter*y_index;
+        //this.y_max = universe_grid_space_diameter*(y_index+1);
+
         this.water_voltage = water_voltage;
         this.temperature = 0;
         this.force_vector = new THREE.Vector3(0, 0, 0);
@@ -358,17 +438,37 @@ class Grid_Space {//before impelenting this, I can simulate about 630 before fra
             universe_grid[this.x_coord+1][this.y_coord+1]
         ]
     }
+    get_half_grid_spaces_in_neighborhood() {
+        return [
+            universe_grid[this.x_coord+1][this.y_coord],
+            universe_grid[this.x_coord-1][this.y_coord+1],
+            universe_grid[this.x_coord][this.y_coord+1],
+            universe_grid[this.x_coord+1][this.y_coord+1]
+        ]
+    }
     check_move_grid_space(cell, index) {//iterate backwards
-        let cell_x = cell.position.x;
-        let cell_y = cell.position.y;
+        let cell_x = cell.position_vector.x + sanity_offset;
+        let cell_y = cell.position_vector.y + sanity_offset;
         if (cell_x < this.x_min || cell_x > this.x_max) {
-            //cell_x
-            console.log("hey");
+            let new_grid_x = Math.min(Math.max(0, Math.floor(cell_x/universe_grid_space_diameter)), universe_grid_width-1);//any cells outside radius get thrown into edges
+            let new_grid_y = Math.min(Math.max(0, Math.floor(cell_y/universe_grid_space_diameter)), universe_grid_height-1);
+            cell.set_cell_grid_space(universe_grid[new_grid_x][new_grid_y]);
+            this.cells.splice(index, 1);
+            cells_to_be_moved.push(cell);
+            /*if (cell_y < this.y_min || cell_y > this.y_max) {
+                let new_grid_y = Math.floor(cell_y/universe_grid_space_diameter);
+            } else {
+                let new_grid_y = cell.gridspace.y_coord;
+            }*/
         } else if (cell_y < this.y_min || cell_y > this.y_max) {
-            console.log("hey");
+            let new_grid_x = cell.grid_space.x_coord;
+            let new_grid_y = Math.min(Math.max(0, Math.floor(cell_y/universe_grid_space_diameter)), universe_grid_height-1);
+            cell.set_cell_grid_space(universe_grid[new_grid_x][new_grid_y]);
+            this.cells.splice(index, 1);
+            cells_to_be_moved.push(cell);
         }
     }
-    apply_friction_with_cell(cell) {
+    /*apply_friction_with_cell(cell) {
         this.friction_force.subVectors(cell.velocity_vector, this.velocity_vector).multiplyScaler(this.friction);
         this.force_vector.add(this.friction_force);
         cell.force_vector.add(this.friction_force.negate());
@@ -380,7 +480,7 @@ class Grid_Space {//before impelenting this, I can simulate about 630 before fra
         //this.position_vector.addScaledVector(this.velocity_vector, 1/60);
         
         this.force_vector.set(0, 0, 0);
-    }
+    }*/
     /*update_water_voltage() {
         delta_v_row = universe_grid[this.x_coord+1][this.y_coord].water_voltage - this.water_voltage;
         delta_v_col = universe_grid[this.x_coord][this.y_coord+1].water_voltage - this.water_voltage;
@@ -474,10 +574,35 @@ class Cell {
         this.energy_capacity = energy_capacity;
         this.energy_equilibrium_offset = 0;//+ for wants to give energy, - for wants to take energy
         this.energy_voltage = 0;
+
+        this.number_of_bonds = 0
     }
     add_cell_to_simulation() {
         universe.add(this.sprite);
         cells.push(this);
+        this.set_cell_grid_space(this.find_grid_space_from_position());
+        this.grid_space.cells.push(this);
+    }
+    find_grid_space_from_position() {
+        return universe_grid[Math.min(Math.max(0, Math.floor((this.position_vector.x + sanity_offset)/universe_grid_space_diameter)), universe_grid_height-1)][Math.min(Math.max(0, Math.floor((this.position_vector.y + sanity_offset)/universe_grid_space_diameter)), universe_grid_height-1)];
+    }
+    set_cell_grid_space(grid_space) {
+        this.grid_space = grid_space;
+    }
+    add_bond_to_cell(new_bond) {
+        this.cell_bonds.push(new_bond);
+        this.number_of_bonds = this.cell_bonds.length;
+    }
+    remove_bond_from_cell(bond_to_remove) {
+        for (let cell_bond_index = 0; cell_bond_index < this.cell_bonds.length; cell_bond_index++) {
+            if (bond_to_remove === this.cell_bonds[cell_bond_index]) {
+                this.cell_bonds.splice(cell_bond_index, 1);
+            }
+        }
+        this.number_of_bonds = this.cell_bonds.length;
+        if (this.number_of_bonds == 0) {
+            console.log("destined to be forever alone");
+        }
     }
     update_schematics(cell_schematics, x_index = 0, y_index = 0) {//and index
         this.cell_schematics = cell_schematics;
@@ -521,17 +646,17 @@ class Cell {
     }
     update_output_display() {
         if (this.output == 1) {
-            //this.sprite.scale.set(2*this.sprite_diameter, 2*this.sprite_diameter, 1);
-            this.sprite.material.color = on_color;
+            this.sprite.scale.set(2*this.sprite_diameter, 2*this.sprite_diameter, 1);
+            //this.sprite.material.color = on_color;
         }
         else {
-            //this.sprite.scale.set(this.sprite_diameter, this.sprite_diameter, 1);
-            this.sprite.material.color = off_color;
+            this.sprite.scale.set(this.sprite_diameter, this.sprite_diameter, 1);
+            //this.sprite.material.color = off_color;
         }
     }
     update_energy_voltage() {
         this.energy_voltage = (this.energy+this.energy_equilibrium_offset)/this.energy_capacity;
-        this.sprite.scale.set((1+this.energy/this.energy_capacity)*this.sprite_diameter, (1+this.energy/this.energy_capacity)*this.sprite_diameter, 1);
+        //this.sprite.scale.set((1+this.energy/this.energy_capacity)*this.sprite_diameter, (1+this.energy/this.energy_capacity)*this.sprite_diameter, 1);
     }
     update_cell(){}
     //initialize_cell(){}
@@ -560,8 +685,8 @@ class Bond {
         this.line_vertices.setX(0, 0);
         this.line_vertices.setY(0, 0);
         this.bond_id = this.cell_1.x_index + ", " + this.cell_1.y_index + "_" + this.cell_2.x_index + ", " + this.cell_2.y_index
-        this.cell_1.cell_bonds.push(this);
-        this.cell_2.cell_bonds.push(this);
+        this.cell_1.add_bond_to_cell(this);
+        this.cell_2.add_bond_to_cell(this);
 
         this.cell_1_weight = cell_1_weight;
         this.cell_2_weight = cell_2_weight;
@@ -629,6 +754,8 @@ class Bond {
         this.broken = true;
         universe.remove(this.line);
         bonds.splice(i, 1);
+        this.cell_1.remove_bond_from_cell(this);
+        this.cell_2.remove_bond_from_cell(this);
     }
     update_energy() {
         let voltage_diff = this.cell_1.energy_voltage - this.cell_2.energy_voltage;
@@ -716,48 +843,27 @@ class Muscle_Cell extends Cell_With_Bond {
     }
 }
 
-/*class Muscle_Cell_Generator extends Cell_With_Bond {
-    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id, extension_factor) {
+class Inverse_Muscle_Cell extends Cell_With_Bond {
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id, extention_resistance) {
         super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector, anchor_bond_id);
-        this.extension_factor = extension_factor;
-        this.extended = false;
+        this.extention_resistance = extention_resistance;
+        this.last_dist_length = 0;
     }
     update_anchor(anchor_bond) {
         super.update_anchor(anchor_bond);
-        this.anchor_bond_original_length = this.anchor_bond.bond_length;
-        this.anchor_bond_original_max_length = this.anchor_bond.max_length;
+        this.last_dist_length = this.anchor_bond.dist_vector_length;
+        this.anchor_bond.dampening += this.extention_resistance;
     }
     update_cell(){
         if (this.anchor_bond != null){
-            if (this.output == 1 && !this.extended){
-                let new_length = this.extension_factor*this.anchor_bond_original_length
-                let energy_cost = 
-                    1/2*this.anchor_bond.k*(Math.abs(this.anchor_bond.dist_vector_length-new_length))**2
-                    - 1/2*this.anchor_bond.k*(Math.abs(this.anchor_bond.dist_vector_length-this.anchor_bond.bond_length))**2;
-                if (energy_cost <= this.energy) {
-                    this.energy -= energy_cost;
-                    this.extended = true;
-                    this.anchor_bond.bond_length = new_length;
-                    this.anchor_bond.max_length = this.extension_factor*this.anchor_bond_original_max_length;
-                }
-            } else if (this.output == 0 && this.extended) {
-                let new_length = this.anchor_bond_original_length
-                let energy_cost = 
-                    1/2*this.anchor_bond.k*(Math.abs(this.anchor_bond.dist_vector_length-new_length))**2
-                    - 1/2*this.anchor_bond.k*(Math.abs(this.anchor_bond.dist_vector_length-this.anchor_bond.bond_length))**2;
-                if (energy_cost <= this.energy) {
-                    this.energy -= energy_cost;
-                    this.extended = false;
-                    this.anchor_bond.bond_length = new_length;
-                    this.anchor_bond.max_length = this.anchor_bond_original_max_length;
-                }
-            }
+            this.energy = Math.min(this.energy_capacity, this.energy + (this.anchor_bond.dist_vector_length-this.last_dist_length)**2 * this.extention_resistance);//apparently the over dt is included in the k constant, so not included here either ¯\_(;))_/¯
+            this.last_dist_length = this.anchor_bond.dist_vector_length;
         }
     }
     clone_cell() {
-        return new Muscle_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, this.energy_capacity, this.energy, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_id, this.extension_factor);
+        return new Inverse_Muscle_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, this.energy_capacity, this.energy, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_id, this.extention_resistance);
     }
-}*/
+}
 
 let vertical_vector = new THREE.Vector3(1, 0, 0);
 class Directed_Cell extends Cell_With_Bond {
@@ -941,28 +1047,36 @@ class Pulse_Cell extends Cell {
 }
 
 let sticky_bond_material = new THREE.LineBasicMaterial( { color: 0x009900 } );
-class Sticky_Cell extends Cell { //there should only ever be one player vector (unless I add split screen)
+class Sticky_Cell extends Cell {
     constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), sticky_radius, sticky_k) {
         super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector);
         this.sticky_radius = sticky_radius;
         this.sticky_k = sticky_k;
         this.cell_bonds = [];
     }
-    repel_cell(cell_2, repel_dist_vector) {
-        super.repel_cell(cell_2, repel_dist_vector)
-        let dist = repel_dist_vector.length();
-        if (dist != 0 && dist < sticky_radius) {
-            let already_bonded = false;
-            for (let bond in this.cell_bonds) {
-                if (bond.cell_1 === this || bond.cell_2 === this) {
-                    already_bonded = true;
-                    break;
+    update_cell() {
+        let near_spaces = this.grid_space.get_grid_spaces_in_neighborhood();
+        for (let space of near_spaces) {
+            for (let cell of space.cells) {
+                if (cell !== this) {
+                    //do thing
+                    let already_bonded = false;
+                    for (let bond of this.cell_bonds) {
+                        if (bond.cell_1 === cell || bond.cell_2 === cell) {
+                            already_bonded = true;
+                            break;
+                        }
+                    }
+                    if (!already_bonded) {
+                        let dist = this.position_vector.distanceTo(cell.position_vector);
+                        if (dist != 0 && dist < this.sticky_radius) {
+                            console.log("new bond!")
+                            let added_bond = new Bond(this, cell, this.sticky_radius, sticky_bond_material, 0, 0);
+                            added_bond.add_bond_to_simulation();
+                            added_bond.check_directed_connection();
+                        }
+                    }
                 }
-            }
-            if (!already_bonded) {
-                let current_bond = new Bond(this, cell_2, this.sticky_radius, sticky_bond_material, 0, 0);
-                current_bond.add_bond_to_simulation();
-                current_bond.check_directed_connection();
             }
         }
     }
