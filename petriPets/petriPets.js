@@ -100,11 +100,11 @@ function wheel(){
 
 //setting up three.js
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 45, window.innerWidth/window.innerHeight, .1, 1000);			
+const camera = new THREE.PerspectiveCamera( 45, window.innerWidth/window.innerHeight, .1, 1000);
 let camera_height = 100;
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });//to add anti aliasing, sdd { antialias: true } to the parameter
-renderer.setSize(window.innerWidth, window.innerHeight); 
+renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild( renderer.domElement );//document.getElementById("body").appendChild( renderer.domElement );
 
 //everything in the universe's reference frame should be added to this group
@@ -384,7 +384,7 @@ stefan_boltzmann_law(temp) {//returns power per unit area
     }
 }
 */
-let test_cell;
+
 let sanity_offset = universe_radius;
 class Grid_Space {//before impelenting this, I can simulate about 630 before frame rate dropped below 60 (though the computer fans turned on)
     //after, fan turned on at 400, still going pretty strong at 2000. good sign.
@@ -466,6 +466,13 @@ class Grid_Space {//before impelenting this, I can simulate about 630 before fra
             cell.set_cell_grid_space(universe_grid[new_grid_x][new_grid_y]);
             this.cells.splice(index, 1);
             cells_to_be_moved.push(cell);
+        }
+    }
+    remove_cell_from_cells(cell) {
+        for (let cell_index = 0; cell_index < this.cells.length; cell_index++) {
+            if (this.cells[cell_index] === cell) {
+                this.cells.splice(cell_index, 1);
+            }
         }
     }
     /*apply_friction_with_cell(cell) {
@@ -661,8 +668,20 @@ class Cell {
     update_cell(){}
     //initialize_cell(){}
     
-    delete_sprite() {//this function may be unfinished. check later
+    destroy_cell() {
+        if (this.number_of_bonds != 0) {
+            console.log("error: destroy cell only works when number of bonds is zero");
+        }
+        for (let cell_index = 0; cell_index < cells.length; cell_index++) {
+            if (cells[cell_index] === this) {
+                cells.splice(cell_index, 1);
+            }
+        }
         universe.remove(this.sprite);
+        this.sprite_material.dispose();
+        delete this.sprite_material;
+        delete this.sprite;
+        this.grid_space.remove_cell_from_cells(this);
     }
     clone_cell() {
         return new Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, this.energy_capacity, this.energy, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0));
@@ -726,7 +745,7 @@ class Bond {
         let k_d_times_d_dist_over_dt = this.dampening*(1 - last_dist_length/this.dist_vector_length);
         let spring_force = this.k*(this.dist_vector_length - this.bond_length);
         if (this.dist_vector.length() > this.max_length) {
-            this.break_bond(i);
+            this.break_bond_at_index(i);
         }//this.bond_length
         else {
             this.cell_2.force_vector.addScaledVector(this.dist_vector, - (spring_force/this.dist_vector_length + k_d_times_d_dist_over_dt) );
@@ -750,7 +769,18 @@ class Bond {
         this.line_vertices.setY(1, this.dist_vector.y);
         this.line_vertices.needsUpdate = true;
     }
-    break_bond(i) {
+    break_bond() {
+        this.broken = true;
+        universe.remove(this.line);
+        for (let i = 0; i < bonds.length; i++) {
+            if (bonds[i] === this) {
+                bonds.splice(i, 1);
+            }
+        }
+        this.cell_1.remove_bond_from_cell(this);
+        this.cell_2.remove_bond_from_cell(this);
+    }
+    break_bond_at_index(i) {
         this.broken = true;
         universe.remove(this.line);
         bonds.splice(i, 1);
@@ -1046,7 +1076,7 @@ class Pulse_Cell extends Cell {
     }
 }
 
-let sticky_bond_material = new THREE.LineBasicMaterial( { color: 0x009900 } );
+let sticky_bond_material = new THREE.LineBasicMaterial( { color: 0x00AA00 } );
 class Sticky_Cell extends Cell {
     constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), sticky_radius, sticky_k) {
         super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector);
@@ -1070,7 +1100,6 @@ class Sticky_Cell extends Cell {
                     if (!already_bonded) {
                         let dist = this.position_vector.distanceTo(cell.position_vector);
                         if (dist != 0 && dist < this.sticky_radius) {
-                            console.log("new bond!")
                             let added_bond = new Bond(this, cell, this.sticky_radius, sticky_bond_material, 0, 0);
                             added_bond.add_bond_to_simulation();
                             added_bond.check_directed_connection();
@@ -1080,8 +1109,40 @@ class Sticky_Cell extends Cell {
             }
         }
     }
-    clone_cell() {//this function should probably only be called once tops. (unless I add split screen)
+    clone_cell() {
         return new Sticky_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, this.energy_capacity, this.energy, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.sticky_radius, this.sticky_k);
+    }
+}
+
+class Absorber_Cell extends Sticky_Cell {
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), sticky_radius, sticky_k) {
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector);
+        this.sticky_radius = sticky_radius;
+        this.sticky_k = sticky_k;
+        this.cell_bonds = [];
+    }
+    update_cell() {
+        super.update_cell();
+        for (let bond of this.cell_bonds) {
+            if (bond.bond_material === sticky_bond_material) {
+                if (bond.cell_1 !== this) {
+                    if (bond.cell_1.number_of_bonds == 1) {
+                        let cell_1 = bond.cell_1;
+                        bond.break_bond();
+                        cell_1.destroy_cell();
+                    }
+                } else if (bond.cell_2 !== this){
+                    if (bond.cell_2.number_of_bonds == 1) {
+                        let cell_2 = bond.cell_2;
+                        bond.break_bond();
+                        cell_2.destroy_cell();
+                    }
+                }
+            }
+        }
+    }
+    clone_cell() {
+        return new Absorber_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, this.energy_capacity, this.energy, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.sticky_radius, this.sticky_k);
     }
 }
 

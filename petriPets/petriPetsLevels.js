@@ -60,6 +60,7 @@ let available_parts = [
     new Part("sensor", 20, eye_cell_path, [], 3),
     new Part("builder", 25),
     new Part("sticky", 20, sticky_cell_path, [], 3),
+    new Part("absorber", 20, absorber_cell_path, [], 3),
     new Part("explosive", 25, bomb_cell_path, [{"name":"explostion_radius", "type":"number", "default_value": 1/2}, {"name":"fragments", "type":"number", "default_value":4}], 5),
     new Part("heavy basic part", 20, gordo_path, [], 3),
     new Part("pulse", 30, pulse_cell_path, [], 3),
@@ -67,7 +68,6 @@ let available_parts = [
     new Part("generator", 30, generator_cell_path, [], 3),
     new Part("energy_cell", 15, energy_storage_cell_path, [], 3),
     //new Part("shield", 30, shield_cell_path, [], 1),
-    new Part("absorber", 25, absorber_cell_path, [], 5),
     new Part("player sensor", 30, kirby_bullet_lightblue_path, [{"name":"anchor_bond_index", "type":"bond", "default_value": [0,0]}], 1),
     new Part("fixed cell", 30, fixed_cell_path, [], 5),
     new Part("muscle cell", 30, shield_cell_path, [{"name":"anchor_bond_index", "type":"bond", "default_value": [0,0]}], 5),
@@ -98,6 +98,9 @@ let available_parts_functions = {
     "sticky": function(part_attributes) {
         return new Sticky_Cell(mass, k, spring_dampening, max_length, charge, sticky_cell_material, 1, 0, 10, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), radius, k)
     },
+    "absorber": function(part_attributes) {
+        return new Absorber_Cell(mass, k, spring_dampening, max_length, charge, absorber_cell_material, 1, 0, 10, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), radius, k)
+    },
     "explosive": function(part_attributes) {
         let explosive_radius = Math.abs(part_attributes[0])*radius;
         let fragments = Math.abs(Math.round(part_attributes[1]));
@@ -122,9 +125,6 @@ let available_parts_functions = {
     /*"shield": function(part_attributes) {
         return new Shield_Cell(mass, k, spring_dampening, max_length, charge, shield_cell_material, 1, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), radius, radius*7, 1);
     },*/
-    "absorber": function(part_attributes) {
-        return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0, 10, 0)
-    },
     "player sensor": function(part_attributes) {
         let anchor_bond_id = part_attributes[0];
         return new Player_Sensor(mass, k, spring_dampening, max_length, charge, kirby_bullet_lightblue_material, 1, 0, 10, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_id, 0);
