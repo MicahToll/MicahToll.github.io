@@ -1146,31 +1146,6 @@ class Absorber_Cell extends Sticky_Cell {
     }
 }
 
-/*class Shield_Cell extends Cell { //there should only ever be one player vector (unless I add split screen)
-    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), shield_inner_radius, shield_outer_radius, shield_strength) {
-        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, position_vector, velocity_vector);
-        this.shield_inner_radius = shield_inner_radius;
-        this.shield_outer_radius = shield_outer_radius;
-        this.shield_strength = shield_strength;
-        this.relative_velocity = new THREE.Vector3(0, 0, 0);
-    }
-    repel_cell(cell_2, repel_dist_vector) {
-        super.repel_cell(cell_2, repel_dist_vector)
-        let dist = repel_dist_vector.length();
-        if (dist < this.shield_outer_radius && dist > this.shield_inner_radius && dist != 0) {
-            this.relative_velocity.subVectors(cell_2.velocity_vector, this.velocity_vector);
-            let relative_speed = this.relative_velocity.length();
-            let dist = repel_dist_vector.length();
-            let force = relative_speed * this.shield_strength / dist; // this is actually force over dist (so that dist gets divided out)
-            this.force_vector.addScaledVector(repel_dist_vector, -force);
-            cell_2.force_vector.addScaledVector(repel_dist_vector, force);
-        }
-    }
-    clone_cell() {//this function should probably only be called once tops. (unless I add split screen)
-        return new Shield_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.shield_inner_radius, this.shield_outer_radius, this.shield_strength);
-    }
-}*/
-
 class Explosive_Cell extends Cell { //there should only ever be one player vector (unless I add split screen)
     constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), explosive_radius, fragments, shapnel_cell) {
         super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector);
@@ -1304,20 +1279,19 @@ class Reproducer extends Directed_Cell {
     }
 }
 
-/*class Ejector extends Cell {
-    constructor(mass, k, length, max_length, charge, position_vector, sprite_material, velocity_vector = new THREE.Vector3(0, 0, 0), ejection_energy, bonds_to_eject) {
-        super(mass, k, length, max_length, charge, position_vector, sprite_material, velocity_vector);
-        this.ejection_energy = ejection_energy;
-        this.bonds_to_eject = bonds_to_eject
+class Ejector_Cell extends Cell_With_Bond {
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id) {
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector, anchor_bond_id);
     }
-    update_cell() {
-        if (parent_creature != null){
-            parent_creature.change_energy(this.energy_generation);
+    update_cell() {//the first print line isn't even going. somethings wrong :(
+        if (this.anchor_bond != null){
+            if (this.output == 1) {
+                this.anchor_bond.break_bond();
+                this.anchor_bond = null;
+            }
         }
     }
-    eject() {//this doesn't work yet
-        for (let bond of bonds_to_eject) {
-            bond.break_bond();
-        }
+    clone_cell() {
+        return new Ejector_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, this.energy_capacity, this.energy, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_id);
     }
-}*/
+}

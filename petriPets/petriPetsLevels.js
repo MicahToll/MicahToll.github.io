@@ -71,7 +71,8 @@ let available_parts = [
     new Part("player sensor", 30, kirby_bullet_lightblue_path, [{"name":"anchor_bond_index", "type":"bond", "default_value": [0,0]}], 1),
     new Part("fixed cell", 30, fixed_cell_path, [], 5),
     new Part("muscle cell", 30, shield_cell_path, [{"name":"anchor_bond_index", "type":"bond", "default_value": [0,0]}], 5),
-    new Part("inverse muscle cell", 30, shield_cell_path, [{"name":"anchor_bond_index", "type":"bond", "default_value": [0,0]}], 5)
+    new Part("inverse muscle cell", 30, shield_cell_path, [{"name":"anchor_bond_index", "type":"bond", "default_value": [0,0]}], 5),
+    new Part("ejector", 25, kirby_bullet_orange_path, [{"name":"anchor_bond_index", "type":"bond", "default_value": [0,0]}], 5)
 ];
 
 let available_parts_functions = {
@@ -139,6 +140,10 @@ let available_parts_functions = {
     "inverse muscle cell": function(part_attributes) {
         let anchor_bond_id = part_attributes[0];
         return new Inverse_Muscle_Cell(mass, k, spring_dampening, max_length, charge, shield_cell_material, 1, 0, 10, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_id, 1);
+    },
+    "ejector": function(part_attributes) {
+        let anchor_bond_index = part_attributes[0];
+        return new Ejector_Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_orange_material, 1, 0, 10, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_index);
     }
 }
 
