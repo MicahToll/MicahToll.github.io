@@ -163,6 +163,7 @@ let background_things = [];
 let creatures = [];
 let cells = [];
 let bonds = [];
+let photons = [];
 let friction = .1;
 let radius = 5;
 let universe_grid_space_diameter = 2*radius;
@@ -953,12 +954,59 @@ class Directed_Cell extends Cell_With_Bond {
 }
 
 let planks_constant = 60;
-class Photon_Cell extends Cell {
+/*class Photon_Cell extends Cell {
     constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0)) {
         super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector)
         this.energy = energy;
         this.last_position_vector = this.position_vector.copy;
         this.last_force_vector = this.force_vector.copy;
+        this.period = 1;//in 1/60th of a sec
+        this.time_since_flip = 0;//in 1/60th of a sec
+        //this.last_speed = this.velocity_vector.length();
+        this.update_period();
+    }
+    update_period() {
+        this.period = Math.ceil(planks_constant/this.energy);
+    }
+    update_energy() {//might switch tactic. currently doing one big update every few ticks, might change to a small update every single tick
+        let potential_energy = 0;
+        for (let cell_2 in cells){
+            let dist = repel_dist_vector.length();
+            if (dist != 0 && dist < radius) {
+                potential_energy += this.charge*cell_2.charge/(dist);
+            }
+        }
+        this.energy -= potential_energy;//detla E = delta KE + delta PE + delta internal energy + delta external energy
+        this.energy = 0
+    }
+    update_cell() {
+        if (this.time_since_flip >= this.period) {
+            console.log(this.charge);
+            this.charge = -this.charge;
+            this.update_energy();
+            this.update_period();
+            this.time_since_flip = 1;
+        } else {
+            this.time_since_flip++;
+        }
+    }
+}*/
+
+class Photon {
+    constructor(photon_radius, sprite_material, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0)) {
+        this.sprite_material = sprite_material.clone();//the clone is only needed for the directional cell, so this could be moved there... not sure if it is worth it though.
+        this.sprite = new THREE.Sprite(this.sprite_material);
+        this.photon_radius = photon_radius;
+        this.sprite.scale.set(2*this.photon_radius, 2*this.photon_radius, 1);
+
+        this.position_vector = position_vector;
+        this.velocity_vector = velocity_vector;
+        this.force_vector = new THREE.Vector3(0, 0, 0);//is this needed?
+        
+        this.sprite.position.copy(this.position_vector);
+        this.cell_bonds = [];//is this needed?
+
+        this.energy = energy;
         this.period = 1;//in 1/60th of a sec
         this.time_since_flip = 0;//in 1/60th of a sec
         //this.last_speed = this.velocity_vector.length();
@@ -1069,6 +1117,21 @@ class Pulse_Cell extends Cell {
         } else {
             this.last_input = 0;
         }
+        this.input_total = 0;
+    }
+    clone_cell(){
+        return new Pulse_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, this.energy_capacity, this.energy, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0));
+    }
+}
+
+class Derivative_Cell extends Cell {
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0)) {
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector);
+        this.last_input = 0;
+    }
+    update_outputs() {
+        this.output = (this.input_total - this.last_input)/(1/60);//delta input / delta time (in seconds)
+        this.last_input = this.input_total;
         this.input_total = 0;
     }
     clone_cell(){
@@ -1224,16 +1287,61 @@ class Player_Sensor extends Directed_Cell {//outputs 1 if facing toward player. 
     }
 }
 
-/*class blank extends Cell {
-
-}*/
-
-/*class Energy_Storage extends Cell {
-    constructor(mass, k, length, max_length, charge, position_vector, sprite_material, velocity_vector = new THREE.Vector3(0, 0, 0), energy_capacity) {
-        super(mass, k, length, max_length, charge, position_vector, sprite_material, velocity_vector);
-        this.energy_capacity = energy_capacity;
+class Eye_Cell extends Directed_Cell {// I want to make the sprite look at the target cell for cuteness and visual feedback
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id, desired_angle = 0, vision_range = radius) {
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector, anchor_bond_id, desired_angle)
+        this.vision_range = vision_range;
+        this.target_cell = null;
+        this.vector_to_target = new THREE.Vector3(0, 0, 0);
     }
-    init
+    update_cell(){
+        if (this.anchor_bond != null){
+            super.update_cell();
+            if (this.target_cell == null || this.position_vector.distanceTo(this.target_cell.position_vector) > this.vision_range) {//the order of this or matters
+                this.output = 0;
+                this.look_for_new_target();
+            }
+        }
+    }
+    update_outputs() {
+        if (this.anchor_bond != null && this.target_cell != null){
+            this.vector_to_target.subVectors(this.target_cell.position_vector, this.position_vector);
+            this.output = this.direction.dot(this.vector_to_target)/this.vector_to_target.length();
+        }
+    }
+    look_for_new_target() {//sets target cell to null if couldn't find anything. currently chooses random one (not random, just the first one that qualifies)
+        this.target_cell = null;
+        let near_spaces = this.grid_space.get_grid_spaces_in_neighborhood();
+        for (let space of near_spaces) {
+            for (let cell of space.cells) {
+                if (cell !== this) {
+                    //do thing
+                    if (cell instanceof Energy_Generator) {//works well, just need the cell type to not be hard coded :)
+                        this.target_cell = cell;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    clone_cell() {
+        return new Eye_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, this.energy_capacity, this.energy, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_id, this.desired_angle, this.vision_range);
+    }
+}
+
+/*class Eye_Beam_Cell extends Directed_Cell {
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id, desired_angle = 0) {
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector, anchor_bond_id, desired_angle)
+    }
+    update_cell(){
+        if (this.anchor_bond != null){
+            super.update_cell();
+            this.output = 1/(1+1);//something
+        }
+    }
+    clone_cell() {
+        return new Eye_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, this.energy_capacity, this.energy, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_id, this.desired_angle);
+    }
 }*/
 
 class Energy_Generator extends Cell {
@@ -1248,11 +1356,7 @@ class Energy_Generator extends Cell {
         return new Energy_Generator(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, this.energy_capacity, this.energy, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.energy_generation);
     }
 }
-/*[
-    [new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material), null],
-    [new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material), new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material)],
-    [null, new Cell(1, k, radius, 2*radius, 1, kirby_bullet_orange_material)]
-]*/
+
 class Reproducer extends Directed_Cell {
     constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id, schematics_to_produce, schematics_to_produce_index) {
         super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector, anchor_bond_id, 0);
@@ -1283,7 +1387,7 @@ class Ejector_Cell extends Cell_With_Bond {
     constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id) {
         super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector, anchor_bond_id);
     }
-    update_cell() {//the first print line isn't even going. somethings wrong :(
+    update_cell() {
         if (this.anchor_bond != null){
             if (this.output == 1) {
                 this.anchor_bond.break_bond();

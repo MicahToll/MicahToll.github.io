@@ -58,6 +58,7 @@ let available_parts = [
     new Part("propulsor", 25, kirby_bullet_orange_path, [{"name":"anchor_bond_index", "type":"bond", "default_value": [0,0]}], 5),
     new Part("key board input", 15, kirby_bullet_lightblue_path, [{"name":"key", "type":"key", "default_value":'w'}], 5),
     new Part("sensor", 20, eye_cell_path, [], 3),
+    new Part("eye cell", 20, eye_cell_path, [{"name":"anchor_bond_index", "type":"bond", "default_value": [0,0]}], 3),
     new Part("builder", 25),
     new Part("sticky", 20, sticky_cell_path, [], 3),
     new Part("absorber", 20, absorber_cell_path, [], 3),
@@ -65,6 +66,7 @@ let available_parts = [
     new Part("heavy basic part", 20, gordo_path, [], 3),
     new Part("pulse", 30, pulse_cell_path, [], 3),
     new Part("toggle", 15, toggle_cell_path, [], 3),
+    new Part("derivative", 15, toggle_cell_path, [], 3),
     new Part("generator", 30, generator_cell_path, [], 3),
     new Part("energy_cell", 15, energy_storage_cell_path, [], 3),
     //new Part("shield", 30, shield_cell_path, [], 1),
@@ -93,8 +95,12 @@ let available_parts_functions = {
     "sensor": function(part_attributes) {
         return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0, 10, 0)
     },
+    "eye cell": function(part_attributes) {
+        let anchor_bond_id = part_attributes[0];
+        return new Eye_Cell(mass, k, spring_dampening, max_length, charge, eye_cell_material, 1, 0, 10, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_id, 0, 2*radius);
+    },
     "builder": function(part_attributes) {
-        return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0, 0, 10)
+        return new Cell(mass, k, spring_dampening, max_length, charge, kirby_bullet_material, 1, 0, 0, 10);
     },
     "sticky": function(part_attributes) {
         return new Sticky_Cell(mass, k, spring_dampening, max_length, charge, sticky_cell_material, 1, 0, 10, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), radius, k)
@@ -116,6 +122,9 @@ let available_parts_functions = {
     },
     "toggle": function(part_attributes) {
         return new Toggle_Cell(mass, k, spring_dampening, max_length, charge, toggle_cell_material, 1, 0, 10, 0)
+    },
+    "derivative": function(part_attributes) {
+        return new Derivative_Cell(mass, k, spring_dampening, max_length, charge, toggle_cell_material, 1, 0, 10, 0)
     },
     "generator": function(part_attributes) {
         return new Energy_Generator(mass, k, spring_dampening, max_length, charge, generator_cell_material, 1, 0, 10, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), 1)

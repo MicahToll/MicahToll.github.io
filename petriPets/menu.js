@@ -292,7 +292,7 @@ function save_schematics(schematic_index) {
         }
     }
     let new_schematics = new Schematic(garage_schematic_cells, garage_design_bond_weights, bond_material_1, [0, 0], "new_schematic");
-    saved_schematics[schematic_index] = new_schematics//does this create a memory leak? it won't be a bad one anyway.
+    saved_schematics[schematic_index] = new_schematics;//does this create a memory leak? it won't be a bad one anyway.
     let new_name = saved_designs[schematic_index]["design_name"];
     if (document.getElementById("schematic_name_input_"+schematic_index) != null) {
         new_name = document.getElementById("schematic_name_input_"+schematic_index).value;
@@ -381,12 +381,12 @@ let saved_schematics = [];
 //and of course, cells and bonds should be saved... we'll see if that part gets implemented. 
 
 //saved settings stuff
-//var volume = .2;
 //var antialias = true;
 
 function save(){
+    let volume = document.getElementById("sound").value;
     let save_data = {
-        //"settings":{"volume":volume, "invertY":invertY, "thirdPerson": thirdPerson, "antialias":antialias}, 
+        "settings":{"volume":volume},//"antialias":antialias}, 
         "progress":{"credits": credits, "available_parts": available_parts, "saved_designs":saved_designs}
     }
     localStorage.setItem("petripets_save_data", JSON.stringify(save_data));
@@ -394,22 +394,41 @@ function save(){
 
 function loadSave(){
     if (localStorage.getItem("petripets_save_data")==null){
-        window.alert("no save found");
+        console.log("no save found");
     }
     else{
         save_data = JSON.parse(localStorage.getItem("petripets_save_data"));
         
-        /*let settings = save_data["settings"];
-        volume = settings["volume"];
-        antialias = settings["antialias"];*/
+        let settings = save_data["settings"];
+        let volume = settings["volume"];
+        document.getElementById("sound").value = volume;
+        set_volume();
+        //antialias = settings["antialias"];
         
         let progress = save_data["progress"];
         credits = progress["credits"];
-        available_parts = progress["available_parts"];
+        update_dashboard();
+        //available_parts = progress["available_parts"];
         saved_designs = progress["saved_designs"];
+        refresh_schematics_table();
+
+        let temp_garage_design = garage_design;
+        let temp_garage_design_attributes = garage_design_attributes;
+        let temp_garage_design_bond_weights = garage_design_bond_weights;
+        saved_schematics = [];
+        for (let design_index = 0; design_index < saved_designs.length; design_index++) {
+            let design = saved_designs[design_index];
+            garage_design = design["garage_design"];
+            garage_design_attributes = design["garage_design_attributes"];
+            garage_design_bond_weights = design["garage_design_bond_weights"];
+            save_schematics(design_index);
+        }
+        garage_design = temp_garage_design;
+        garage_design_attributes = temp_garage_design_attributes;
+        garage_design_bond_weights = temp_garage_design_bond_weights;
 
         //change_settings();
-        update_dashboard();
+        console.log("save data loaded");
     }
 }
 
