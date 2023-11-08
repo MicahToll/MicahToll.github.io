@@ -56,6 +56,7 @@ let available_parts = [
     new Part("basic part", 5, kirby_bullet_path, [], 5),
     new Part("basic player part", 25, kirby_path, [], 1),
     new Part("propulsor", 25, kirby_bullet_orange_path, [{"name":"anchor_bond_index", "type":"bond", "default_value": [0,0]}], 5),
+    new Part("inverse propulsor", 25, kirby_bullet_orange_path, [{"name":"anchor_bond_index", "type":"bond", "default_value": [0,0]}], 5),
     new Part("key board input", 15, kirby_bullet_lightblue_path, [{"name":"key", "type":"key", "default_value":'w'}], 5),
     new Part("sensor", 20, eye_cell_path, [], 3),
     new Part("eye cell", 20, eye_cell_path, [{"name":"anchor_bond_index", "type":"bond", "default_value": [0,0]}], 3),
@@ -86,7 +87,11 @@ let available_parts_functions = {
     },
     "propulsor": function(part_attributes) {
         let anchor_bond_index = part_attributes[0];//kirby_bullet_orange_material
-        return new Propulsor(mass, k, spring_dampening, max_length, charge, kirby_bullet_orange_material, 1, 0, 10, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_index, 0, engine_power)
+        return new Propulsor(mass, k, spring_dampening, max_length, charge, kirby_bullet_orange_material, 1, 0, 10, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_index, 0, engine_power);
+    },
+    "inverse propulsor": function(part_attributes) {
+        let anchor_bond_index = part_attributes[0];
+        return new Inverse_Propulsor(mass, k, spring_dampening, max_length, charge, kirby_bullet_orange_material, 1, 0, 10, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_index, 0, 2*friction);
     },
     "key board input": function(part_attributes) {
         let key = key_decoder[part_attributes[0]];

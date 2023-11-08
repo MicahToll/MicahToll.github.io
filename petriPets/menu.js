@@ -350,7 +350,7 @@ function close_schematic_window() {
 }
 
 function update_dashboard() {
-    document.getElementById("credits").innerHTML = "Credits: " + credits;
+    document.getElementById("credits").innerHTML = "Evolution Points: " + credits;
 }
 function closeAllWindows(){
     document.getElementById("settings").hidden = true;
