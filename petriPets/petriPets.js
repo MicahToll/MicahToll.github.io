@@ -132,7 +132,7 @@ let kirby_bullet_lightblue_path = '../KirbyBulletHell/assets/bullets/kirby_bulle
 let gordo_path = '../KirbyBulletHell/assets/enemies/gordo.png';
 let fixed_cell_path = 'images/fixed_cell.png'
 let photon_path = 'images/photon.png'
-let photon2_path = 'images/photon2.png'
+let photon_map = new THREE.TextureLoader().load( photon_path );
 const bomb_cell_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( bomb_cell_path ) } );
 const shrapnel_cell_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( shrapnel_cell_path ) } );
 const shield_cell_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( shield_cell_path ) } );
@@ -149,8 +149,7 @@ const kirby_bullet_orange_material = new THREE.SpriteMaterial( { map: new THREE.
 const kirby_bullet_lightblue_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( kirby_bullet_lightblue_path ) } );
 const gordo_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( gordo_path ) } );
 const fixed_cell_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( fixed_cell_path ) } );
-const photon_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( photon_path ) } );
-const photon2_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( photon2_path ) } );
+const photon_material = new THREE.SpriteMaterial( { map: photon_map } );
 
 //bond material
 const bond_material_1 = new THREE.LineBasicMaterial( { color: 0x0000ff } );
@@ -252,8 +251,12 @@ function gameloop(timestamp) {
         thing.update();
     }
 
-    for (let photon of photons){
+    /*for (let photon of photons){
         photon.update_photon();
+    }*/
+    for (let i = photons.length-1; i > 0-1; i--) {
+        let photon = photons[i];
+        photon.update_photon(i);
     }
 
     /*for (let grid_space_col of universe_grid) {
@@ -1004,21 +1007,25 @@ let planks_constant = 60;
 
 //v = lambda * f
 function create_photon_yeet() {
-    let photon1 = new Photon(radius, photon_material, 60, 1000, new THREE.Vector3(0, 0, 0), new THREE.Vector3(1/(60/60)*2*radius, 0, 0));
+    let photon1 = new Photon(radius, photon_path, 60, 1000, new THREE.Vector3(0, 0, 0), new THREE.Vector3(1/(60/60)*2*radius, 0, 0));
     photon1.add_photon_to_simulation();
+    let photon2 = new Photon(radius, photon_path, 160, 1000, new THREE.Vector3(0, 0, 0), new THREE.Vector3(1/(160/60)*2*radius, 0, 0));
+    photon2.add_photon_to_simulation();
 }
 
 class Photon {
-    constructor(photon_radius, sprite_material, period, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0)) {
-        this.sprite_material = sprite_material.clone();//the clone is only needed for the directional cell, so this could be moved there... not sure if it is worth it though.
-        this.sprite = new THREE.Sprite(this.sprite_material);
+    constructor(photon_radius, sprite_path, period, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0)) {
+        let sprite_map = new THREE.TextureLoader().load( sprite_path );
+        let sprite_material = new THREE.SpriteMaterial( { map: sprite_map } );
+        this.sprite = new THREE.Sprite(sprite_material);
         this.photon_radius = photon_radius;
-        this.sprite.scale.set(2*this.photon_radius, 2*this.photon_radius, 1);
+        this.sprite.scale.set(4*this.photon_radius, 2*this.photon_radius, 1);
 
         this.position_vector = position_vector;
         this.velocity_vector = velocity_vector;
+        this.velocity_vector.setLength((2*this.photon_radius) * (1/(period/60)));
         this.electric_force_vector = new THREE.Vector3(0, 0, 0);//is this needed?
-        
+
         this.sprite.position.copy(this.position_vector);
         this.cell_bonds = [];//is this needed?
 
@@ -1029,7 +1036,7 @@ class Photon {
         //this.last_speed = this.velocity_vector.length();
         this.period = period;//in number of frames
 
-        
+
         this.sprite.material.map.repeat.set( 1, 1/2 );
         //sprite_map.magFilter = THREE.NearestFilter;//makes sharper if needed;
     }
@@ -1050,23 +1057,27 @@ class Photon {
     /*update_period() {
         this.period = Math.ceil(planks_constant/this.energy);
     }*/
-    update_photon() {
+    update_photon(index) {
         this.update_force();
-        let near_spaces = this.grid_space.get_grid_spaces_in_neighborhood();
-        for (let space of near_spaces) {
-            for (let cell of space.cells) {
-                //do thing
-                let dist = this.position_vector.distanceTo(cell.position_vector);
-                if (dist < this.photon_radius) {
-                    cell.force_vector.add(this.electric_force_vector);
-                    this.energy = this.energy - this.electric_force_vector.dot(cell.velocity_vector)*(1/60);//force dot distance (distance is v * delta T)
+        if ( this.grid_space.x_coord != 0 &&  this.grid_space.x_coord != universe_grid_width - 1 && this.grid_space.y_coord != 0  &&  this.grid_space.y_coord != universe_grid_height - 1 ) {//this should probably be replaced with different logic ( specifically adding a "photons" list to the gridspace class )
+            let near_spaces = this.grid_space.get_grid_spaces_in_neighborhood();
+            for (let space of near_spaces) {
+                for (let cell of space.cells) {
+                    //do thing
+                    let dist = this.position_vector.distanceTo(cell.position_vector);
+                    if (dist < this.photon_radius) {
+                        cell.force_vector.add(this.electric_force_vector);
+                        this.energy = this.energy - this.electric_force_vector.dot(cell.velocity_vector)*(1/60);//force dot distance (distance is v * delta T)
+                    }
                 }
             }
+            this.update_position(index);
+            if (this.energy < 0) {
+                this.destroy_photon();
+            }
+        } else {
+            this.destroy_photon(index);
         }
-        if (this.energy < 0) {
-            this.destroy_photon();
-        }
-        this.update_position();
     }
     update_position() {//and add friction and reset force
         this.position_vector.addScaledVector(this.velocity_vector, 1/60);
@@ -1087,8 +1098,13 @@ class Photon {
     set_photon_grid_space(grid_space) {
         this.grid_space = grid_space;
     }
-    destroy_photon() {
+    destroy_photon(index) {
         console.log("rip photon");
+        universe.remove(this.sprite);
+        this.sprite.material.map.dispose();
+        this.sprite.material.dispose();
+        delete this.sprite;
+        photons.splice(index, 1);
     }
 }
 
@@ -1269,7 +1285,7 @@ class Explosive_Cell extends Cell { //there should only ever be one player vecto
         this.fragments = fragments;
         this.shapnel_cell = shapnel_cell;
         this.exploded = false;
-        this.radius_vector = new THREE.Vector3(this.explosive_radius, 0, 0)
+        this.radius_vector = new THREE.Vector3(this.explosive_radius, 0, 0);
     }
     update_cell(){
         if (!this.exploded && this.output == 1){
@@ -1322,13 +1338,68 @@ class Propulsor extends Directed_Cell {
     update_cell(){
         if (this.anchor_bond != null){
             super.update_cell();
-            if (this.output == 1){
-                this.force_vector.addScaledVector(this.direction, this.propulsion);
-            }
+            //let energy_cost = Math.max( 0, this.velocity_vector.dot(this.direction) * this.output*this.propulsion * (1/60) );//this is a weird place for the work equation. might change/remove
+            //if (energy_cost <= this.energy) {
+            //    this.energy -= energy_cost;
+                this.force_vector.addScaledVector(this.direction, this.output*this.propulsion);
+            ///}
         }
     }
     clone_cell() {
         return new Propulsor(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, this.energy_capacity, this.energy, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_id, this.desired_angle, this.propulsion);
+    }
+}
+
+class Propulsor2 extends Directed_Cell {
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id, desired_angle = 0, directional_resistance) {
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector, anchor_bond_id, desired_angle)
+        this.directional_resistance = directional_resistance;
+        //this.propulsion = propulsion;//(does this mean that these points must have an orientation?)
+        this.max_target_speed = 10;
+        this.target_velocity = new THREE.Vector3(0, 0, 0);
+        this.directional_friction_force = new THREE.Vector3(0, 0, 0);
+        this.reletive_velocity_vector = new THREE.Vector3(0, 0, 0);
+    }
+    update_outputs() {
+        this.output = Math.max( -1, Math.min( 1, this.input_total-this.x_0 ) );
+        this.update_output_display()
+        this.input_total = 0;
+    }
+    update_output_display() {
+        this.sprite.scale.set((this.output+1)*this.sprite_diameter, (this.output+1)*this.sprite_diameter, 1);
+    }
+    update_cell(){
+        if (this.anchor_bond != null){
+            super.update_cell();
+            this.target_velocity.copy(this.direction);
+            this.target_velocity.multiplyScalar( this.max_target_speed * this.output );
+            this.reletive_velocity_vector.subVectors(this.velocity_vector, this.target_velocity);
+            this.directional_friction_force.copy(this.direction);
+            this.directional_friction_force.multiplyScalar( -this.direction.dot(this.reletive_velocity_vector)*this.directional_resistance );
+            let energy_cost = this.directional_friction_force.dot(this.velocity_vector)*1/60;//Force dot distance (distance = v * delta T)
+            //let energy_cost = Math.abs(this.directional_friction_force.dot(this.velocity_vector)*1/60);//Force dot distance (distance = v * delta T)
+            if (energy_cost <= this.energy) {
+                //this.energy -= Math.max( 0, energy_cost );
+                this.energy = Math.min(this.energy_capacity, this.energy - energy_cost);
+                this.force_vector.add(this.directional_friction_force);
+            }
+            //this.force_vector.add(this.directional_friction_force);
+            //let energy_generated = -this.directional_friction_force.dot(this.velocity_vector)*1/60;//Force dot distance (distance = v * delta T)
+            //this.energy = Math.(this.energy_capacity, this.energy + energy_generated);
+        }
+    }
+    /*update_cell(){
+        if (this.anchor_bond != null){
+            super.update_cell();
+            let energy_cost = Math.max( 0, this.velocity_vector.dot(this.direction) * this.output*this.propulsion * (1/60) );//this is a weird place for the work equation. might change/remove
+            if (energy_cost <= this.energy) {
+                this.energy -= energy_cost;
+                this.force_vector.addScaledVector(this.direction, this.output*this.propulsion);
+            }
+        }
+    }*/
+    clone_cell() {
+        return new Propulsor2(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, this.energy_capacity, this.energy, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_id, this.desired_angle, this.directional_resistance);
     }
 }
 
@@ -1342,8 +1413,8 @@ class Inverse_Propulsor extends Directed_Cell {
         if (this.anchor_bond != null){
             super.update_cell();
             //if (this.output == 1){
-            this.directional_friction_force.set(0, 0, 0);
-            this.directional_friction_force.addScaledVector(this.direction, -this.direction.dot(this.velocity_vector)*this.directional_resistance*10);
+            this.directional_friction_force.copy(this.direction);
+            this.directional_friction_force.multiplyScalar( -this.direction.dot(this.velocity_vector)*this.directional_resistance );
             this.force_vector.add(this.directional_friction_force);
             let energy_generated = -this.directional_friction_force.dot(this.velocity_vector)*1/60;//Force dot distance (distance = v * delta T)
             this.energy = Math.min(this.energy_capacity, this.energy + energy_generated);
