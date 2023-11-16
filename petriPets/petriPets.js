@@ -168,6 +168,7 @@ let cells = [];
 let bonds = [];
 let photons = [];
 let friction = .1;
+let base_friction = .1;
 let radius = 5;
 let universe_grid_space_diameter = 2*radius;
 let universe_radius = universe_grid_space_diameter * Math.max(universe_grid_height, universe_grid_width)/2;
@@ -259,12 +260,6 @@ function gameloop(timestamp) {
         photon.update_photon(i);
     }
 
-    /*for (let grid_space_col of universe_grid) {
-        for (let grid_space of grid_space_col) {
-            grid_space.update_water_voltage();
-        }
-    }*/
-
     for (let i = bonds.length-1; i > 0-1; i--) {
         let bond = bonds[i];
         //console.log(i);
@@ -312,7 +307,7 @@ function gameloop(timestamp) {
 
     for (let i = 0; i < cells.length; i++) {
         let cell = cells[i];
-        cell.check_boundary_force();//this is here so that it isn't skipped. I probably should change some things...
+        //cell.check_boundary_force();//this is here so that it isn't skipped. I probably should change some things...
         cell.update_position();
     }
     for (let i = 0; i < bonds.length; i++) {
@@ -336,6 +331,17 @@ function gameloop(timestamp) {
         cell.grid_space.cells.push(cell);
     }
     cells_to_be_moved = [];
+
+    for (let x = 0; x < universe_grid.length-1; x++) {//skipping last col but not first
+        for (let y = 0; y < universe_grid[x].length-1; y++) {//skipping last row but not first
+            let focused_grid = universe_grid[x][y];
+            focused_grid.update_velocity();
+            focused_grid.update_water_voltage();
+            if (focused_grid.is_edge) {
+                focused_grid.do_edge_things();
+            }
+        }
+    }
 
     renderer.render(scene,camera);
     window.requestAnimationFrame(gameloop);
@@ -432,12 +438,47 @@ class Grid_Space {//before impelenting this, I can simulate about 630 before fra
         //this.y_max = universe_grid_space_diameter*(y_index+1);
 
         this.water_voltage = water_voltage;
-        this.temperature = 0;
+        //this.temperature = 0;//ignore for now
         this.force_vector = new THREE.Vector3(0, 0, 0);
         this.velocity_vector = new THREE.Vector3(0, 0, 0);
         this.mass = 1;
         this.friction_force = new THREE.Vector3(0, 0, 0);
-        this.friction = .1;
+        this.friction = .1;//resistance (velocity instead of I, water voltage instead of V)
+        /*this.current_up;
+        this.current_down;
+        this.current_left;
+        this.current_right;*/
+        if (this.x_coord == 0) {
+            this.is_edge = true;
+            this.const_water_voltage = 5;
+            this.water_voltage = this.const_water_voltage;
+            this.boundary_force_vector = new THREE.Vector3(1, 0, 0);
+        } else if (this.x_coord == 1) {
+            this.is_edge = true;
+            this.const_water_voltage = null;
+            this.boundary_force_vector = new THREE.Vector3(1, 0, 0);
+        } else if (this.x_coord == universe_grid_width-2) {
+            this.is_edge = true;
+            this.const_water_voltage = -5;
+            this.water_voltage = this.const_water_voltage;
+            this.boundary_force_vector = new THREE.Vector3(-1, 0, 0);
+        } else if (this.y_coord == 0) {
+            this.is_edge = true;
+            this.const_water_voltage = 5;
+            this.water_voltage = this.const_water_voltage;
+            this.boundary_force_vector = new THREE.Vector3(0, 1, 0);
+        } else if (this.y_coord == 1) {
+            this.is_edge = true;
+            this.const_water_voltage = null;
+            this.boundary_force_vector = new THREE.Vector3(0, 1, 0);
+        } else if (this.y_coord == universe_grid_height-2) {
+            this.is_edge = true;
+            this.const_water_voltage = -5;
+            this.water_voltage = this.const_water_voltage;
+            this.boundary_force_vector = new THREE.Vector3(0, -1, 0);
+        } else {
+            this.is_edge = false;
+        }
     }
     get_grid_spaces_in_neighborhood() {
         return [
@@ -489,25 +530,43 @@ class Grid_Space {//before impelenting this, I can simulate about 630 before fra
             }
         }
     }
-    /*apply_friction_with_cell(cell) {
-        this.friction_force.subVectors(cell.velocity_vector, this.velocity_vector).multiplyScaler(this.friction);
+    apply_friction_with_cell(cell) {
+        this.friction_force.subVectors(cell.velocity_vector, this.velocity_vector);
+        this.friction_force.multiplyScalar(this.friction);
         this.force_vector.add(this.friction_force);
         cell.force_vector.add(this.friction_force.negate());
     }
-    update_velocity() {//and and add friction and reset force
-        this.force_vector.addScaledVector(this.velocity_vector, -friction);
+    update_velocity() {//and add friction and reset force
+        let ohms_law_force_x = (this.water_voltage - universe_grid[this.x_coord+1][this.y_coord].water_voltage)*1/10;
+        let ohms_law_force_y = (this.water_voltage - universe_grid[this.x_coord][this.y_coord+1].water_voltage)*1/10;
+        this.force_vector.set(this.force_vector.x + ohms_law_force_x, this.force_vector.y + ohms_law_force_y, 0);
+        this.force_vector.addScaledVector(this.velocity_vector, -base_friction);
 
-        this.velocity_vector.addScaledVector(this.force_vector, 1/60/this.mass);
-        //this.position_vector.addScaledVector(this.velocity_vector, 1/60);
-        
+        this.velocity_vector.addScaledVector(this.force_vector, (1/60)/this.mass);
         this.force_vector.set(0, 0, 0);
-    }*/
-    /*update_water_voltage() {
-        delta_v_row = universe_grid[this.x_coord+1][this.y_coord].water_voltage - this.water_voltage;
-        delta_v_col = universe_grid[this.x_coord][this.y_coord+1].water_voltage - this.water_voltage;
-        this.force_vector.setX(delta_v_row/resist);
-        this.force_vector.setY(delta_v_col/);
-    }*/
+    }
+    update_water_voltage() {
+        this.water_voltage -= this.velocity_vector.x * (1/60);
+        this.water_voltage -= this.velocity_vector.y * (1/60);
+        universe_grid[this.x_coord+1][this.y_coord].water_voltage += this.velocity_vector.x * (1/60);
+        universe_grid[this.x_coord][this.y_coord+1].water_voltage += this.velocity_vector.y * (1/60);
+    }
+    do_edge_things() {
+        this.apply_boundary_force();
+        if (this.const_water_voltage != null) {
+            this.water_voltage = this.const_water_voltage;
+        }
+    }
+    apply_boundary_force() {
+        for (let cell of this.cells) {
+            //let cell_x = cell.position_vector.x + sanity_offset;
+            //let cell_y = cell.position_vector.y + sanity_offset;
+            let boundary_force_magnitude = 50;
+            cell.force_vector.addScaledVector(this.boundary_force_vector, boundary_force_magnitude);
+            //let force_x = universe_grid_space_diameter / ( this.x_coord * universe_grid_space_diameter - cell_x ) - 1;
+            //let force_y = universe_grid_space_diameter / ( this.y_coord * universe_grid_space_diameter - cell_y ) - 1;
+        }
+    }
 }
 
 class Schematic {//we are going to change this
@@ -632,7 +691,8 @@ class Cell {
     }
     update_position() {//and add friction and reset force
         //apply_friction_with_cell(cell)
-        this.force_vector.addScaledVector(this.velocity_vector, -friction);
+        //this.force_vector.addScaledVector(this.velocity_vector, -friction);//old version. doesn't use current
+        this.grid_space.apply_friction_with_cell(this);
 
         this.velocity_vector.addScaledVector(this.force_vector, 1/60/this.mass);
         this.position_vector.addScaledVector(this.velocity_vector, 1/60);
@@ -1309,7 +1369,8 @@ class Fixed_Cell extends Cell { //there should only ever be one player vector (u
         super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector);
     }
     update_position() {//and add friction and reset force
-        this.force_vector.addScaledVector(this.velocity_vector, -friction);
+        //this.force_vector.addScaledVector(this.velocity_vector, -friction);//old version. doesn't use current
+        this.grid_space.apply_friction_with_cell(this);
 
         //this.velocity_vector.addScaledVector(this.force_vector, 1/60/this.mass);
         //this.position_vector.addScaledVector(this.velocity_vector, 1/60);
