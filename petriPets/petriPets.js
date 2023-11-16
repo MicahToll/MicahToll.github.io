@@ -1365,21 +1365,37 @@ class Explosive_Cell extends Cell { //there should only ever be one player vecto
 }
 
 class Fixed_Cell extends Cell { //there should only ever be one player vector (unless I add split screen)
-    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0)) {
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), root_strength) {
         super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector);
+        this.root_strength = root_strength;
+        this.rooted = true;
     }
     update_position() {//and add friction and reset force
         //this.force_vector.addScaledVector(this.velocity_vector, -friction);//old version. doesn't use current
         this.grid_space.apply_friction_with_cell(this);
 
-        //this.velocity_vector.addScaledVector(this.force_vector, 1/60/this.mass);
-        //this.position_vector.addScaledVector(this.velocity_vector, 1/60);
+        if (this.rooted) {
+            let force_magnitude = this.force_vector.length();
+            if (force_magnitude > this.root_strength) {
+                this.rooted = false;
+
+                this.force_vector.setLength(force_magnitude-this.root_strength);
+                this.velocity_vector.addScaledVector(this.force_vector, 1/60/this.mass);
+                this.position_vector.addScaledVector(this.velocity_vector, 1/60);
+                
+                this.sprite.position.copy(this.position_vector);
+            }
+        } else {
+            this.velocity_vector.addScaledVector(this.force_vector, 1/60/this.mass);
+            this.position_vector.addScaledVector(this.velocity_vector, 1/60);
+            
+            this.sprite.position.copy(this.position_vector);
+        }
         
-        //this.sprite.position.copy(this.position_vector);
         this.force_vector.set(0, 0, 0);
     }
     clone_cell() {//this function should probably only be called once tops. (unless I add split screen)
-        return new Fixed_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, this.energy_capacity, this.energy, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0));
+        return new Fixed_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, this.energy_capacity, this.energy, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.root_strength);
     }
 }
 

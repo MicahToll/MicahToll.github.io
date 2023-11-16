@@ -145,7 +145,7 @@ let available_parts_functions = {
         return new Player_Sensor(mass, k, spring_dampening, max_length, charge, kirby_bullet_lightblue_material, 1, 0, 10, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_id, 0);
     },
     "fixed cell": function(part_attributes) {
-        return new Fixed_Cell(mass, k, spring_dampening, max_length, charge, fixed_cell_material, 1, 0, 10, 0);
+        return new Fixed_Cell(mass, k, spring_dampening, max_length, charge, fixed_cell_material, 1, 0, 10, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), 100);
     },
     "muscle cell": function(part_attributes) {
         let anchor_bond_id = part_attributes[0];
