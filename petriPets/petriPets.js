@@ -247,6 +247,11 @@ function gameloop(timestamp) {
     }
     //time = timestamp;
 
+    if (frame_number%60 == 0) {
+        //(2*Math.random()-1)*universe_radius
+        //create_photon(new THREE.Vector3((2*Math.random()-1)*universe_radius/2, universe_radius/2, 0), new THREE.Vector3(0, -1, 0), 45);
+    }
+
     //update background
     for (let thing of background_things){
         thing.update();
@@ -537,8 +542,8 @@ class Grid_Space {//before impelenting this, I can simulate about 630 before fra
         cell.force_vector.add(this.friction_force.negate());
     }
     update_velocity() {//and add friction and reset force
-        let ohms_law_force_x = (this.water_voltage - universe_grid[this.x_coord+1][this.y_coord].water_voltage)*1/10;
-        let ohms_law_force_y = (this.water_voltage - universe_grid[this.x_coord][this.y_coord+1].water_voltage)*1/10;
+        let ohms_law_force_x = (this.water_voltage - universe_grid[this.x_coord+1][this.y_coord].water_voltage)*1;
+        let ohms_law_force_y = (this.water_voltage - universe_grid[this.x_coord][this.y_coord+1].water_voltage)*1;
         this.force_vector.set(this.force_vector.x + ohms_law_force_x, this.force_vector.y + ohms_law_force_y, 0);
         this.force_vector.addScaledVector(this.velocity_vector, -base_friction);
 
@@ -561,7 +566,7 @@ class Grid_Space {//before impelenting this, I can simulate about 630 before fra
         for (let cell of this.cells) {
             //let cell_x = cell.position_vector.x + sanity_offset;
             //let cell_y = cell.position_vector.y + sanity_offset;
-            let boundary_force_magnitude = 50;
+            let boundary_force_magnitude = 500;
             cell.force_vector.addScaledVector(this.boundary_force_vector, boundary_force_magnitude);
             //let force_x = universe_grid_space_diameter / ( this.x_coord * universe_grid_space_diameter - cell_x ) - 1;
             //let force_y = universe_grid_space_diameter / ( this.y_coord * universe_grid_space_diameter - cell_y ) - 1;
@@ -860,6 +865,7 @@ class Bond {
         bonds.splice(i, 1);
         this.cell_1.remove_bond_from_cell(this);
         this.cell_2.remove_bond_from_cell(this);
+        this.geometry.dispose()
     }
     update_energy() {
         let voltage_diff = this.cell_1.energy_voltage - this.cell_2.energy_voltage;
@@ -1066,11 +1072,9 @@ let planks_constant = 60;
 }*/
 
 //v = lambda * f
-function create_photon_yeet() {
-    let photon1 = new Photon(radius, photon_path, 60, 1000, new THREE.Vector3(0, 0, 0), new THREE.Vector3(1/(60/60)*2*radius, 0, 0));
-    photon1.add_photon_to_simulation();
-    let photon2 = new Photon(radius, photon_path, 160, 1000, new THREE.Vector3(0, 0, 0), new THREE.Vector3(1/(160/60)*2*radius, 0, 0));
-    photon2.add_photon_to_simulation();
+function create_photon(position_vector, velocity_vector, wave_length) {
+    let photon = new Photon(radius, photon_path, wave_length, 1000, position_vector, velocity_vector);
+    photon.add_photon_to_simulation();
 }
 
 class Photon {
@@ -1084,7 +1088,8 @@ class Photon {
         this.position_vector = position_vector;
         this.velocity_vector = velocity_vector;
         this.velocity_vector.setLength((2*this.photon_radius) * (1/(period/60)));
-        this.electric_force_vector = new THREE.Vector3(0, 0, 0);//is this needed?
+        this.electric_force_vector = this.velocity_vector.clone()
+        this.electric_force_vector.applyAxisAngle(z_axis, Math.PI/2);
 
         this.sprite.position.copy(this.position_vector);
         this.cell_bonds = [];//is this needed?
@@ -1096,12 +1101,13 @@ class Photon {
         //this.last_speed = this.velocity_vector.length();
         this.period = period;//in number of frames
 
+        this.sprite_angle = this.get_angle_from_vertical()+Math.PI/2;
+        this.sprite.material.rotation = this.sprite_angle;
 
         this.sprite.material.map.repeat.set( 1, 1/2 );
         //sprite_map.magFilter = THREE.NearestFilter;//makes sharper if needed;
     }
     update_force() {
-        this.electric_force_vector.copy(this.velocity_vector);
         this.electric_force_vector.normalize();
         let force_scalar = this.energy/16;
         let sin_component = Math.sin(2*Math.PI * frame_number/this.period);
@@ -1158,8 +1164,15 @@ class Photon {
     set_photon_grid_space(grid_space) {
         this.grid_space = grid_space;
     }
+    get_angle_from_vertical() {
+        if (this.velocity_vector.y > 0) {
+            return Math.asin(-this.velocity_vector.x/this.velocity_vector.length());
+        } else {
+            return -Math.asin(-this.velocity_vector.x/this.velocity_vector.length())+Math.PI;
+        }
+    }
     destroy_photon(index) {
-        console.log("rip photon");
+        //console.log("rip photon");
         universe.remove(this.sprite);
         this.sprite.material.map.dispose();
         this.sprite.material.dispose();
@@ -1399,6 +1412,7 @@ class Fixed_Cell extends Cell { //there should only ever be one player vector (u
     }
 }
 
+let propeller_efficiency = 1;//units of distance over time
 class Propulsor extends Directed_Cell {
     constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id, desired_angle = 0, propulsion) {
         super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector, anchor_bond_id, desired_angle)
@@ -1415,11 +1429,13 @@ class Propulsor extends Directed_Cell {
     update_cell(){
         if (this.anchor_bond != null){
             super.update_cell();
+            let energy_cost = propeller_efficiency*this.output*this.propulsion*(1/60);//propeller_efficiency is a constant with units of distance/delta time. I am thinking if this as a propeller. Thus, the rotors spin with a torque T against the water (based on the reletive speeds) and therefore the energy cost is T*delta theta. (and of course delta theta is rotational velocity * delta t hence the (1/60). 1 is arbitrarily chosen. I think it'll be ok so long as I'm consistent)
             //let energy_cost = Math.max( 0, this.velocity_vector.dot(this.direction) * this.output*this.propulsion * (1/60) );//this is a weird place for the work equation. might change/remove
-            //if (energy_cost <= this.energy) {
-            //    this.energy -= energy_cost;
+            if (energy_cost <= this.energy) {
+                this.energy -= energy_cost;
                 this.force_vector.addScaledVector(this.direction, this.output*this.propulsion);
-            ///}
+                this.grid_space.force_vector.addScaledVector(this.direction, -this.output*this.propulsion);
+            }
         }
     }
     clone_cell() {
@@ -1428,14 +1444,12 @@ class Propulsor extends Directed_Cell {
 }
 
 class Propulsor2 extends Directed_Cell {
-    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id, desired_angle = 0, directional_resistance) {
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id, desired_angle = 0, rotor_resistance) {
         super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector, anchor_bond_id, desired_angle)
-        this.directional_resistance = directional_resistance;
-        //this.propulsion = propulsion;//(does this mean that these points must have an orientation?)
+        this.rotor_resistance = 9//rotor_resistance;
         this.max_target_speed = 10;
         this.target_velocity = new THREE.Vector3(0, 0, 0);
-        this.directional_friction_force = new THREE.Vector3(0, 0, 0);
-        this.reletive_velocity_vector = new THREE.Vector3(0, 0, 0);
+        this.friction_force = new THREE.Vector3(0, 0, 0);
     }
     update_outputs() {
         this.output = Math.max( -1, Math.min( 1, this.input_total-this.x_0 ) );
@@ -1445,21 +1459,41 @@ class Propulsor2 extends Directed_Cell {
     update_output_display() {
         this.sprite.scale.set((this.output+1)*this.sprite_diameter, (this.output+1)*this.sprite_diameter, 1);
     }
-    update_cell(){
+    update_cell() {
         if (this.anchor_bond != null){
             super.update_cell();
-            this.target_velocity.copy(this.direction);
-            this.target_velocity.multiplyScalar( this.max_target_speed * this.output );
-            this.reletive_velocity_vector.subVectors(this.velocity_vector, this.target_velocity);
-            this.directional_friction_force.copy(this.direction);
-            this.directional_friction_force.multiplyScalar( -this.direction.dot(this.reletive_velocity_vector)*this.directional_resistance );
-            let energy_cost = this.directional_friction_force.dot(this.velocity_vector)*1/60;//Force dot distance (distance = v * delta T)
-            //let energy_cost = Math.abs(this.directional_friction_force.dot(this.velocity_vector)*1/60);//Force dot distance (distance = v * delta T)
+            this.target_velocity.copy(this.direction);//unit vec in direction cell is facing
+            this.target_velocity.multiplyScalar( this.max_target_speed * this.output );//now with the desired magnitude based on cell output (related to rotor speed)
+            this.target_velocity.add(this.grid_space.velocity_vector)//add in the current
+
+            this.friction_force.subVectors(this.target_velocity, this.velocity_vector)//I could change this to only be the directed component, but I wil leave it for now for simplicity and to represent the side resistence of the flagelum.
+            this.friction_force.multiplyScalar(this.rotor_resistance)
+
+            //this.reletive_velocity_vector.subVectors(this.grid_space.velocity_vector, this.velocity_vector);
+            //this.directional_friction_force.copy(this.direction);
+            //this.directional_friction_force.multiplyScalar( -this.direction.dot(this.reletive_velocity_vector)*this.directional_resistance );
+            //let energy_cost = this.directional_friction_force.dot(this.velocity_vector)*1/60;//Force dot distance (distance = v * delta T)
+            let energy_cost = propeller_efficiency*this.direction.dot(this.friction_force)*(1/60);//propeller_efficiency is a constant with units of distance/delta time. I am thinking if this as a propeller. Thus, the rotors spin with a torque T against the water (based on the reletive speeds) and therefore the energy cost is T*delta theta. (and of course delta theta is rotational velocity * delta t hence the (1/60). 1 is arbitrarily chosen. I think it'll be ok so long as I'm consistent)
             if (energy_cost <= this.energy) {
-                //this.energy -= Math.max( 0, energy_cost );
-                this.energy = Math.min(this.energy_capacity, this.energy - energy_cost);
-                this.force_vector.add(this.directional_friction_force);
+                this.energy -= Math.max( 0, energy_cost );
+                //this.energy = Math.min(this.energy_capacity, this.energy - energy_cost);
+                //this.energy -= energy_cost;
+                this.force_vector.add(this.friction_force);
+                this.grid_space.force_vector.sub(this.friction_force);//same thing as .negate(), but doesn't change the friction force var
+            } else {
+                this.force_vector.add(this.friction_force);
+                this.grid_space.force_vector.sub(this.friction_force);//same thing as .negate(), but doesn't change the friction force var
+                this.grid_space.force_vector.addScaledVector(this.friction_force, -1);
+                let forward_component = this.friction_force.dot(this.direction);
+                this.friction_force.copy(this.direction);
+                this.friction_force.multiplyScalar(forward_component);
+                this.force_vector.sub(this.friction_force);
+                this.grid_space.force_vector.add(this.friction_force);//same thing as .negate(), but doesn't change the friction force var
+                //as is, when there is not enough power to the propulsor, the flagelium disengeages and reduces the forward backward friction to 0.
             }
+            //arguements for this system. picture a flagelium. there is as much sideways cross section as forward cross section. therefore, sideways friction will be included (whether applying tork or not). 
+            //similarly, if the force isn't in the positive direction, no energy cost, since it will spin on it's own. however, allowing it to spin will still slightly help over locking it in place.
+            //finally when unable to afford to spin the flagalium, the friction is calculated side to side only.
             //this.force_vector.add(this.directional_friction_force);
             //let energy_generated = -this.directional_friction_force.dot(this.velocity_vector)*1/60;//Force dot distance (distance = v * delta T)
             //this.energy = Math.(this.energy_capacity, this.energy + energy_generated);
@@ -1481,25 +1515,33 @@ class Propulsor2 extends Directed_Cell {
 }
 
 class Inverse_Propulsor extends Directed_Cell {
-    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id, desired_angle = 0, directional_resistance) {
-        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector, anchor_bond_id, desired_angle)
-        this.directional_resistance = directional_resistance;
-        this.directional_friction_force = new THREE.Vector3(0, 0, 0);
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id, desired_angle = 0, rotor_resistance) {
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector, anchor_bond_id, desired_angle);
+        this.rotor_resistance = rotor_resistance;
+        //this.reletive_velocity_vector = new THREE.Vector3(0, 0, 0);
+        this.friction_force = new THREE.Vector3(0, 0, 0);
     }
     update_cell(){
         if (this.anchor_bond != null){
             super.update_cell();
-            //if (this.output == 1){
-            this.directional_friction_force.copy(this.direction);
-            this.directional_friction_force.multiplyScalar( -this.direction.dot(this.velocity_vector)*this.directional_resistance );
-            this.force_vector.add(this.directional_friction_force);
-            let energy_generated = -this.directional_friction_force.dot(this.velocity_vector)*1/60;//Force dot distance (distance = v * delta T)
-            this.energy = Math.min(this.energy_capacity, this.energy + energy_generated);
-            //}
+            if (this.output == 1) {
+                this.friction_force.subVectors(this.grid_space.velocity_vector, this.velocity_vector);
+                //this.friction_force.copy(this.reletive_velocity_vector);
+                this.friction_force.multiplyScalar(this.rotor_resistance);
+                let energy_generated = Math.abs(propeller_efficiency*this.direction.dot(this.friction_force)*(1/60));//propeller_efficiency is a constant with units of distance/delta time. I am thinking if this as a propeller. Thus, the rotors spin with a torque T against the water (based on the reletive speeds) and therefore the energy cost is T*delta theta. (and of course delta theta is rotational velocity * delta t hence the (1/60). 1 is arbitrarily chosen. I think it'll be ok so long as I'm consistent)
+                this.energy = Math.min(this.energy_capacity, this.energy + energy_generated);
+                this.force_vector.add(this.friction_force);
+            } else {
+                this.force_vector.add(this.friction_force);
+                let forward_component = this.friction_force.dot(this.direction);
+                this.friction_force.copy(this.direction);
+                this.friction_force.multiplyScalar(forward_component);
+                this.force_vector.sub(this.friction_force);
+            }
         }
     }
     clone_cell() {
-        return new Inverse_Propulsor(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, this.energy_capacity, this.energy, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_id, this.desired_angle, this.directional_resistance);
+        return new Inverse_Propulsor(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, this.energy_capacity, this.energy, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_id, this.desired_angle, this.rotor_resistance);
     }
 }
 

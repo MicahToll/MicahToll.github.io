@@ -87,7 +87,7 @@ let available_parts_functions = {
     },
     "propulsor": function(part_attributes) {
         let anchor_bond_index = part_attributes[0];//kirby_bullet_orange_material
-        return new Propulsor(mass, k, spring_dampening, max_length, charge, kirby_bullet_orange_material, 1, 0, 10, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_index, 0, engine_power);
+        return new Propulsor2(mass, k, spring_dampening, max_length, charge, kirby_bullet_orange_material, 1, 0, 10, 0, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), anchor_bond_index, 0, engine_power);
     },
     "inverse propulsor": function(part_attributes) {
         let anchor_bond_index = part_attributes[0];
