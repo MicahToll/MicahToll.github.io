@@ -581,8 +581,20 @@ class Schematic {//we are going to change this
         this.bond_material = bond_material;
         this.origin_point = origin_point;// in the form [x, y], indicates the coordinates of the builder cell is.
         this.schematic_name = schematic_name;
+        this.energy_cost;
+        this.calculate_energy_cost();
     }
-    build_schematic(creature_position = new THREE.Vector3(0, 0, 0), creature_velocity = new THREE.Vector3(0, 0, 0)) {
+    calculate_energy_cost() {
+        this.energy_cost = 0;
+        for (let cell_row of this.schematic_cells) {
+            for (let cell of cell_row) {
+                if (cell != null) {
+                    this.energy += cell.mass*c_squared + cell.energy;
+                }
+            }
+        }
+    }
+    build_schematic(creature_position = new THREE.Vector3(0, 0, 0), creature_velocity = new THREE.Vector3(0, 0, 0), angle_change = 0, builder_cell =null ) {
         //instance of this
         let creature_cells = [];
 
@@ -593,10 +605,13 @@ class Schematic {//we are going to change this
                     let current_cell = this.schematic_cells[y][x].clone_cell();//this now clones the cell and adds it to the creature cells array
                     creature_cells[y].push(current_cell);
                     current_cell.update_schematics(this, x, y);
+                    //current_cell.position_vector.addScaledVector(x_basis, (x-this.origin_point[0])).addScaledVector(y_basis, -(y-this.origin_point[1])).add(creature_position);
+                    current_cell.position_vector.addScaledVector(x_basis, (x-this.origin_point[0])).addScaledVector(y_basis, -(y-this.origin_point[1]));
+                    current_cell.position_vector.applyAxisAngle(z_axis, angle_change);
+                    //current_cell.position_vector.addScaledVector(x_basis, ()).addScaledVector(y_basis, -(-this.origin_point[1])).add(creature_position);
+                    current_cell.position_vector.add(creature_position);
+                    current_cell.velocity_vector.add(creature_velocity);
                     current_cell.add_cell_to_simulation();
-                    current_cell.position_vector.addScaledVector(x_basis, (x-this.origin_point[0])).addScaledVector(y_basis, -(y-this.origin_point[1])).add(creature_position);
-                    //current_cell.position_vector.addScaledVector(x_basis, x-this.origin_point[0]).addScaledVector(y_basis, -(y-this.origin_point[1])).add(creature_position);
-                    current_cell.velocity_vector.add(creature_velocity)
                 } else {
                     creature_cells[y].push(null);
                 }
@@ -605,6 +620,9 @@ class Schematic {//we are going to change this
         for (let y = 0; y < creature_cells.length; y++) {
             for (let x = 0; x < creature_cells[y].length; x++) {
                 let current_cell = creature_cells[y][x];
+                if (current_cell == null && x == this.origin_point[0] && y == this.origin_point[1]) {
+                    current_cell = builder_cell;
+                }
                 if (current_cell != null) {
                     for (let bond_key in this.bond_weights[y][x]) {
                         let bond = this.bond_weights[y][x][bond_key]
@@ -613,16 +631,17 @@ class Schematic {//we are going to change this
                         let weight_1 = bond[2];
                         let weight_2 = bond[3];
                         if (creature_cells[y2][x2] != null) {
-                            this.build_bond(creature_cells, x, y, x2, y2, weight_1, weight_2);
+                            let connecting_cell = creature_cells[y2][x2];
+                            this.build_bond(current_cell, connecting_cell, weight_1, weight_2);
+                        } else if ( builder_cell != null && (x2 == this.origin_point[0] && y2 == this.origin_point[1])) {
+                            this.build_bond(current_cell, builder_cell, weight_1, weight_2);
                         }
                     }
                 }
             }
         }
     }
-    build_bond(creature_cells, current_x, current_y, connecting_x, connecting_y, weight_1, weight_2) {// returns the newly created bond
-        let current_cell = creature_cells[current_y][current_x];
-        let connecting_cell = creature_cells[connecting_y][connecting_x];
+    build_bond(current_cell, connecting_cell, weight_1, weight_2) {// returns the newly created bond
         let difference = current_cell.position_vector.distanceTo(connecting_cell.position_vector);
         let current_bond = new Bond(current_cell, connecting_cell, difference, this.bond_material, weight_1, weight_2);
         current_bond.add_bond_to_simulation();
@@ -665,6 +684,7 @@ class Cell {
     add_cell_to_simulation() {
         universe.add(this.sprite);
         cells.push(this);
+        this.sprite.position.copy(this.position_vector);
         this.set_cell_grid_space(this.find_grid_space_from_position());
         this.grid_space.cells.push(this);
     }
@@ -1395,7 +1415,7 @@ class Fixed_Cell extends Cell { //there should only ever be one player vector (u
                 this.force_vector.setLength(force_magnitude-this.root_strength);
                 this.velocity_vector.addScaledVector(this.force_vector, 1/60/this.mass);
                 this.position_vector.addScaledVector(this.velocity_vector, 1/60);
-                
+
                 this.sprite.position.copy(this.position_vector);
             }
         } else {
@@ -1632,30 +1652,67 @@ class Energy_Generator extends Cell {
 }
 
 class Reproducer extends Directed_Cell {
-    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id, schematics_to_produce, schematics_to_produce_index) {
-        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector, anchor_bond_id, 0);
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id, desired_angle = 0, schematics_to_produce = null, schematics_to_produce_index, bond_number_reproduce_threshhold = 4) {
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector, anchor_bond_id, desired_angle);
         this.schematics_to_produce = schematics_to_produce;
         this.schematics_to_produce_index = schematics_to_produce_index;
-        this.energy = 1;
+        this.bond_number_reproduce_threshhold = bond_number_reproduce_threshhold;//max bonds and still able to build
+        //this.energy2 = 1;
     }
-    update_cell(){
-        if (this.anchor_bond != null){
+    update_schematics(cell_schematics, x_index = 0, y_index = 0) {
+        super.update_schematics(cell_schematics, x_index, y_index)
+        if (this.schematics_to_produce == null) {
+            this.schematics_to_produce = cell_schematics;
+        }
+    }
+    update_anchor(anchor_bond) {
+        super.update_anchor(anchor_bond);
+        super.update_cell();
+        this.starting_angle = this.get_angle_from_vertical();
+    }
+    update_cell() {
+        if (this.anchor_bond != null && this.schematics_to_produce != null){
             super.update_cell();
             if (this.output == 1){
-                if (this.energy >= 1) {
-                    let creature_position = this.position_vector.clone();
-                    //creature_position.addScaledVector(this.direction, -radius);
-                    let creature_velocity = this.velocity_vector.clone();
-                    this.schematics_to_produce.build_schematic(creature_position, creature_velocity);
-                    this.energy = 0;
+                if (this.number_of_bonds < this.bond_number_reproduce_threshhold){
+                    if (this.energy >= this.schematics_to_produce.energy_cost) {
+                        let creature_position = this.position_vector.clone();
+                        //creature_position.addScaledVector(this.direction, -radius);
+                        let creature_velocity = this.velocity_vector.clone();
+                        this.schematics_to_produce.build_schematic(creature_position, creature_velocity, this.get_angle_from_vertical()-this.starting_angle, this);
+                        this.energy -= this.schematics_to_produce.energy_cost;
+                    }
                 }
             }
         }
     }
     clone_cell() {
-        return new Reproducer(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, this.energy_capacity, this.energy, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_id, this.schematics_to_produce, this.schematics_to_produce_index);
+        return new Reproducer(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, this.energy_capacity, this.energy, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_id, this.desired_angle, this.schematics_to_produce, this.schematics_to_produce_index);
     }
 }
+
+/*class Self_Reproducer extends Reproducer {
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id, desired_angle = x_0, schematics_to_produce_index) {
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector, anchor_bond_id, desired_angle = 0, something, schematics_to_produce_index);
+    }
+    update_cell() {
+        if (this.anchor_bond != null){
+            super.update_cell();
+            if (this.output == 1){
+                if (this.energy2 >= 1) {
+                    let creature_position = this.position_vector.clone();
+                    //creature_position.addScaledVector(this.direction, -radius);
+                    let creature_velocity = this.velocity_vector.clone();
+                    this.schematics_to_produce.build_schematic(creature_position, creature_velocity);
+                    this.energy2 = 0;
+                }
+            }
+        }
+    }
+    clone_cell() {
+        return new Self_Reproducer(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, this.energy_capacity, this.energy, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_id, this.desired_angle, this.schematics_to_produce_index);
+    }
+}*/
 
 class Ejector_Cell extends Cell_With_Bond {
     constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id) {

@@ -34,7 +34,13 @@ function menu_onload() {
     for (let x = 0; x < dimensions; x++) {
         for (let y = 0; y < dimensions; y++) {
             let svg_xy = xy_to_svg_xy(x, y);
-            garage_svg.innerHTML += `<g transform="translate(`+svg_xy[0]+`,`+svg_xy[1]+`)" onclick="add_particle_to_design(`+x+`, `+y+`)") oncontextmenu="edit_particle_attributes(`+x+`, `+y+`)"><circle cx="`+0+`" cy="`+0+`" r="10" fill="#404040" class="circle_node_svg"/><g id="cord_`+x+`_`+y+`"></g></g>`
+            let fill_color;
+            if (x == standard_origin[0] && y == standard_origin[1]) {
+                fill_color = "#409040"
+            } else {
+                fill_color = "#404040"
+            }
+            garage_svg.innerHTML += `<g transform="translate(`+svg_xy[0]+`,`+svg_xy[1]+`)" onclick="add_particle_to_design(`+x+`, `+y+`)") oncontextmenu="edit_particle_attributes(`+x+`, `+y+`)"><circle cx="`+0+`" cy="`+0+`" r="10" fill="`+fill_color+`" class="circle_node_svg"/><g id="cord_`+x+`_`+y+`"></g></g>`
         }
     }
     garage_svg.addEventListener("contextmenu", (e) => {e.preventDefault()});
@@ -48,6 +54,7 @@ garage_svg.style.width = svg_width;
 garage_svg.style.height = svg_height;
 
 let dimensions = 12;
+let standard_origin = [Math.floor(dimensions/2), Math.floor(dimensions/2)];
 let svg_radius = (svg_height)/dimensions/(y_basis.y/radius);
 
 function xy_to_svg_xy(x, y) {
@@ -291,7 +298,7 @@ function save_schematics(schematic_index) {
             }
         }
     }
-    let new_schematics = new Schematic(garage_schematic_cells, garage_design_bond_weights, bond_material_1, [0, 0], "new_schematic");
+    let new_schematics = new Schematic(garage_schematic_cells, garage_design_bond_weights, bond_material_1, standard_origin, "new_schematic");
     saved_schematics[schematic_index] = new_schematics;//does this create a memory leak? it won't be a bad one anyway.
     let new_name = saved_designs[schematic_index]["design_name"];
     if (document.getElementById("schematic_name_input_"+schematic_index) != null) {

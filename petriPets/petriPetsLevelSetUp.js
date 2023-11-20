@@ -41,6 +41,6 @@ function design_to_schematics(design) {//mostly a copy of save schematics. proba
             }
         }
     }
-    let new_schematics = new Schematic(garage_schematic_cells, design["garage_design_bond_weights"], bond_material_1, [0, 0], design["design_name"]);
+    let new_schematics = new Schematic(garage_schematic_cells, design["garage_design_bond_weights"], bond_material_1, standard_origin, design["design_name"]);
     return new_schematics;
 }
