@@ -192,6 +192,101 @@ function set_up_level2() {
     }
 }*/
 
+function create_bubble() {
+    //bubble1 = new Flow_Particle(bubble_material, 1, new THREE.Vector3(0, 0, 0));
+    //bubble1.add_bubble_to_simulation();
+    for (let x = 1; x < universe_grid.length-1; x++) {//not sure about these bounds
+        for (let y = 1; y < universe_grid[x].length-1; y++) {//not sure about these bounds
+            let focused_grid = universe_grid[x][y];
+            //let x_pos_avg = (focused_grid.x_min + focused_grid.x_max - 2*sanity_offset) / 2;
+            //let y_pos_avg = (focused_grid.y_min + focused_grid.y_max - 2*sanity_offset) / 2;
+            let x_pos_avg = (focused_grid.x_min - sanity_offset + universe_grid_space_diameter*Math.random());
+            let y_pos_avg = (focused_grid.y_min - sanity_offset + universe_grid_space_diameter*Math.random());
+            let bubble1 = new Flow_Particle(bubble_material, 1, new THREE.Vector3(x_pos_avg, y_pos_avg, 0));
+            bubble1.add_bubble_to_simulation();
+        }
+    }
+}
+
+let wave_bond_material = new THREE.LineBasicMaterial( { color: 0x3355BB } );
+class Flow_Particle {
+    constructor(sprite_material, sprite_diameter, position_vector = new THREE.Vector3(0, 0, 0)){
+        this.position_vector = position_vector;
+        this.starting_position_vector = new THREE.Vector3(0, 0, 0);
+        this.starting_position_vector.copy(this.position_vector);
+        
+        /*this.sprite_material = sprite_material.clone();//the clone is only needed for the directional cell, so this could be moved there... not sure if it is worth it though.
+        this.sprite = new THREE.Sprite(sprite_material);
+        this.sprite_diameter = sprite_diameter;
+        this.sprite.scale.set(sprite_diameter, sprite_diameter, 1);
+        this.sprite.position.copy(this.position_vector);*/
+
+        this.position_memory = 500;
+        this.position_list = []
+        for (let i = 0; i < this.position_memory ; i++) {
+            this.position_list.push(position_vector.x, position_vector.y, 0);
+            /*this.position_list.push(i);
+            this.position_list.push(i);*/
+            
+        }
+        this.geometry = new THREE.BufferGeometry();
+        this.geometry.setAttribute('position', new THREE.Float32BufferAttribute( this.position_list, 3 ));
+        this.bond_material = wave_bond_material;
+        this.line = new THREE.Line( this.geometry, this.bond_material );
+        this.line_vertices = this.geometry.getAttribute( 'position' );
+        //this.line.position.copy(this.position_vector);
+        this.frame = 0;
+
+        /*this.line_vertices.setX(0, 0);
+        this.line_vertices.setY(0, 0);
+        this.line_vertices.setX(1, this.dist_vector.x);
+        this.line_vertices.setY(1, this.dist_vector.y);
+        this.line.position.copy(this.position_vector);*/
+    }
+    add_bubble_to_simulation() {
+        /*universe.add(this.sprite);*/
+        universe.add(this.line);
+        bubbles.push(this);
+        //this.line.frustumCulled = false;
+        /*this.sprite.position.copy(this.position_vector);*/
+        this.grid_space = this.find_grid_space_from_position();
+    }
+    update_bubble_position(index) {
+        if (this.frame == this.position_memory) {
+            this.frame = 0;
+            this.position_vector.set(this.line_vertices.array[0], this.line_vertices.array[1], this.line_vertices.array[2])
+            //this.position_vector.copy(this.starting_position_vector);
+            this.line.geometry.computeBoundingSphere();
+        }
+        this.grid_space = this.find_grid_space_from_position();
+        this.position_vector.addScaledVector(this.grid_space.velocity_vector, (1/60)/2);
+        //this.sprite.position.copy(this.position_vector);
+        /*if (this.grid_space.is_edge) {
+            this.destroy_bubble(index);
+        }*/
+        
+        this.line_vertices.setX(this.frame%this.position_memory, this.position_vector.x);
+        this.line_vertices.setY(this.frame%this.position_memory, this.position_vector.y);
+        this.line_vertices.needsUpdate = true;
+        this.frame++;
+    }
+    find_grid_space_from_position() {
+        return universe_grid[Math.min(Math.max(0, Math.floor((this.position_vector.x + sanity_offset)/universe_grid_space_diameter)), universe_grid_height-1)][Math.min(Math.max(0, Math.floor((this.position_vector.y + sanity_offset)/universe_grid_space_diameter)), universe_grid_height-1)];
+    }
+    destroy_bubble(index) {
+        //console.log("bubble popped");
+        /*universe.remove(this.sprite);*/
+        //this.sprite.material.map.dispose();
+        //this.sprite.material.dispose();
+
+        universe.remove(this.line);
+        //this.sprite.material.map.dispose();
+        this.line.geometry.dispose();
+        /*delete this.sprite;*/
+        bubbles.splice(index, 1);
+    }
+}
+
 class Background {
     constructor(update,mesh){
         this.update = update;

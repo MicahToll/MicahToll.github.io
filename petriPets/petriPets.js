@@ -132,6 +132,7 @@ let kirby_bullet_lightblue_path = '../KirbyBulletHell/assets/bullets/kirby_bulle
 let gordo_path = '../KirbyBulletHell/assets/enemies/gordo.png';
 let fixed_cell_path = 'images/fixed_cell.png'
 let photon_path = 'images/photon.png'
+let bubble_path = 'images/bubble.png'
 let photon_map = new THREE.TextureLoader().load( photon_path );
 const bomb_cell_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( bomb_cell_path ) } );
 const shrapnel_cell_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( shrapnel_cell_path ) } );
@@ -150,6 +151,7 @@ const kirby_bullet_lightblue_material = new THREE.SpriteMaterial( { map: new THR
 const gordo_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( gordo_path ) } );
 const fixed_cell_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( fixed_cell_path ) } );
 const photon_material = new THREE.SpriteMaterial( { map: photon_map } );
+const bubble_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( bubble_path ) } );
 
 //bond material
 const bond_material_1 = new THREE.LineBasicMaterial( { color: 0x0000ff } );
@@ -167,6 +169,7 @@ let creatures = [];
 let cells = [];
 let bonds = [];
 let photons = [];
+let bubbles = [];
 let friction = .1;
 let base_friction = .1;
 let radius = 5;
@@ -263,6 +266,11 @@ function gameloop(timestamp) {
     for (let i = photons.length-1; i > 0-1; i--) {
         let photon = photons[i];
         photon.update_photon(i);
+    }
+
+    for (let i = bubbles.length-1; i > 0-1; i--) {
+        let bubble = bubbles[i];
+        bubble.update_bubble_position(i);
     }
 
     for (let i = bonds.length-1; i > 0-1; i--) {
@@ -589,7 +597,7 @@ class Schematic {//we are going to change this
         for (let cell_row of this.schematic_cells) {
             for (let cell of cell_row) {
                 if (cell != null) {
-                    this.energy += cell.mass*c_squared + cell.energy;
+                    this.energy_cost += cell.mass*c_squared + cell.energy;
                 }
             }
         }
@@ -1652,11 +1660,11 @@ class Energy_Generator extends Cell {
 }
 
 class Reproducer extends Directed_Cell {
-    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id, desired_angle = 0, schematics_to_produce = null, schematics_to_produce_index, bond_number_reproduce_threshhold = 4) {
+    constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), anchor_bond_id, desired_angle = 0, schematics_to_produce = null, schematics_to_produce_index) {
         super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector, anchor_bond_id, desired_angle);
         this.schematics_to_produce = schematics_to_produce;
         this.schematics_to_produce_index = schematics_to_produce_index;
-        this.bond_number_reproduce_threshhold = bond_number_reproduce_threshhold;//max bonds and still able to build
+        this.able_to_build = true;
         //this.energy2 = 1;
     }
     update_schematics(cell_schematics, x_index = 0, y_index = 0) {
@@ -1674,17 +1682,24 @@ class Reproducer extends Directed_Cell {
         if (this.anchor_bond != null && this.schematics_to_produce != null){
             super.update_cell();
             if (this.output == 1){
-                if (this.number_of_bonds < this.bond_number_reproduce_threshhold){
+                if (this.able_to_build){
                     if (this.energy >= this.schematics_to_produce.energy_cost) {
+                        console.log("energy "+this.energy) 
+                        console.log("energy_cost "+this.schematics_to_produce.energy_cost)
                         let creature_position = this.position_vector.clone();
                         //creature_position.addScaledVector(this.direction, -radius);
                         let creature_velocity = this.velocity_vector.clone();
                         this.schematics_to_produce.build_schematic(creature_position, creature_velocity, this.get_angle_from_vertical()-this.starting_angle, this);
                         this.energy -= this.schematics_to_produce.energy_cost;
+                        this.able_to_build = false;
                     }
                 }
             }
         }
+    }
+    remove_bond_from_cell(bond_to_remove) {
+        super.remove_bond_from_cell(bond_to_remove);
+        this.able_to_build = true;
     }
     clone_cell() {
         return new Reproducer(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, this.energy_capacity, this.energy, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.anchor_bond_id, this.desired_angle, this.schematics_to_produce, this.schematics_to_produce_index);
