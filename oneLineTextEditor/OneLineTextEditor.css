@@ -1,0 +1,8 @@
+#output_svg {
+    /**/
+    height: 80vw;
+    width: 100%;
+    border-color: black;
+    border-width: 5px;
+    background-color: beige;
+}

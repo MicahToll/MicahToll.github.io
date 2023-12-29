@@ -202,7 +202,8 @@ function create_bubble() {
             //let y_pos_avg = (focused_grid.y_min + focused_grid.y_max - 2*sanity_offset) / 2;
             let x_pos_avg = (focused_grid.x_min - sanity_offset + universe_grid_space_diameter*Math.random());
             let y_pos_avg = (focused_grid.y_min - sanity_offset + universe_grid_space_diameter*Math.random());
-            let bubble1 = new Flow_Particle(bubble_material, 1, new THREE.Vector3(x_pos_avg, y_pos_avg, 0));
+            let z = THREE.MathUtils.randFloat( backdrop_z_position, camera_height );
+            let bubble1 = new Flow_Particle(bubble_material, 1, new THREE.Vector3(x_pos_avg, y_pos_avg, z));
             bubble1.add_bubble_to_simulation();
         }
     }
@@ -212,8 +213,6 @@ let wave_bond_material = new THREE.LineBasicMaterial( { color: 0x3355BB } );
 class Flow_Particle {
     constructor(sprite_material, sprite_diameter, position_vector = new THREE.Vector3(0, 0, 0)){
         this.position_vector = position_vector;
-        this.starting_position_vector = new THREE.Vector3(0, 0, 0);
-        this.starting_position_vector.copy(this.position_vector);
         
         /*this.sprite_material = sprite_material.clone();//the clone is only needed for the directional cell, so this could be moved there... not sure if it is worth it though.
         this.sprite = new THREE.Sprite(sprite_material);
@@ -224,7 +223,7 @@ class Flow_Particle {
         this.position_memory = 500;
         this.position_list = []
         for (let i = 0; i < this.position_memory ; i++) {
-            this.position_list.push(position_vector.x, position_vector.y, 0);
+            this.position_list.push(position_vector.x, position_vector.y, position_vector.z);
             /*this.position_list.push(i);
             this.position_list.push(i);*/
             
@@ -255,7 +254,6 @@ class Flow_Particle {
         if (this.frame == this.position_memory) {
             this.frame = 0;
             this.position_vector.set(this.line_vertices.array[0], this.line_vertices.array[1], this.line_vertices.array[2])
-            //this.position_vector.copy(this.starting_position_vector);
             this.line.geometry.computeBoundingSphere();
         }
         this.grid_space = this.find_grid_space_from_position();
@@ -303,8 +301,10 @@ class Background {
 /*
 //level 1
 */
+let backdrop_z_position = -200;
+let backdrop1_z_position = -100;
 function set_up_level1() {
-    let backdrop_z_position = -200;
+    //let backdrop_z_position = -200;
 
     const vertices = [];
     for ( let i = 0; i < 1000; i ++ ) {
@@ -345,6 +345,14 @@ function set_up_level1() {
     backdrop_sprite.position.set(0, 0, backdrop_z_position);
     universe.add(backdrop_sprite);
 
+    let backdrop1_path = 'images/place_holder_backdrop_background1.png';
+    const backdrop1_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( backdrop1_path ) } );
+    let backdrop1_sprite = new THREE.Sprite(backdrop1_material);
+    backdrop1_sprite.scale.set(2*universe_radius+(max_camera_height-backdrop1_z_position)/(window_height/window_width), 2*universe_radius+(max_camera_height-backdrop_z_position)/(window_height/window_width), 1);//currently an over estimate (assumes fov is 90, which it is not)
+    backdrop1_sprite.position.set(0, 0, backdrop1_z_position);
+    universe.add(backdrop1_sprite);
+
+    //create_bubble();
 
     /*
     let planel1_geometry = new THREE.IcosahedronGeometry(75);

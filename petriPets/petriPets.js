@@ -133,6 +133,7 @@ let gordo_path = '../KirbyBulletHell/assets/enemies/gordo.png';
 let fixed_cell_path = 'images/fixed_cell.png'
 let photon_path = 'images/photon.png'
 let bubble_path = 'images/bubble.png'
+let rocks_path= 'images/rocks.png'
 let photon_map = new THREE.TextureLoader().load( photon_path );
 const bomb_cell_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( bomb_cell_path ) } );
 const shrapnel_cell_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( shrapnel_cell_path ) } );
@@ -152,6 +153,7 @@ const gordo_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader(
 const fixed_cell_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( fixed_cell_path ) } );
 const photon_material = new THREE.SpriteMaterial( { map: photon_map } );
 const bubble_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( bubble_path ) } );
+const rocks_material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( rocks_path ) } );
 
 //bond material
 const bond_material_1 = new THREE.LineBasicMaterial( { color: 0x0000ff } );
@@ -200,7 +202,11 @@ function init() {
     for (let x = 0; x < universe_grid_width; x++) {
         universe_grid.push([])
         for (let y = 0; y < universe_grid_height; y++) {
-            universe_grid[x].push( new Grid_Space( x, y ) );
+            if (y == Math.ceil(universe_grid_height*2/3) && !( x == Math.ceil(universe_grid_width/2) || x == Math.ceil(universe_grid_width/2)+1 ) ) {
+                universe_grid[x].push( new Rocky_Grid_Space( x, y ) );
+            } else {
+                universe_grid[x].push( new Grid_Space( x, y ) );
+            }
         }
     }
     
@@ -250,7 +256,7 @@ function gameloop(timestamp) {
     }
     //time = timestamp;
 
-    if (frame_number%60 == 0) {
+    if (frame_number%4 == 0) {
         //(2*Math.random()-1)*universe_radius
         //create_photon(new THREE.Vector3((2*Math.random()-1)*universe_radius/2, universe_radius/2, 0), new THREE.Vector3(0, -1, 0), 45);
     }
@@ -457,6 +463,7 @@ class Grid_Space {//before impelenting this, I can simulate about 630 before fra
         this.mass = 1;
         this.friction_force = new THREE.Vector3(0, 0, 0);
         this.friction = .1;//resistance (velocity instead of I, water voltage instead of V)
+        this.water_ohms = 1;//-- just that, water ohms. hight -> more resistance to (water) current
         /*this.current_up;
         this.current_down;
         this.current_left;
@@ -550,8 +557,8 @@ class Grid_Space {//before impelenting this, I can simulate about 630 before fra
         cell.force_vector.add(this.friction_force.negate());
     }
     update_velocity() {//and add friction and reset force
-        let ohms_law_force_x = (this.water_voltage - universe_grid[this.x_coord+1][this.y_coord].water_voltage)*1;
-        let ohms_law_force_y = (this.water_voltage - universe_grid[this.x_coord][this.y_coord+1].water_voltage)*1;
+        let ohms_law_force_x = (this.water_voltage - universe_grid[this.x_coord+1][this.y_coord].water_voltage)/this.water_ohms;
+        let ohms_law_force_y = (this.water_voltage - universe_grid[this.x_coord][this.y_coord+1].water_voltage)/this.water_ohms;
         this.force_vector.set(this.force_vector.x + ohms_law_force_x, this.force_vector.y + ohms_law_force_y, 0);
         this.force_vector.addScaledVector(this.velocity_vector, -base_friction);
 
@@ -579,6 +586,40 @@ class Grid_Space {//before impelenting this, I can simulate about 630 before fra
             //let force_x = universe_grid_space_diameter / ( this.x_coord * universe_grid_space_diameter - cell_x ) - 1;
             //let force_y = universe_grid_space_diameter / ( this.y_coord * universe_grid_space_diameter - cell_y ) - 1;
         }
+    }
+}
+
+class Rocky_Grid_Space extends Grid_Space {
+    constructor(x_index, y_index, water_voltage = 0) {
+        super(x_index, y_index, water_voltage);
+        this.water_ohms = this.water_ohms*100;
+
+        this.sprite = new THREE.Sprite(rocks_material);
+        this.sprite.position.set( (this.x_max+this.x_min)/2-sanity_offset, (this.y_max+this.y_min)/2-sanity_offset, 0);
+        this.sprite.scale.set( universe_grid_space_diameter, universe_grid_space_diameter, 0);
+        universe.add(this.sprite);
+        //add to list of rocky spaces?
+
+        this.repel_dist_vector = new THREE.Vector3(0, 0, 0);
+    }
+    apply_friction_with_cell(cell) {
+        /*console.log("hey")
+        this.repel_dist_vector.subVectors(cell.position_vector, this.sprite.position);
+        let dist = repel_dist_vector.length() - universe_grid_space_diameter/4;
+        if (dist > 0 && true) {//asymptotes at 1/2 radius
+            console.log("there1")
+            if (dist < universe_grid_space_diameter/4) {
+                console.log("there2");
+                let force = 1000*cell.charge**2*(1-(dist/(universe_grid_space_diameter/4))**3)/(dist)**3;// this is actually force over dist (so that dist gets divided out)
+                cell.force_vector.addScaledVector(repel_dist_vector, force);
+            }
+            else {
+                console.log(dist/(universe_grid_space_diameter/2));
+            }
+            
+        }*/
+
+        super.apply_friction_with_cell(cell);
     }
 }
 
@@ -1116,8 +1157,11 @@ class Photon {
         this.position_vector = position_vector;
         this.velocity_vector = velocity_vector;
         this.velocity_vector.setLength((2*this.photon_radius) * (1/(period/60)));
-        this.electric_force_vector = this.velocity_vector.clone()
-        this.electric_force_vector.applyAxisAngle(z_axis, Math.PI/2);
+        this.electric_force_norm_vector = this.velocity_vector.clone()
+        this.electric_force_norm_vector.applyAxisAngle(z_axis, Math.PI/2);
+        this.electric_force_norm_vector.normalize();
+
+        this.electric_force_vector = this.electric_force_norm_vector.clone()
 
         this.sprite.position.copy(this.position_vector);
         this.cell_bonds = [];//is this needed?
@@ -1134,11 +1178,14 @@ class Photon {
 
         this.sprite.material.map.repeat.set( 1, 1/2 );
         //sprite_map.magFilter = THREE.NearestFilter;//makes sharper if needed;
+
+        this.starting_frame_num = frame_number;
     }
     update_force() {
-        this.electric_force_vector.normalize();
+        this.electric_force_vector.copy(this.electric_force_norm_vector);
         let force_scalar = this.energy/16;
-        let sin_component = Math.sin(2*Math.PI * frame_number/this.period);
+        //let sin_component = Math.sin(2*Math.PI * frame_number/this.period);
+        let sin_component = Math.sin(2*Math.PI * (frame_number-this.starting_frame_num)/this.period);
         this.electric_force_vector.multiplyScalar(force_scalar*sin_component);
         if(sin_component < 0) {
             this.sprite.material.map.offset.set( 0, 0 );
