@@ -593,6 +593,7 @@ class Rocky_Grid_Space extends Grid_Space {
     constructor(x_index, y_index, water_voltage = 0) {
         super(x_index, y_index, water_voltage);
         this.water_ohms = this.water_ohms*100;
+        this.rock_friction = .9;//this is a temp variable for approximating the rocks via friction.
 
         this.sprite = new THREE.Sprite(rocks_material);
         this.sprite.position.set( (this.x_max+this.x_min)/2-sanity_offset, (this.y_max+this.y_min)/2-sanity_offset, 0);
@@ -603,22 +604,36 @@ class Rocky_Grid_Space extends Grid_Space {
         this.repel_dist_vector = new THREE.Vector3(0, 0, 0);
     }
     apply_friction_with_cell(cell) {
-        /*console.log("hey")
+
+
+
+        //for some reason this isn't working - in fact, it seams pretty dang broken - may need to completely rewrite. for the time being, I'm just going to apply the same friction force to the cells as the water. this is simultatiously logical, simple, and consistent. but it also isn't so much what I was going for so I might chnage it back later
+        /*
+        //console.log("hey")
         this.repel_dist_vector.subVectors(cell.position_vector, this.sprite.position);
-        let dist = repel_dist_vector.length() - universe_grid_space_diameter/4;
+        let dist = repel_dist_vector.length();// - universe_grid_space_diameter/4;
         if (dist > 0 && true) {//asymptotes at 1/2 radius
-            console.log("there1")
+            //console.log("there1")
             if (dist < universe_grid_space_diameter/4) {
-                console.log("there2");
+                console.log(dist);
                 let force = 1000*cell.charge**2*(1-(dist/(universe_grid_space_diameter/4))**3)/(dist)**3;// this is actually force over dist (so that dist gets divided out)
                 cell.force_vector.addScaledVector(repel_dist_vector, force);
             }
             else {
-                console.log(dist/(universe_grid_space_diameter/2));
+                console.log(dist+"hi");
+                //console.log(dist/(universe_grid_space_diameter/2));
             }
             
         }*/
+        //temp friction from "rocks"
+        
 
+        this.friction_force.copy(cell.velocity_vector);
+        this.friction_force.multiplyScalar(this.rock_friction);
+        cell.force_vector.add(this.friction_force.negate());
+
+
+        //this applys the water friction to the cell. both the rock friction and water friction use the friction_force variable as a temp variable
         super.apply_friction_with_cell(cell);
     }
 }
@@ -1396,9 +1411,7 @@ class Sticky_Cell extends Cell {
 
 class Absorber_Cell extends Sticky_Cell {
     constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), sticky_radius, sticky_k) {
-        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector);
-        this.sticky_radius = sticky_radius;
-        this.sticky_k = sticky_k;
+        super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector, sticky_radius, sticky_k);
         this.cell_bonds = [];
     }
     update_cell() {
@@ -1426,7 +1439,7 @@ class Absorber_Cell extends Sticky_Cell {
     }
 }
 
-class Explosive_Cell extends Cell { //there should only ever be one player vector (unless I add split screen)
+class Explosive_Cell extends Cell {
     constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), explosive_radius, fragments, shapnel_cell) {
         super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector);
         this.explosive_radius = explosive_radius;//in units of energy?
@@ -1447,12 +1460,12 @@ class Explosive_Cell extends Cell { //there should only ever be one player vecto
             this.exploded = true;
         }
     }
-    clone_cell() {//this function should probably only be called once tops. (unless I add split screen)
+    clone_cell() {
         return new Explosive_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, this.energy_capacity, this.energy, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.explosive_radius, this.fragments, this.shapnel_cell);
     }
 }
 
-class Fixed_Cell extends Cell { //there should only ever be one player vector (unless I add split screen)
+class Fixed_Cell extends Cell {
     constructor(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0 = 0, energy_capacity, energy = 0, position_vector = new THREE.Vector3(0, 0, 0), velocity_vector = new THREE.Vector3(0, 0, 0), root_strength) {
         super(mass, k, dampening, max_length, charge, sprite_material, sprite_diameter, x_0, energy_capacity, energy, position_vector, velocity_vector);
         this.root_strength = root_strength;
@@ -1482,7 +1495,7 @@ class Fixed_Cell extends Cell { //there should only ever be one player vector (u
         
         this.force_vector.set(0, 0, 0);
     }
-    clone_cell() {//this function should probably only be called once tops. (unless I add split screen)
+    clone_cell() {
         return new Fixed_Cell(this.mass, this.k, this.dampening, this.max_length, this.charge, this.sprite_material, this.sprite_diameter, this.x_0, this.energy_capacity, this.energy, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), this.root_strength);
     }
 }
