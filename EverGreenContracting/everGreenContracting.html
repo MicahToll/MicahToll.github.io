@@ -3,21 +3,167 @@
     <head>    
         <meta http-equiv="content-type" content="text/html; charset=utf-8" />
         <title>Ever Green Contracting</title>
-        <link rel="stylesheet" type="text/css" href="../css/style.css">
+        <!--<link rel="stylesheet" type="text/css" href="../css/style.css">-->
+        <link rel="stylesheet" type="text/css" href="everGreenContracting.css">
         <script src="../js/d3.min.js"></script>
         <script src="../js/three.js"></script>
         <script src="../js/code.js"></script>
     </head>
     <body id="body" onload="init()">
-        <div id="d3-container" style="line-height: 0"></div>
-        <div id="page_content">
-            <h1>Ever Green Contracting</h1>
-            <h2>about us</h2>
-            <p>We are a general contractor, speciallzing in Bathroom and ktchen remodel.</p>
+        <!--<div id="d3-container" style="line-height: 0"></div>-->
+        <div id="title_banner"  class="banner" style="padding-top: 3vw;">
+            <div class="page_content">
+                <h1>Ever Green Contracting</h1>
+                <p class="subtitle">Licensed, Bonded, Insured!</p>
+            </div>
+        </div>
+        <div class="page_content main_body">
+            <h2>About us</h2>
+            <p>We are a general contractor, specialized in bathrooms and kitchens.</p>
             <h2>Example work</h2>
-            <p>insert before and after pictures here</p>
-            <h2>how to contact us</h2>
-            <p>you can contact us at </p>
-		</div>
+            <!--<p>insert before and after pictures here</p>-->
+            <table>
+                <tr>
+                    <th>Before</th>
+                    <th>After</th>
+                </tr>
+                <tr>
+                    <td><img src="pictures/Resized_20240802_112238.jpeg" alt="muddy backyard" class="before_after"></td>
+                    <td><img src="pictures/IMG_8708.jpg" alt="nice back deck" class="before_after"></td>
+                </tr>
+                <tr>
+                    <td><img src="pictures/Resized_20240806_155141.jpeg" alt="old bathroom" class="before_after"></td>
+                    <td><img src="pictures/IMG_8708.jpg" alt="modern bathroom" class="before_after"></td>
+                </tr>
+                <tr>
+                    <td><img src="pictures/IMG_20260311_191916.png" alt="" class="before_after"></td>
+                    <td><img src="pictures/IMG_20260311_191922.png" alt="" class="before_after"></td>
+                </tr>
+                <tr>
+                    <td><img src="pictures/image000000.JPG" alt="" class="before_after"></td>
+                    <td><img src="pictures/image000001.JPG" alt="" class="before_after"></td>
+                </tr>
+                <tr>
+                    <td><img src="pictures/image000002.JPG" alt="" class="before_after"></td>
+                </tr>
+            </table>
+        </div>
+        <div id="contact_us_form_banner" class="banner" style="padding-bottom: 3vw;"><!--considter making this a table-->
+            <div class="page_content">
+                
+                <!--<table>
+                    <tr>
+                        <td class="form_text"><label>Name</label></td>
+                        <td> <input type="text" name="name" id="name" required></td>
+                    </tr>
+                    <tr>
+                        <td class="form_text"><label>Email</label></td>
+                        <td><input type="email" name="email" id="email" required></td>
+                    </tr>
+                    <tr>
+                        <td class="form_text"><label>Project type (bathroom, kitchen, deck, etc.)</label></td>
+                        <td><input type="text" name="project_type" id="project_type"></td>
+                    </tr>
+                    <tr>
+                        <td class="form_text"><label>Message</label></td>
+                        <td><textarea name="message" id="message" rows="5"></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="form_text"><label><strong>Where did you hear about us?</strong></label></td>
+                        <td><select name="referral" id="referral" required>
+                            <option value="" disabled selected>Select an option</option>
+                            <option value="Google Search">Google Search</option>
+                            <option value="Google Maps">Google Maps</option>
+                            <option value="Facebook">Facebook</option>
+                            <option value="Friend/Family">Friend/Family Referral</option>
+                            <option value="other">Other</option>
+                        </select></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </table>-->
+                <div class="half_page">
+                    <h2 style="text-align: center;">Get a quote!</h2>
+                    <form id="contact-form" class="">
+                        <div class="form_div">
+                            <label for="name">Name</label><br>
+                            <input class="text_input" type="text" name="name" id="name" required>
+                        </div>
+                        <div class="form_div">
+                            <label for="email">Email</label><br>
+                            <input class="text_input" type="email" name="email" id="email" required>
+                        </div>
+                        <div class="form_div">
+                            <label for="project_type">Project type (bathroom, kitchen, deck, etc.)</label><br>
+                            <input class="text_input" type="text" name="project_type" id="project_type">
+                        </div>
+                        <div class="form_div">
+                            <label for="message">Message</label><br>
+                            <textarea class="text_input" name="message" id="message" rows="5"></textarea>
+                        </div>
+                        <div class="form_div">
+                            <label for="referral">Where did you hear about us?</label><br>
+                            <select class="text_input" name="referral" id="referral" required>
+                                <option value="" disabled selected>Select an option</option>
+                                <option value="Google Search">Google Search</option>
+                                <option value="Google Maps">Google Maps</option>
+                                <option value="Facebook">Facebook</option>
+                                <option value="Friend/Family">Friend/Family Referral</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form_div">
+                            <div id="other-container" style="display:none;">
+                                <label for="other-text"><strong>Please specify:</strong></label>
+                                <input class="text_input" type="text" name="other-text" id="other-text">
+                            </div>
+                        </div>
+                        <div class="form_div">
+                            <button class="text_input" type="submit" id="submit_button">Submit</button>
+                        </div>
+                        <div id="form-overlay">
+                            <div class="overlay-content" style="display:none;">
+                                Thanks! We’ll reach out via email within 24 hours.
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="half_page">
+                    <div class="space">
+                        <div class="contact_info_col">
+                            <div class="contact_info">
+                                <h3>Don Milford</h3>
+                                <p>Email: donm.galaxy@gmail.com</p>
+                                <p>phone: 123-123-1234</p>
+                            </div>
+                        </div>
+                        <div class="contact_info_col">
+                            <div class="contact_info">
+                                <h3>Micah Toll</h3>
+                                <p>Email: tollmicah@gmail.com</p>
+                                <p>phone: 123-123-1234</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+            <!--<footer class="site-footer">
+                <div class="footer-content">
+                    <div class="footer-links">
+                        <p><a href="index.html">Home</a>
+                            &emsp; | &emsp;<a href="tutors.html">Learn About Us</a>
+                            &emsp; | &emsp;<a href="testimonials.html">Student Testimonials</a>
+                            &emsp; | &emsp;<a href="policies.html">Tutoring Policies</a>
+                            &emsp; | &emsp;<a href="privacy.html">Privacy Policy</a>
+                            &emsp; | &emsp;<a href="index.html#contact">Contact Us</a>
+                    </div>
+                    <div class="footer-info">
+                        <p>&copy; Toll Tutoring, 2025. All rights reserved.</p>
+                    </div>
+                </div>
+            </footer>-->
     </body>
 </html>
