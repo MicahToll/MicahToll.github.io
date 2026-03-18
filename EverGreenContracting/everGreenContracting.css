@@ -27,7 +27,7 @@ p {
 body {
     font-family: Helvetica, Arial, sans-serif;
     font-kerning: auto;
-    font-size: 16px;
+    font-size: 24px;
     font-stretch: normal;
     font-style: normal;
     font-variant: normal;
@@ -97,6 +97,17 @@ body {
     width: 40vw;
 }
 
+.gallery {
+    width: 40vw;
+    z-index: 1;
+    position:relative;
+}
+.gallery:hover {
+    width: 50vw;
+    margin: -5vw;
+    z-index: 2;
+}
+
 .main_body {
     background-color: rgb(231, 236, 235);
 }
@@ -131,3 +142,135 @@ body {
     font-style: italic;
     margin-left: 40vw;
 }
+
+.site_footer {
+    background-color:#6cb978;
+}
+
+.footer-links {
+    justify-content: center;
+    display: flex;
+}
+
+
+/* slider css code start */
+
+.custom-image-slider {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    height: 0;
+    padding-bottom: 75%; /* Adjust this value according to your image aspect ratio */
+}
+.slider-before,
+.slider-after {
+    position: absolute;
+    width: 100%;
+    display: block;
+    top: 0;
+    left: 0;
+    height: 100%;
+    object-fit: cover;
+}
+  .slider-before, .slider-after {
+    user-select: none;
+  }
+.slider-after {
+    overflow: hidden;
+}
+.slider-handle {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 4px;
+    height: 100%;
+    background-color: #fff;
+    cursor: ew-resize;
+}
+.slider-handle::before,
+.slider-handle::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 0;
+    height: 0;
+    border-top: 12px solid transparent;
+    border-bottom: 12px solid transparent;
+    cursor: ew-resize;
+    transition: all 0.2s ease-out; /* Add transition property */
+}
+.slider-handle::before {
+    left: -24px;
+    border-right: 16px solid #fff;
+}
+.slider-handle::after {
+    right: -24px;
+    border-left: 16px solid #fff;
+}
+
+/*slider css code end */
+
+/* auto scroll start */
+
+/*body {
+	background-color: #2E3537;
+	height: 100vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}*/
+
+.wrapper {
+	background-color: #E1E2E2;
+	height: 130px;
+	overflow: hidden;
+	position: relative;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	padding: 0 20px;
+}
+
+.wrapper:before, .wrapper:after {
+	content: "";
+	position: absolute;
+	height: 130px;
+	width: 25vw;
+	z-index: 2;
+}
+
+.wrapper:after {
+	right: 0;
+	top: 0;
+	transform: rotateZ(180deg);
+}
+
+.wrapper:before {
+	left: 0;
+	top: 0;
+}
+
+.wrapper .track {
+	display: flex;
+	width: calc(25vw * 10);
+	animation: scroll 15s 0.5s linear infinite;
+}
+
+.wrapper .logo {
+	width: 25vw;
+}
+
+.wrapper .logo img {
+	height: 90px;
+}
+
+@keyframes  scroll {
+	from {
+		transform: translateX(0);
+	}
+	to {
+		transform: translateX(calc(-25vw * 5));
+	}
+}
+
+/* auto scroll end */
