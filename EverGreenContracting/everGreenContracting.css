@@ -131,7 +131,13 @@ body {
 
 .contact_info_col {
   display: flex;
-  justify-content: center;
+  margin-left: 1vw;
+  /**/
+}
+
+.superspace {
+    display: flex;
+    justify-content: center;
 }
 
 .space {
