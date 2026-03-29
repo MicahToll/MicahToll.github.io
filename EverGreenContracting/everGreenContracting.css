@@ -18,11 +18,14 @@ h2 {
     margin-bottom: 14px;
     /*text-align: center;*/
 }
+ul {
+    margin-left: 2vw;
+}
 p {
     margin-left: 2vw;
     margin-right: 2vw;
-    margin-top: 12px;
-    margin-bottom: 12px;
+    margin-top: 15px;
+    margin-bottom: 15px;
 }
 body {
     font-family: Helvetica, Arial, sans-serif;
@@ -101,12 +104,41 @@ body {
     width: 40vw;
     z-index: 1;
     position:relative;
+    animation-name: ensmall;
+    animation-duration: .5s;
+    border-radius: 20px;
 }
 .gallery:hover {
+    z-index: 2;
+    animation-name: enlarge;
+    animation-duration: .5s;
     width: 50vw;
     margin: -5vw;
-    z-index: 2;
 }
+
+/* The animation code */
+@keyframes enlarge {
+    from {
+        width: 40vw;
+        margin: 0vw;
+    }
+    to {
+        width: 50vw;
+        margin: -5vw;
+    }
+}
+@keyframes ensmall {
+    from {
+        width: 50vw;
+        margin: -5vw;
+    }
+    to {
+        width: 40vw;
+        margin: 0vw;
+    }
+}
+
+/* The element to apply the animation to */
 
 .main_body {
     background-color: rgb(231, 236, 235);
@@ -216,67 +248,117 @@ body {
 
 /*slider css code end */
 
-/* auto scroll start */
-
-/*body {
-	background-color: #2E3537;
-	height: 100vh;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}*/
-
-.wrapper {
-	background-color: #E1E2E2;
-	height: 130px;
-	overflow: hidden;
-	position: relative;
-	width: 100%;
-	display: flex;
-	align-items: center;
-	padding: 0 20px;
+#form-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeIn 0.3s ease;
 }
 
-.wrapper:before, .wrapper:after {
-	content: "";
-	position: absolute;
-	height: 130px;
-	width: 25vw;
-	z-index: 2;
+.overlay-content {
+    background: #ffffff;
+    padding: 20px 28px;
+    border-radius: 12px;
+    font-size: 20px;
+    font-weight: 600;
+    color: #2a650f;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    animation: popIn 0.3s ease;
 }
 
-.wrapper:after {
-	right: 0;
-	top: 0;
-	transform: rotateZ(180deg);
+.quote_box {
+    background-color: white;
+    border-radius: 20px;
+    padding: 15px;
+    margin-left: 5vw;
+    margin-right: -5vw;
 }
 
-.wrapper:before {
-	left: 0;
-	top: 0;
+/* auto scroll carousel start */
+.testimonial-carousel {
+  background-color: #1d1d1d;
+  padding: 2rem 1rem;
+  overflow: hidden;
+  color: #ebebeb;
 }
 
-.wrapper .track {
-	display: flex;
-	width: calc(25vw * 10);
-	animation: scroll 15s 0.5s linear infinite;
+.header {
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
 }
 
-.wrapper .logo {
-	width: 25vw;
+.carousel-controls {
+      text-align: center;
+      margin-top: 1rem;
 }
 
-.wrapper .logo img {
-	height: 90px;
+.carousel-nav-button {
+    background-color: #727272;
+    color:#ebebeb;
+    border-radius: 10px;
+    width:40px;
+    height: auto;
+    font-weight: bolder;
+    font-size: large;
+    border:none;
 }
 
-@keyframes  scroll {
-	from {
-		transform: translateX(0);
-	}
-	to {
-		transform: translateX(calc(-25vw * 5));
-	}
+.carousel-nav-button:active {
+    background-color: #7c7c7c;
 }
 
-/* auto scroll end */
+.carousel-wrapper {
+  max-width: 1250px;
+  margin: auto;
+  overflow: hidden;
+}
+
+.carousel-track {
+  display: flex;
+  gap: 1.5rem;
+  transition: transform 0.5s ease-in-out;
+}
+
+.carousel-slide {
+  flex: 0 0 calc((100% - 9rem) / 3); /* default: 3 cards */
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  padding: 1rem;
+}
+
+/* ⭐ Tablet: 2 cards */
+@media (max-width: 1024px) {
+  .carousel-slide {
+    flex: 0 0 calc((100% - 6rem) / 2);
+  }
+}
+
+/* ⭐ Mobile: 1 card */
+@media (max-width: 600px) {
+  .carousel-slide {
+    flex: 0 0 calc((100% - 3rem) / 1);
+  }
+}
+
+.carousel-slide footer {
+  text-align: right;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+.carousel_picture {
+    width: 100%;
+    /*height: 50vh;*/
+    /*position:relative;*/
+    border-radius: 10px;
+}

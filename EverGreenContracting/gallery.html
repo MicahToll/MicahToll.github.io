@@ -6,7 +6,7 @@
         <link rel="stylesheet" type="text/css" href="everGreenContracting.css">
         <script src="everGreenContracting.js"></script>
     </head>
-    <body id="body">
+    <body id="body" onload="gallery_onload()">
         <div id="title_banner"  class="banner" style="padding-top: 3vw;">
             <div class="page_content">
                 <h1>Ever Green Contracting</h1>
@@ -29,44 +29,25 @@
             
             <h2>Example work</h2>
             <!--<p>insert before and after pictures here</p>-->
-
-            <h3>before/after table</h3>
-            <table>
-                <tr>
-                    <th>Before</th>
-                    <th>After</th>
-                </tr>
-                <tr>
-                    <td><img src="pictures/Resized_20240802_112238.jpeg" alt="muddy backyard" class="before_after"></td>
-                    <td><img src="pictures/IMG_8708.jpg" alt="nice back deck" class="before_after"></td>
-                </tr>
-                <tr>
-                    <td><img src="pictures/Resized_20240806_155141.jpeg" alt="old bathroom" class="before_after"></td>
-                    <td><img src="pictures/IMG_20260311_191916.png" alt="modern bathroom" class="before_after"></td>
-                </tr>
-            </table>
-
+            <h3>Before/After</h3>
+            <div class="custom-image-slider" id="customImageSlider">
+                <img class="slider-before" src="pictures/image000001.jpeg" alt="After">
+                <img class="slider-after" src="pictures/Resized_20240806_155141.jpeg" alt="Before">
+                <div class="slider-handle"></div>
+            </div>
             <!--gallery-->
-            <h3>gallery table</h3>
+            <h3>Gallery</h3>
             <table>
                 <tr>
                     <td><img src="pictures/image000001.JPG" alt="" class="gallery"></td>
                     <td><img src="pictures/IMG_20260311_191916.png" alt="" class="gallery"></td>
-                    
-
                 </tr>
                 <tr>
                     <td><img src="pictures/IMG_20260311_191922.png" alt="" class="gallery"></td>
-                    
+                    <td><img src="pictures/image000000.jpeg" alt="" class="gallery"></td>
                 </tr>
                 <tr>
                     <td><img src="pictures/image000000.JPG" alt="" class="gallery"></td>
-                </tr>
-                <tr>
-                    
-                </tr>
-                <tr>
-                    
                     <td><img src="pictures/image000002.JPG" alt="" class="gallery"></td>
                 </tr>
                 <tr>
@@ -75,12 +56,12 @@
             </table>
 
             <!--slider-->
-            <h3>before/after slider</h3>
-            <div class="custom-image-slider" id="customImageSlider">
-                <img class="slider-before" src="pictures/IMG_8708.jpg" alt="Before">
-                <img class="slider-after" src="pictures/Resized_20240802_112238.jpeg" alt="After">
+            
+            <!--<div class="custom-image-slider" id="customImageSlider">
+                <img class="slider-before" src="pictures/IMG_8708.jpg" alt="After">
+                <img class="slider-after" src="pictures/Resized_20240802_112238.jpeg" alt="Before">
                 <div class="slider-handle"></div>
-            </div>
+            </div>-->
         </div>
         <footer class="site_footer">
             <div class="page_content">
